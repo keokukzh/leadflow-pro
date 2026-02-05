@@ -1,0 +1,724 @@
+[
+  {
+    "id": "v1h23s8",
+    "industry": "Architekt, Gartenbau, Sanitär",
+    "locations": [
+      "Nidwalden",
+      "Basel-Landschaft",
+      "Schaffhausen",
+      "Basel-Stadt"
+    ],
+    "currentLocationIndex": 0,
+    "status": "COMPLETED",
+    "results": [
+      {
+        "place_id": "ChIJAccV4dyBmkcRS7aVWZ3oK3Q",
+        "name": "Gartenleben GmbH",
+        "rating": 4,
+        "user_ratings_total": 4,
+        "vicinity": "Schweizersbildstrasse 31, 8207 Schaffhausen, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJAccV4dyBmkcRS7aVWZ3oK3Q",
+        "query_source": "Architekt, Gartenbau, Sanitär in Schaffhausen"
+      },
+      {
+        "place_id": "ChIJO98RltK4eYgRuiniOejr8kU",
+        "name": "Saum GmbH",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "St. Johanns-Ring 108, 4056 Basel, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJO98RltK4eYgRuiniOejr8kU",
+        "query_source": "Architekt, Gartenbau, Sanitär in Basel-Landschaft"
+      },
+      {
+        "place_id": "ChIJaa7qeOu5kUcRomXolaqd0ls",
+        "name": "Berchtold.Lenzin Landschaftsarchitekten",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "St. Alban-Tal 40A, 4052 Basel, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJaa7qeOu5kUcRomXolaqd0ls",
+        "query_source": "Architekt, Gartenbau, Sanitär in Basel-Landschaft"
+      }
+    ],
+    "created_at": "2026-02-05T19:21:04.308Z"
+  },
+  {
+    "id": "l13sma5",
+    "industry": "Architekt, Gartenbau, Sanitär, Coiffeur, Restaurant",
+    "locations": [
+      "Basel-Landschaft",
+      "Schaffhausen",
+      "Basel-Stadt",
+      "Solothurn",
+      "Zug",
+      "Zürich"
+    ],
+    "currentLocationIndex": 0,
+    "status": "COMPLETED",
+    "results": [
+      {
+        "place_id": "ChIJewPn3SO4kUcR9k0Yp037s4s",
+        "name": "Stadtgärtnerei Kanton Basel-Stadt",
+        "rating": 4.9,
+        "user_ratings_total": 35,
+        "vicinity": "Unter Brüglingen 3A, 4142 Münchenstein, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJewPn3SO4kUcR9k0Yp037s4s",
+        "query_source": "Architekt, Gartenbau, Sanitär, Coiffeur, Restaurant in Basel-Stadt"
+      },
+      {
+        "place_id": "ChIJAccV4dyBmkcRS7aVWZ3oK3Q",
+        "name": "Gartenleben GmbH",
+        "rating": 4,
+        "user_ratings_total": 4,
+        "vicinity": "Schweizersbildstrasse 31, 8207 Schaffhausen, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJAccV4dyBmkcRS7aVWZ3oK3Q",
+        "query_source": "Architekt, Gartenbau, Sanitär, Coiffeur, Restaurant in Schaffhausen"
+      },
+      {
+        "place_id": "ChIJq6p6Vh3YkUcR4m8TajEBlxs",
+        "name": "wslarch",
+        "rating": 5,
+        "user_ratings_total": 1,
+        "vicinity": "Untere Steingrubenstrasse 19, 4500 Solothurn, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJq6p6Vh3YkUcR4m8TajEBlxs",
+        "query_source": "Architekt, Gartenbau, Sanitär, Coiffeur, Restaurant in Solothurn"
+      },
+      {
+        "place_id": "ChIJq6q-Rbu5kUcRkVi8TVWiPOk",
+        "name": "Grand Paysage Landschaftsarchitektur",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Haltingerstrasse 40, 4057 Basel, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJq6q-Rbu5kUcRkVi8TVWiPOk",
+        "query_source": "Architekt, Gartenbau, Sanitär, Coiffeur, Restaurant in Basel-Landschaft"
+      },
+      {
+        "place_id": "ChIJaa7qeOu5kUcRomXolaqd0ls",
+        "name": "Berchtold.Lenzin Landschaftsarchitekten",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "St. Alban-Tal 40A, 4052 Basel, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJaa7qeOu5kUcRomXolaqd0ls",
+        "query_source": "Architekt, Gartenbau, Sanitär, Coiffeur, Restaurant in Basel-Landschaft"
+      },
+      {
+        "place_id": "ChIJNZjxRbu5kUcRRI1cDhaLqIY",
+        "name": "Association des anciens de Châtelaine et Lullier",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Haltingerstrasse, 4057 Basel, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJNZjxRbu5kUcRRI1cDhaLqIY",
+        "query_source": "Architekt, Gartenbau, Sanitär, Coiffeur, Restaurant in Basel-Landschaft"
+      },
+      {
+        "place_id": "ChIJ47nYcrK5kUcRU0CPJS1IF3w",
+        "name": "Städtebau & Architektur",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Münsterpl. 11, 4051 Basel, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ47nYcrK5kUcRU0CPJS1IF3w",
+        "query_source": "Architekt, Gartenbau, Sanitär, Coiffeur, Restaurant in Basel-Stadt"
+      }
+    ],
+    "created_at": "2026-02-05T19:22:06.591Z"
+  },
+  {
+    "id": "2id861j",
+    "industry": "Sanitär, Gartenbau",
+    "locations": [
+      "Basel-Landschaft",
+      "Schaffhausen",
+      "Basel-Stadt",
+      "Solothurn",
+      "Zug",
+      "Zürich",
+      "Freiburg",
+      "Obwalden",
+      "Nidwalden",
+      "Glarus",
+      "Uri",
+      "Schwyz",
+      "Luzern",
+      "Bern"
+    ],
+    "currentLocationIndex": 0,
+    "status": "COMPLETED",
+    "results": [
+      {
+        "place_id": "ChIJewPn3SO4kUcR9k0Yp037s4s",
+        "name": "Stadtgärtnerei Kanton Basel-Stadt",
+        "rating": 4.9,
+        "user_ratings_total": 35,
+        "vicinity": "Unter Brüglingen 3A, 4142 Münchenstein, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJewPn3SO4kUcR9k0Yp037s4s",
+        "query_source": "Sanitär, Gartenbau in Basel-Landschaft"
+      },
+      {
+        "place_id": "ChIJgRpthZFDhUcRYj1XGQpqOiE",
+        "name": "Josef Lussmann AG",
+        "rating": 5,
+        "user_ratings_total": 12,
+        "vicinity": "Hochmühlegasse 3, 6460 Altdorf, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJgRpthZFDhUcRYj1XGQpqOiE",
+        "query_source": "Sanitär, Gartenbau in Uri"
+      },
+      {
+        "place_id": "ChIJL6IP1E9RhUcRt7_NRmUjQxU",
+        "name": "Inderbitzin Gmbh Sanitär Heizung Solaranlagen",
+        "rating": 4.2,
+        "user_ratings_total": 10,
+        "vicinity": "Chräbelstrasse 7, 6410 Goldau, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJL6IP1E9RhUcRt7_NRmUjQxU",
+        "query_source": "Sanitär, Gartenbau in Schwyz"
+      },
+      {
+        "place_id": "ChIJQVjFQl_7j0cRkQ5s0x_gjfw",
+        "name": "Abächerli Heizung Sanitär Service",
+        "rating": 4.5,
+        "user_ratings_total": 8,
+        "vicinity": "Grüneggstrasse 18, 6005 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJQVjFQl_7j0cRkQ5s0x_gjfw",
+        "query_source": "Sanitär, Gartenbau in Luzern"
+      },
+      {
+        "place_id": "ChIJYZ5r6qL3j0cRge4qcrTx8sI",
+        "name": "Wyss Haustechnik AG",
+        "rating": 4.8,
+        "user_ratings_total": 5,
+        "vicinity": "Riedenmatt 2, 6370 Stans, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJYZ5r6qL3j0cRge4qcrTx8sI",
+        "query_source": "Sanitär, Gartenbau in Nidwalden"
+      },
+      {
+        "place_id": "ChIJAccV4dyBmkcRS7aVWZ3oK3Q",
+        "name": "Gartenleben GmbH",
+        "rating": 4,
+        "user_ratings_total": 4,
+        "vicinity": "Schweizersbildstrasse 31, 8207 Schaffhausen, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJAccV4dyBmkcRS7aVWZ3oK3Q",
+        "query_source": "Sanitär, Gartenbau in Schaffhausen"
+      },
+      {
+        "place_id": "ChIJ7564BDL5j0cRox0gIs4KJwU",
+        "name": "Gartenpflege Suppiger",
+        "rating": 5,
+        "user_ratings_total": 3,
+        "vicinity": "Sentibühlstrasse 39, 6045 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ7564BDL5j0cRox0gIs4KJwU",
+        "query_source": "Sanitär, Gartenbau in Luzern"
+      },
+      {
+        "place_id": "ChIJOcTARkFOhUcRSDpn0DwsdQ8",
+        "name": "Walter Fässler",
+        "rating": 5,
+        "user_ratings_total": 1,
+        "vicinity": "Grundstrasse 7, 6430 Schwyz, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJOcTARkFOhUcRSDpn0DwsdQ8",
+        "query_source": "Sanitär, Gartenbau in Schwyz"
+      },
+      {
+        "place_id": "ChIJfVt4eGf7j0cRj3hv9d9Gkqk",
+        "name": "Gartenbau Hartmann",
+        "rating": 5,
+        "user_ratings_total": 1,
+        "vicinity": "Helgengüetlistrasse 23, 6015 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJfVt4eGf7j0cRj3hv9d9Gkqk",
+        "query_source": "Sanitär, Gartenbau in Luzern"
+      },
+      {
+        "place_id": "ChIJMdUv3B0thUcRFOV54tNGr4M",
+        "name": "Landschaftsgestaltung.",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Sandstrasse 4, 8750 Glarus, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJMdUv3B0thUcRFOV54tNGr4M",
+        "query_source": "Sanitär, Gartenbau in Glarus"
+      }
+    ],
+    "created_at": "2026-02-05T19:23:53.647Z"
+  },
+  {
+    "id": "yfff1jn",
+    "industry": "Coiffeur",
+    "locations": [
+      "Zürich",
+      "Bern",
+      "Luzern",
+      "Schwyz",
+      "Obwalden",
+      "Jura",
+      "Neuenburg",
+      "Graubünden",
+      "Appenzell Ausserrhoden",
+      "Thurgau",
+      "Aargau"
+    ],
+    "currentLocationIndex": 0,
+    "status": "COMPLETED",
+    "results": [
+      {
+        "place_id": "ChIJl9hEtNjfpkcRxIbRlk0Tv1w",
+        "name": "LuXuS Friseur&barbier",
+        "rating": 4.9,
+        "user_ratings_total": 228,
+        "vicinity": "Kornmarkt 15, 04600 Altenburg, Germany",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJl9hEtNjfpkcRxIbRlk0Tv1w",
+        "query_source": "\"Luxus-Coiffeur mit Premium-Dienstleistungen in Neuenburg\""
+      },
+      {
+        "place_id": "ChIJ_UKdAV87kEcRi1r-p6WIHfg",
+        "name": "MAD Barber Shop Aarau",
+        "rating": 4.3,
+        "user_ratings_total": 222,
+        "vicinity": "Buchserstrasse 1, 5000 Aarau, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ_UKdAV87kEcRi1r-p6WIHfg",
+        "query_source": "Beste Coiffeursalons in Aarau mit Haarschnitte für Herren"
+      },
+      {
+        "place_id": "ChIJzZf7daE5jkcRRpXusZ7XH3s",
+        "name": "Anas Coiffeur",
+        "rating": 5,
+        "user_ratings_total": 150,
+        "vicinity": "Brunnmattstrasse 48, 3007 Bern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJzZf7daE5jkcRRpXusZ7XH3s",
+        "query_source": "\"Beste Coiffeur in Bern\""
+      },
+      {
+        "place_id": "ChIJpVLYmqbhmkcRIp45tMdjRJ4",
+        "name": "Coiffeur Studio Ari",
+        "rating": 4.9,
+        "user_ratings_total": 129,
+        "vicinity": "St. Gallerstrasse 117a, 9200 Gossau, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJpVLYmqbhmkcRIp45tMdjRJ4",
+        "query_source": "\"Friseursalon mit speziellen Haarschnitt für Männer Appenzell Ausserrhoden\""
+      },
+      {
+        "place_id": "ChIJ7aiUwbNRhUcRJj0fLcxdAcc",
+        "name": "S&M Hair Beauty",
+        "rating": 5,
+        "user_ratings_total": 106,
+        "vicinity": "Bahnhofstrasse 19, 6440 Ingenbohl, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ7aiUwbNRhUcRJj0fLcxdAcc",
+        "query_source": "\"Beste Friseursalons in Schwyz\""
+      },
+      {
+        "place_id": "ChIJbxZNtDchm0cRaojG5TgL5W0",
+        "name": "Azad Barber Shop - Appenzell",
+        "rating": 4.9,
+        "user_ratings_total": 102,
+        "vicinity": "Oberer Gansbach 2, 9050 Appenzell, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJbxZNtDchm0cRaojG5TgL5W0",
+        "query_source": "\"Coiffeur Appenzell Ausserrhoden Bewertung\""
+      },
+      {
+        "place_id": "ChIJT-SzdtrxmkcRE1AnBs7-6aA",
+        "name": "Coiffeur Weinfelden",
+        "rating": 4.7,
+        "user_ratings_total": 105,
+        "vicinity": "Bahnhofstrasse 13, 8570 Weinfelden, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJT-SzdtrxmkcRE1AnBs7-6aA",
+        "query_source": "\"Coiffeur Thurgau Bewertung\""
+      },
+      {
+        "place_id": "ChIJJeuURDz7j0cR8yBNKX_dQeE",
+        "name": "Boss Barber Shop",
+        "rating": 4.9,
+        "user_ratings_total": 95,
+        "vicinity": "Hofstrasse 4, 6004 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJJeuURDz7j0cR8yBNKX_dQeE",
+        "query_source": "\"Premium Coiffeur für Herren in Luzern\""
+      },
+      {
+        "place_id": "ChIJc9b7-_E7kEcRIFufm-s3xk0",
+        "name": "Barber Abdou",
+        "rating": 4.8,
+        "user_ratings_total": 94,
+        "vicinity": "Gönhardweg 3, 5000 Aarau, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJc9b7-_E7kEcRIFufm-s3xk0",
+        "query_source": "Coiffeur Aargau Bewertung"
+      },
+      {
+        "place_id": "ChIJw1rPr_ihkUcREyts07bot50",
+        "name": "Barbershop Neuenburg",
+        "rating": 4.8,
+        "user_ratings_total": 88,
+        "vicinity": "Müllheimer Str. 21, 79395 Neuenburg am Rhein, Germany",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJw1rPr_ihkUcREyts07bot50",
+        "query_source": "\"Coiffeur Neuenburg Bewertungen\""
+      },
+      {
+        "place_id": "ChIJsX0ceyCSmkcRw5m2FgI8_Tg",
+        "name": "Coiffeur - Barbier Herrensalon Sascha Frauenfeld",
+        "rating": 4.9,
+        "user_ratings_total": 83,
+        "vicinity": "Altweg 16, 8500 Frauenfeld, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJsX0ceyCSmkcRw5m2FgI8_Tg",
+        "query_source": "\"Beste Coiffeur in Frauenfeld\""
+      },
+      {
+        "place_id": "ChIJo1KWo5v7j0cRaLzCYrBv4CM",
+        "name": "Hair Studio Miko",
+        "rating": 4.9,
+        "user_ratings_total": 80,
+        "vicinity": "Löwenstrasse 13, 6004 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJo1KWo5v7j0cRaLzCYrBv4CM",
+        "query_source": "\"Coiffeur Luzern Bewertung\""
+      },
+      {
+        "place_id": "ChIJ1cVHMKc9jUcR9uh5MTq87Sw",
+        "name": "AU DELA DU MIROIR - Coiffeur Conseil",
+        "rating": 4.7,
+        "user_ratings_total": 71,
+        "vicinity": "5 bis Rue Nicolas Appert, 39800 Poligny, France",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ1cVHMKc9jUcR9uh5MTq87Sw",
+        "query_source": "Drastische Haarschnitte & Styling in Poligny"
+      },
+      {
+        "place_id": "ChIJAQDQ1Unyj0cRM7NuNX1je8Y",
+        "name": "Maestros Barbershop",
+        "rating": 4.7,
+        "user_ratings_total": 62,
+        "vicinity": "Marktstrasse 7A, 6060 Sarnen, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJAQDQ1Unyj0cRM7NuNX1je8Y",
+        "query_source": "\"Coiffeur Obwalden Bewertung\""
+      },
+      {
+        "place_id": "ChIJ61e4gevXjEcRt6NnTERGk9c",
+        "name": "Coiffeur",
+        "rating": 4.6,
+        "user_ratings_total": 63,
+        "vicinity": "13 Rue des Salines, 39000 Lons-le-Saunier, France",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ61e4gevXjEcRt6NnTERGk9c",
+        "query_source": "Friseur für Männer Rasur & Bartpflege in Lons-le-Saunier"
+      }
+    ],
+    "created_at": "2026-02-05T20:20:30.807Z"
+  },
+  {
+    "id": "xevbqej",
+    "industry": "Gartenbau",
+    "locations": [
+      "Bern",
+      "Luzern",
+      "Glarus",
+      "Zug"
+    ],
+    "currentLocationIndex": 0,
+    "status": "COMPLETED",
+    "results": [
+      {
+        "place_id": "ChIJO9wOZw-rmkcR3WVPwx_Qh2Q",
+        "name": "Hofladen Berghof",
+        "rating": 5,
+        "user_ratings_total": 7,
+        "vicinity": "Berghof, 6300 Zug, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJO9wOZw-rmkcR3WVPwx_Qh2Q",
+        "query_source": "\"Spezialisierte Baumschule mit Lieferung in der Region Zug\""
+      },
+      {
+        "place_id": "ChIJfa2tia0thUcRChNYq-8awHs",
+        "name": "Blumen Atelier Durscher",
+        "rating": 5,
+        "user_ratings_total": 4,
+        "vicinity": "Kirchstrasse 9, 8750 Glarus, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJfa2tia0thUcRChNYq-8awHs",
+        "query_source": "\"Traditionelle Blumenbinden in Glarus ohne digitale Präsenz\""
+      },
+      {
+        "place_id": "ChIJ-VLAXw38j0cRp2xbpQmAPD0",
+        "name": "Birrer Gartenbau und Baugeschäft GmbH",
+        "rating": 4.8,
+        "user_ratings_total": 4,
+        "vicinity": "Schachenweidstrasse 14, 6030 Ebikon, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ-VLAXw38j0cRp2xbpQmAPD0",
+        "query_source": "\"Gartenbau Unternehmen Luzern mit besten Bewertungen\""
+      },
+      {
+        "place_id": "ChIJ7564BDL5j0cRox0gIs4KJwU",
+        "name": "Gartenpflege Suppiger",
+        "rating": 5,
+        "user_ratings_total": 3,
+        "vicinity": "Sentibühlstrasse 39, 6045 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ7564BDL5j0cRox0gIs4KJwU",
+        "query_source": "\"Gartenbau Unternehmen Luzern mit besten Bewertungen\""
+      },
+      {
+        "place_id": "ChIJTZDhvU4shUcRC038K2QVtq8",
+        "name": "Küper Gärten",
+        "rating": 5,
+        "user_ratings_total": 2,
+        "vicinity": "Mühlestrasse 4, 8755 Ennenda, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJTZDhvU4shUcRC038K2QVtq8",
+        "query_source": "\"Gartenbau Glarus Bewertung\""
+      },
+      {
+        "place_id": "ChIJgX-V8rI-jkcRPRb-r1qcor8",
+        "name": "Gartenbau",
+        "rating": 5,
+        "user_ratings_total": 1,
+        "vicinity": "Kappelenring 40A, 3032 Wohlen bei Bern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJgX-V8rI-jkcRPRb-r1qcor8",
+        "query_source": "\"Gartenplanung und -gestaltung Bern ohne Website\""
+      },
+      {
+        "place_id": "ChIJfVt4eGf7j0cRj3hv9d9Gkqk",
+        "name": "Gartenbau Hartmann",
+        "rating": 5,
+        "user_ratings_total": 1,
+        "vicinity": "Helgengüetlistrasse 23, 6015 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJfVt4eGf7j0cRj3hv9d9Gkqk",
+        "query_source": "\"Gartenbau Unternehmen Luzern mit besten Bewertungen\""
+      },
+      {
+        "place_id": "ChIJg9uW9zj7j0cR1ysWz2N8SM0",
+        "name": "Gärtnerei Isenegger",
+        "rating": 5,
+        "user_ratings_total": 1,
+        "vicinity": "Matthof 28, 6014 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJg9uW9zj7j0cR1ysWz2N8SM0",
+        "query_source": "\"Spezialisierte Baumschulen für Zierpflanzen in Luzern\""
+      },
+      {
+        "place_id": "ChIJMdUv3B0thUcRFOV54tNGr4M",
+        "name": "Landschaftsgestaltung.",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Sandstrasse 4, 8750 Glarus, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJMdUv3B0thUcRFOV54tNGr4M",
+        "query_source": "\"Gartenbau Glarus Bewertung\""
+      },
+      {
+        "place_id": "ChIJ6XISBacthUcRPo6vfGYQ7Xk",
+        "name": "JEKAG Gartenbau- und Maschinenbetrieb GmbH",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Lindengut 6, 8750 Glarus, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ6XISBacthUcRPo6vfGYQ7Xk",
+        "query_source": "\"Gartenbau Glarus Bewertung\""
+      },
+      {
+        "place_id": "ChIJoS3SZbIthUcR3uBm7lOELzE",
+        "name": "Zürcher Gartenunternehmen",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Hauptstrasse 5, 8750 Glarus, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJoS3SZbIthUcR3uBm7lOELzE",
+        "query_source": "\"Beste Gartenbaubetriebe in Glarus\""
+      }
+    ],
+    "created_at": "2026-02-05T20:49:10.015Z"
+  },
+  {
+    "id": "0bijr57",
+    "industry": "Sanitär, Garage",
+    "locations": [
+      "Zürich",
+      "Luzern",
+      "Nidwalden",
+      "Bern",
+      "Uri",
+      "Schwyz",
+      "Obwalden"
+    ],
+    "currentLocationIndex": 0,
+    "status": "COMPLETED",
+    "results": [
+      {
+        "place_id": "ChIJwWUHZDf7j0cRt_ikypE-nCQ",
+        "name": "Garage Salvenmoser GmbH",
+        "rating": 4.8,
+        "user_ratings_total": 44,
+        "vicinity": "Luzernerstrasse 135, 6014 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJwWUHZDf7j0cRt_ikypE-nCQ",
+        "query_source": "\"Beste Garage mit Werkstatt Luzern\""
+      },
+      {
+        "place_id": "ChIJy9jFamD7j0cR23EgzTdivIQ",
+        "name": "Mika Garage Gmbh",
+        "rating": 4.9,
+        "user_ratings_total": 34,
+        "vicinity": "Sedelstrasse 1, 6020 Emmen, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJy9jFamD7j0cR23EgzTdivIQ",
+        "query_source": "\"Garage mit digitaler Terminbuchung Luzern\""
+      },
+      {
+        "place_id": "ChIJTbhHA3M5jkcRJPSCE3qWNVw",
+        "name": "Tinu's Garage GmbH",
+        "rating": 4.7,
+        "user_ratings_total": 33,
+        "vicinity": "Freiburgstrasse 125A, 3008 Bern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJTbhHA3M5jkcRJPSCE3qWNVw",
+        "query_source": "\"Beste Garage mit Autoreparatur in der Nähe von Bern\""
+      },
+      {
+        "place_id": "ChIJM4fq1KBThUcR9Ys1If9iPO4",
+        "name": "Gisler Chnusti AG",
+        "rating": 4.6,
+        "user_ratings_total": 14,
+        "vicinity": "Räbengasse 8, 6422 Steinen, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJM4fq1KBThUcR9Ys1If9iPO4",
+        "query_source": "\"Kfz-Instandsetzung Schwyz\""
+      },
+      {
+        "place_id": "ChIJx6jkBMNPhUcRAEFfg22QuUQ",
+        "name": "Garage Zumbühl",
+        "rating": 5,
+        "user_ratings_total": 11,
+        "vicinity": "Grundstrasse 33, 6430 Schwyz, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJx6jkBMNPhUcRAEFfg22QuUQ",
+        "query_source": "\"Beste Garage in Schwyz\""
+      },
+      {
+        "place_id": "ChIJ2ZNQLjb7j0cRg9MUh3Yebl4",
+        "name": "W. Stutz AG",
+        "rating": 4,
+        "user_ratings_total": 13,
+        "vicinity": "Ritterstrasse 40, 6014 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ2ZNQLjb7j0cRg9MUh3Yebl4",
+        "query_source": "\"Sanitärinstallation für gewerbliche Kunden Luzern\""
+      },
+      {
+        "place_id": "ChIJgTy4vhL8j0cR9fAFu1CEaC0",
+        "name": "Garage Zenuni",
+        "rating": 4.2,
+        "user_ratings_total": 12,
+        "vicinity": "6030 Ebikon, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJgTy4vhL8j0cR9fAFu1CEaC0",
+        "query_source": "\"Beste Garage mit Werkstatt Luzern\""
+      },
+      {
+        "place_id": "ChIJQVjFQl_7j0cRkQ5s0x_gjfw",
+        "name": "Abächerli Heizung Sanitär Service",
+        "rating": 4.5,
+        "user_ratings_total": 8,
+        "vicinity": "Grüneggstrasse 18, 6005 Luzern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJQVjFQl_7j0cRkQ5s0x_gjfw",
+        "query_source": "\"Sanitär Notdienst Luzern\" Bewertung"
+      },
+      {
+        "place_id": "ChIJX0S_JV83jkcRX80s7Sv8OE4",
+        "name": "Mechanics, De Castro Figueiredo",
+        "rating": 4.8,
+        "user_ratings_total": 6,
+        "vicinity": "Zikadenweg 6B, 3006 Bern, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJX0S_JV83jkcRX80s7Sv8OE4",
+        "query_source": "\"Beste Garage mit Autoreparatur in der Nähe von Bern\""
+      },
+      {
+        "place_id": "ChIJYwtK_2z8j0cRMM4fDQdUAKk",
+        "name": "Heer Sanitär GmbH",
+        "rating": 4.2,
+        "user_ratings_total": 5,
+        "vicinity": "Sonnhalderain 74, 6030 Ebikon, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJYwtK_2z8j0cRMM4fDQdUAKk",
+        "query_source": "\"Sanitär Notdienst Luzern\" Bewertung"
+      },
+      {
+        "place_id": "ChIJI68O5zsLkEcR9H-kz8cmlPk",
+        "name": "Autowerkstatt Zürich",
+        "rating": 5,
+        "user_ratings_total": 4,
+        "vicinity": "Badenerstrasse 540, 8048 Zürich, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJI68O5zsLkEcR9H-kz8cmlPk",
+        "query_source": "\"Garage Zürich Ölwechsel und Reifenwechsel\""
+      },
+      {
+        "place_id": "ChIJ_Wj7XBJChUcR0LTa4bafwWo",
+        "name": "Püntener Heizung - Sanitär",
+        "rating": 5,
+        "user_ratings_total": 3,
+        "vicinity": "Kirchgasse 1, 6472 Erstfeld, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ_Wj7XBJChUcR0LTa4bafwWo",
+        "query_source": "\"Notdienst Sanitär Uri\""
+      },
+      {
+        "place_id": "ChIJOcTARkFOhUcRSDpn0DwsdQ8",
+        "name": "Walter Fässler",
+        "rating": 5,
+        "user_ratings_total": 1,
+        "vicinity": "Grundstrasse 7, 6430 Schwyz, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJOcTARkFOhUcRSDpn0DwsdQ8",
+        "query_source": "\"Sanitär Schwyz Bewertung\""
+      },
+      {
+        "place_id": "ChIJ-fps5LqSj0cR8zArjZEMf0Y",
+        "name": "Armin Berchtold AG",
+        "rating": 5,
+        "user_ratings_total": 1,
+        "vicinity": "Mühlemattli 30, 6074 Giswil, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ-fps5LqSj0cR8zArjZEMf0Y",
+        "query_source": "\"Sanitärinstallation Obwalden Bewertung\""
+      },
+      {
+        "place_id": "ChIJU7MecsQ5jkcRYjV3FL3QOeo",
+        "name": "Uri und seine Täler",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Herrengasse 28, 6430 Schwyz, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJU7MecsQ5jkcRYjV3FL3QOeo",
+        "query_source": "\"Kfz-Instandsetzung Schwyz\""
+      }
+    ],
+    "created_at": "2026-02-05T21:04:31.018Z"
+  }
+]

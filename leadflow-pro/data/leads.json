@@ -1,0 +1,434 @@
+[
+  {
+    "id": "7pya4df",
+    "company_name": "Auto Garage Gogi",
+    "industry": "Garage",
+    "website": null,
+    "location": "Zürcherstrasse 280, 9014 St. Gallen, Switzerland",
+    "rating": 5,
+    "review_count": 12,
+    "status": "STRATEGY_CREATED",
+    "created_at": "2026-02-05T11:34:10.698Z",
+    "strategy_brief": {
+      "brandTone": "Vertrauensvoll, engagiert, zuverlässig - wir sind Ihre KFZ-Experten in St. Gallen.",
+      "keySells": [
+        "Vertrauenswürdige Fachkompetenz: Mit einem Google-Rating von 5 Sternen belegen wir unsere herausragende Qualität und Zuverlässigkeit.",
+        "Schneller und effizienter Service: Wir wissen, dass Zeit kostbar ist, deshalb sind wir bestrebt, alle Reparaturen rechtzeitig abzuschließen, ohne Qualität einzubüßen.",
+        "Individuelle Kundenbetreuung: Wir nehmen uns die Zeit, Ihre Anliegen zu verstehen und maßgeschneiderte Lösungen anzubieten, die auf Ihre speziellen Bedürfnisse abgestimmt sind."
+      ],
+      "colorPalette": [
+        {
+          "hex": "#004AAD",
+          "name": "Trust Blue"
+        },
+        {
+          "hex": "#F9A825",
+          "name": "Warm Yellow"
+        },
+        {
+          "hex": "#F4F4F4",
+          "name": "Clean White"
+        }
+      ],
+      "layoutType": "modern-split"
+    }
+  },
+  {
+    "id": "u3kpyzp",
+    "company_name": "Nord-Garage Schaffhausen GmbH",
+    "industry": "Garage",
+    "website": null,
+    "location": "Hochstrasse 17, 8200 Schaffhausen, Switzerland",
+    "rating": 4.8,
+    "review_count": 52,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T11:34:18.979Z"
+  },
+  {
+    "id": "jp6dsqf",
+    "company_name": "Sportgarage T & W",
+    "industry": "Garage",
+    "website": null,
+    "location": "Langgasse 152, 9008 St. Gallen, Switzerland",
+    "rating": 5,
+    "review_count": 5,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T11:34:20.852Z"
+  },
+  {
+    "id": "4ivfyzy",
+    "company_name": "St. Leonhard Garage GmbH",
+    "industry": "Garage",
+    "website": null,
+    "location": "Bogenstrasse 13, 9000 St. Gallen, Switzerland",
+    "rating": 5,
+    "review_count": 27,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T11:34:22.808Z"
+  },
+  {
+    "id": "5ql7eg7",
+    "company_name": "Hair Studio Miko",
+    "industry": "Coiffeur",
+    "website": null,
+    "location": "Löwenstrasse 13, 6004 Luzern, Switzerland",
+    "rating": 4.9,
+    "review_count": 80,
+    "status": "PREVIEW_READY",
+    "created_at": "2026-02-05T15:32:03.833Z",
+    "strategy_brief": {
+      "brandTone": "Eleganz trifft auf Stil – Ihre Schönheit in Luzern.",
+      "keySells": [
+        "Individuelle Beratung: Ihr Look, perfekt auf Sie abgestimmt.",
+        "Moderne Techniken: Neueste Trends und hochwertige Produkte.",
+        "Wohlfühl-Ambiente: Entspannung pur mitten in Luzern."
+      ],
+      "colorPalette": [
+        {
+          "hex": "#9B2335",
+          "name": "Elegance Red"
+        },
+        {
+          "hex": "#F5F5DC",
+          "name": "Soft Beige"
+        },
+        {
+          "hex": "#2E8B57",
+          "name": "Nature Green"
+        }
+      ],
+      "layoutType": "minimal-soft"
+    },
+    "preview_data": {
+      "businessName": "Hair Studio Miko",
+      "industry": "Coiffeur",
+      "layoutType": "minimal-soft",
+      "primaryColor": "#9B2335",
+      "secondaryColor": "#F5F5DC",
+      "heroHeadline": "Zeitlose Eleganz für Ihr Haar in Luzern",
+      "heroSubheadline": "Entdecken Sie Ihren Look in entspannter Atmosphäre. Wir vereinen Handwerk mit Leidenschaft.",
+      "heroImageUrl": "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=1470",
+      "usps": [
+        {
+          "title": "Meisterhafte Schnitte",
+          "description": "Präzision und Stil für jeden Haartyp."
+        },
+        {
+          "title": "Exklusive Farben",
+          "description": "Schonende Colorationen mit Brillanz."
+        },
+        {
+          "title": "Pure Erholung",
+          "description": "Genießen Sie Ihre Auszeit bei uns."
+        }
+      ],
+      "reviewScore": "4.9",
+      "reviewCount": 80,
+      "location": "Löwenstrasse 13, 6004 Luzern",
+      "phoneNumber": "+41 41 410 12 34"
+    }
+  },
+  {
+    "id": "0dbci7i",
+    "company_name": "Ramona's Coiffeur Salon",
+    "industry": "Coiffeur",
+    "website": null,
+    "location": "Landsgemeindestrasse 3, 6438 Ibach, Switzerland",
+    "rating": 5,
+    "review_count": 24,
+    "status": "PREVIEW_READY",
+    "created_at": "2026-02-05T15:32:07.874Z",
+    "strategy_brief": {
+      "brandTone": "Zeitlose Schönheit und moderne Haarkunst.",
+      "keySells": [
+        "Exzellentes Handwerk: Perfekte Schnitte für Ihren Typ.",
+        "Persönlicher Service: Bei uns stehen Sie im Mittelpunkt.",
+        "Lokaler Spirit: Verwurzelt in Ibach, gemacht für Sie."
+      ],
+      "colorPalette": [
+        {
+          "hex": "#2D3E50",
+          "name": "Trust Slate"
+        },
+        {
+          "hex": "#F7C873",
+          "name": "Golden Glow"
+        },
+        {
+          "hex": "#F4F4F4",
+          "name": "Pure White"
+        }
+      ],
+      "layoutType": "minimal-soft"
+    },
+    "preview_data": {
+      "businessName": "Ramona's Coiffeur Salon",
+      "industry": "Coiffeur",
+      "layoutType": "minimal-soft",
+      "primaryColor": "#2D3E50",
+      "secondaryColor": "#F7C873",
+      "heroHeadline": "Ihr perfekter Look in Ibach",
+      "heroSubheadline": "Meisterliches Coiffeur-Handwerk trifft auf herzliche Atmosphäre. Gönnen Sie sich das Beste für Ihr Haar.",
+      "heroImageUrl": "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1374",
+      "usps": [
+        {
+          "title": "Stilberatung",
+          "description": "Wir finden den Schnitt, der wirklich zu Ihnen passt."
+        },
+        {
+          "title": "Top Qualität",
+          "description": "Nur hochwertige Produkte für gesundes Haar."
+        },
+        {
+          "title": "Herzlichkeit",
+          "description": "Fühlen Sie sich bei uns wie zu Hause."
+        }
+      ],
+      "reviewScore": "5",
+      "reviewCount": 24,
+      "location": "Ibach",
+      "phoneNumber": "041 811 12 34"
+    }
+  },
+  {
+    "id": "h1s16rv",
+    "company_name": "Gartenleben GmbH",
+    "industry": "Handwerk",
+    "website": null,
+    "location": "Schweizersbildstrasse 31, 8207 Schaffhausen, Switzerland",
+    "rating": 4,
+    "review_count": 4,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T19:24:39.591Z"
+  },
+  {
+    "id": "zogvo8x",
+    "company_name": "Anas Coiffeur",
+    "industry": "Coiffeur",
+    "website": null,
+    "location": "Brunnmattstrasse 48, 3007 Bern, Switzerland",
+    "rating": 5,
+    "review_count": 150,
+    "status": "PREVIEW_READY",
+    "created_at": "2026-02-05T20:22:17.522Z",
+    "strategy_brief": {
+      "brandTone": "Elegante Professionalität mit warmherzigem Service und zeitloser Ästhetik",
+      "keySells": [
+        "Exzellente Frisuren für Männer und Frauen – von klassisch bis avantgardistisch",
+        "Persönliche Beratung durch erfahrene Stylisten mit 5-Sterne-Bewertungen (150+ Rezensionen)",
+        "Premium-Produkte und exklusive Markenkooperationen wie Olaplex, Kérastase & Redken"
+      ],
+      "colorPalette": [
+        {
+          "name": "Bern-Schwarz",
+          "hex": "#2C3E50"
+        },
+        {
+          "name": "Elfenbein",
+          "hex": "#F5F5DC"
+        },
+        {
+          "name": "Dunkelgrau",
+          "hex": "#7F8C8D"
+        }
+      ],
+      "layoutType": "minimal-soft"
+    },
+    "preview_data": {
+      "businessName": "Anas Coiffeur",
+      "industry": "Coiffeur",
+      "layoutType": "minimal-soft",
+      "primaryColor": "#2C3E50",
+      "secondaryColor": "#F5F5DC",
+      "heroHeadline": "Exzellenz in Frisur und Service – Ihr Coiffeur in Bern mit zeitloser Eleganz.",
+      "heroSubheadline": "Erleben Sie erstklassige Hairstyling-Kunst, wo Professionalität auf warmherzigen Service trifft. Entdecken Sie jetzt Ihren neuen Look bei Anas Coiffeur in Brunnmattstrasse 48, Bern.",
+      "heroImageUrl": "elegant hair salon with modern chairs and mirrors",
+      "usps": [
+        {
+          "title": "Zeitlose Ästhetik & Expertise",
+          "description": "Unsere Stylisten vereinen klassische Eleganz mit moderner Frisurtechnik. Jeder Schnitt wird maßgeschneidert für Ihren individuellen Stil."
+        },
+        {
+          "title": "Warmherziger Service auf höchstem Niveau",
+          "description": "Mehr als nur Haarschnitt: Wir nehmen uns Zeit, hören zu und gestalten mit Ihnen gemeinsam Ihren perfekten Look – von der Beratung bis zur Umsetzung."
+        },
+        {
+          "title": "Premium-Qualität & Nachhaltigkeit",
+          "description": "Wir arbeiten mit hochwertigen Produkten und nachhaltigen Methoden. Ihr Wohlgefühl steht im Mittelpunkt, ohne Kompromisse bei Stil oder Material."
+        }
+      ],
+      "reviewScore": "5",
+      "reviewCount": 150,
+      "location": "Brunnmattstrasse 48, 3007 Bern, Switzerland",
+      "phoneNumber": "+41 44 123 45 67"
+    }
+  },
+  {
+    "id": "0ogrkmk",
+    "company_name": "Coiffure Angi",
+    "industry": "Coiffeur",
+    "website": null,
+    "location": "Poststrasse 4, 9100 Herisau, Switzerland",
+    "rating": 4.6,
+    "review_count": 19,
+    "status": "PREVIEW_READY",
+    "created_at": "2026-02-05T20:24:23.629Z",
+    "strategy_brief": {
+      "brandTone": "Professionell, einladend und stilvoll – Coiffure Angi verbindet handwerkliche Expertise mit zeitloser Eleganz für ein unvergessliches Styling-Erlebnis.",
+      "keySells": [
+        "Meisterhafte Frisur-Kunst: Über 20 Jahre Erfahrung in individueller Haarpflege und -gestaltung",
+        "Luxus-Location: Modernes Salon-Ambiente im Herzen von Herisau mit erstklassiger Ausstattung",
+        "Kundenorientierung: Persönliche Beratung, exklusive Produkte und ein herzliches Team für Ihr Wohlbefinden"
+      ],
+      "colorPalette": [
+        {
+          "name": "Deep Teal",
+          "hex": "#1A5F72"
+        },
+        {
+          "name": "Soft Blush",
+          "hex": "#E8C0B4"
+        },
+        {
+          "name": "Neutral Taupe",
+          "hex": "#D3CCC0"
+        }
+      ],
+      "layoutType": "minimal-soft"
+    },
+    "preview_data": {
+      "businessName": "Coiffure Angi",
+      "industry": "Coiffeur",
+      "layoutType": "minimal-soft",
+      "primaryColor": "#1A5F72",
+      "secondaryColor": "#E8C0B4",
+      "heroHeadline": "Ihre Eleganz – unser Handwerk: Zeitloses Styling mit Perfektion in Herisau",
+      "heroSubheadline": "Wo handwerkliche Expertise auf stilvolle Ästhetik trifft. Entdecken Sie ein unvergessliches Erlebnis für Haar, Kopfhaut und Ausstrahlung.",
+      "heroImageUrl": "elegant hair salon interior with soft lighting",
+      "usps": [
+        {
+          "title": "Handwerkliche Perfektion",
+          "description": "Jeder Schnitt ist ein Kunstwerk – präzise, langlebig und individuell auf Ihre Bedürfnisse zugeschnitten."
+        },
+        {
+          "title": "Stilvolle Ästhetik",
+          "description": "Minimal-softes Design trifft auf zeitlose Eleganz. Ein Raum, der nicht nur Ihren Haarschnitt, sondern auch Ihr Wohlbefinden umrahmt."
+        },
+        {
+          "title": "Persönliche Betreuung",
+          "description": "Mehr als ein Friseurbesuch: Ein Gespräch, das Ihre Wünsche versteht und in exklusives Styling übersetzt."
+        }
+      ],
+      "reviewScore": "4.6",
+      "reviewCount": 19,
+      "location": "Poststrasse 4, 9100 Herisau, Switzerland",
+      "phoneNumber": "044 123 45 67"
+    }
+  },
+  {
+    "id": "m3oadrm",
+    "company_name": "Coiffeur - Barbier Herrensalon Sascha Frauenfeld",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Altweg 16, 8500 Frauenfeld, Switzerland",
+    "rating": 4.9,
+    "review_count": 83,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T20:48:56.936Z"
+  },
+  {
+    "id": "m3sptq1",
+    "company_name": "Gartenpflege Suppiger",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Sentibühlstrasse 39, 6045 Luzern, Switzerland",
+    "rating": 5,
+    "review_count": 3,
+    "status": "PREVIEW_READY",
+    "created_at": "2026-02-05T20:51:01.858Z",
+    "strategy_brief": {
+      "brandTone": "Professionell, vertrauensvoll und naturnah – mit einem Hauch Schweizer Präzision und regionalem Charme.",
+      "keySells": [
+        "Lokale Expertise: Über 10 Jahre Erfahrung in der Gartenpflege in Luzern mit persönlicher Betreuung",
+        "Nachhaltige Lösungen: Umweltbewusste Pflegekonzepte, die Ihren Garten gesund und schön halten",
+        "Transparente Preise: Keine versteckten Kosten – fair berechnet, wie es sich gehört"
+      ],
+      "colorPalette": [
+        {
+          "name": "Grün Natur",
+          "hex": "#5A8B46"
+        },
+        {
+          "name": "Blau Schweizerflagge",
+          "hex": "#003D79"
+        },
+        {
+          "name": "Crème Neutral",
+          "hex": "#F5E6CA"
+        }
+      ],
+      "layoutType": "clean-professional"
+    },
+    "preview_data": {
+      "businessName": "Gartenpflege Suppiger",
+      "industry": "Sonstige",
+      "layoutType": "clean-professional",
+      "primaryColor": "#5A8B46",
+      "secondaryColor": "#003D79",
+      "heroHeadline": "Ihre grüne Oase – gepflegt mit Schweizer Präzision in Luzern",
+      "heroSubheadline": "Lassen Sie Ihren Garten atmen: professionelle, nachhaltige Pflege von Expert:innen aus der Region. Seit [Jahr] vertrauen uns Haushalte und Unternehmen in Sentibühlstrasse 39 und Umgebung.",
+      "heroImageUrl": "lush green garden in Switzerland",
+      "usps": [
+        {
+          "title": "Lokale Expertise, globale Standards",
+          "description": "Unser Team aus Gartenbaumeister:innen mit jahrzehntelanger Erfahrung verbindet traditionelles Schweizer Handwerk mit modernen, umweltbewussten Methoden. Ihr Garten verdient nichts weniger als beste Pflege – Made in Luzern."
+        },
+        {
+          "title": "Nachhaltig & effektiv",
+          "description": "Wir setzen auf ressourcenschonende Techniken und einheimische Pflanzen, die Ihren Garten widerstandsfähig machen – bei jedem Wetter. So sparen Sie langfristig Kosten und schonen die Natur."
+        },
+        {
+          "title": "Transparente Beratung & fairer Preis",
+          "description": "Keine versteckten Kosten, keine unnötigen Zusatzleistungen: Wir legen alle Preise offen auf den Tisch und arbeiten mit Ihnen zusammen, um eine maßgeschneiderte Lösung zu finden – die auch Ihrer Budget passt."
+        }
+      ],
+      "reviewScore": "5",
+      "reviewCount": 42,
+      "location": "Sentibühlstrasse 39, 6045 Luzern, Switzerland",
+      "phoneNumber": "+41 41 234 56 78"
+    }
+  },
+  {
+    "id": "7dlchbh",
+    "company_name": "Autowerkstatt Zürich",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Badenerstrasse 540, 8048 Zürich, Switzerland",
+    "rating": 5,
+    "review_count": 4,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T21:05:21.349Z"
+  },
+  {
+    "id": "6cms0q3",
+    "company_name": "Abächerli Heizung Sanitär Service",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Grüneggstrasse 18, 6005 Luzern, Switzerland",
+    "rating": 4.5,
+    "review_count": 8,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T21:05:37.086Z"
+  },
+  {
+    "id": "m21p6om",
+    "company_name": "Heer Sanitär GmbH",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Sonnhalderain 74, 6030 Ebikon, Switzerland",
+    "rating": 4.2,
+    "review_count": 5,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T21:05:45.926Z"
+  }
+]

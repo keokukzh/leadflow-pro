@@ -1,0 +1,55 @@
+{
+  "name": "Verification Workflow",
+  "version": "1.0.0",
+  "description": "Verify core orchestrator features: dependencies, shell tasks, and conditions",
+  "trigger": {
+    "type": "manual",
+    "config": {}
+  },
+  "environment": {
+    "SKIP_TESTS": "false",
+    "TEST_VAR": "hello"
+  },
+  "tasks": [
+    {
+      "id": "init",
+      "name": "Initialization",
+      "type": "shell",
+      "command": "echo Initializing verification...",
+      "live_output": true
+    },
+    {
+      "id": "parallel-1",
+      "name": "Parallel Task 1",
+      "type": "shell",
+      "command": "powershell -Command \"Start-Sleep -Seconds 1; echo Parallel 1 Done\"",
+      "depends_on": ["init"],
+      "live_output": true
+    },
+    {
+      "id": "parallel-2",
+      "name": "Parallel Task 2",
+      "type": "shell",
+      "command": "powershell -Command \"Start-Sleep -Seconds 1; echo Parallel 2 Done\"",
+      "depends_on": ["init"],
+      "live_output": true
+    },
+    {
+      "id": "conditional-task",
+      "name": "Conditional Task",
+      "type": "shell",
+      "command": "echo This should run",
+      "depends_on": ["parallel-1", "parallel-2"],
+      "condition": "${env.SKIP_TESTS} != 'true'",
+      "live_output": true
+    },
+    {
+      "id": "final",
+      "name": "Final Task",
+      "type": "shell",
+      "command": "echo Verification Complete",
+      "depends_on": ["conditional-task"],
+      "live_output": true
+    }
+  ]
+}
