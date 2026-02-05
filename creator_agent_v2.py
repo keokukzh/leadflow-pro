@@ -503,61 +503,117 @@ class CreatorAgent2:
         return results
 
 
+# Path to leads.json in Next.js app
+LEADS_FILE = os.path.join(os.path.dirname(__file__), "leadflow-pro", "data", "leads.json")
+
+def load_leads() -> List[Dict]:
+    """Lädt Leads aus leads.json."""
+    try:
+        with open(LEADS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"❌ {LEADS_FILE} nicht gefunden")
+        return []
+
+def save_leads(leads: List[Dict]):
+    """Speichert Leads in leads.json."""
+    with open(LEADS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(leads, f, indent=2, ensure_ascii=False)
+
+def convert_to_agent_format(lead: Dict) -> Dict:
+    """Konvertiert Lead aus leads.json ins Agent-Format."""
+    return {
+        "id": lead.get("id"),
+        "name": lead.get("company_name"),
+        "industry": lead.get("industry", "service"),
+        "location": lead.get("location", "Schweiz"),
+        "website_status": "KEINE WEBSITE" if not lead.get("website") else "vorhanden",
+        "rating": lead.get("rating", 4.0),
+        "review_count": lead.get("review_count", 0),
+        "phone": "+41 44 000 00 00",  # Placeholder
+        "google_maps": True,
+        "social_media": False,
+        "local_directory": True
+    }
+
 def main():
-    """CLI Interface."""
+    """CLI Interface - verarbeitet Leads aus leads.json."""
     agent = CreatorAgent2()
     
     print("=" * 70)
     print("🎯 CREATOR AGENT 2.0")
     print("   Image AI + Content Generation + Lead Scoring")
+    print("   📁 Verbunden mit: leadflow-pro/data/leads.json")
     print("=" * 70)
     
-    # Test mit Beispieldaten
-    test_leads = [
-        {
-            "name": "Coiffure Thomas D",
-            "industry": "beauty",
-            "location": "Zürich",
-            "website_status": "KEINE WEBSITE",
-            "rating": 4.8,
-            "review_count": 45,
-            "phone": "+41 44 123 45 67",
-            "google_maps": True,
-            "social_media": False,
-            "local_directory": True
-        },
-        {
-            "name": "Metzgerei Müller",
-            "industry": "retail",
-            "location": "Bern",
-            "website_status": "veraltet",
-            "rating": 4.2,
-            "review_count": 28,
-            "phone": "+41 31 123 45 67",
-            "google_maps": True,
-            "social_media": True,
-            "local_directory": True
-        }
-    ]
+    # Lade Leads aus leads.json
+    leads = load_leads()
+    if not leads:
+        return
     
-    # Process
-    results = agent.process_batch(test_leads)
+    # Filtere nur DISCOVERED Leads (ohne Strategie)
+    discovered_leads = [l for l in leads if l.get("status") == "DISCOVERED"]
     
-    # Show results
-    for r in results:
-        lead = r["lead"]["name"]
-        score = r["score"]["total_score"]
-        grade = r["score"]["grade"]
-        recs = r["score"]["recommendations"]
+    if not discovered_leads:
+        print("\n✅ Alle Leads haben bereits eine Strategie!")
+        print(f"   Total Leads: {len(leads)}")
+        return
+    
+    print(f"\n📊 Gefunden: {len(discovered_leads)} Leads ohne Strategie")
+    print("-" * 70)
+    
+    # Verarbeite Leads
+    processed_count = 0
+    for lead in discovered_leads:
+        agent_lead = convert_to_agent_format(lead)
+        result = agent.process_lead(agent_lead)
         
-        print(f"\n📋 {lead}")
+        # Erstelle strategy_brief im richtigen Format für Next.js
+        strategy_brief = {
+            "brandTone": result["content"]["hero"]["headline"],
+            "keySells": [
+                result["score"]["recommendations"][0] if result["score"]["recommendations"] else "Qualität aus der Region",
+                f"Premium {agent_lead['industry']} Service",
+                f"Bewertung: {agent_lead['rating']}/5 Sterne"
+            ],
+            "colorPalette": [
+                {"name": "Primary", "hex": "#3b82f6"},
+                {"name": "Secondary", "hex": "#10b981"},
+                {"name": "Accent", "hex": "#f59e0b"}
+            ],
+            "layoutType": "modern-split"
+        }
+        
+        # Update Lead in der Liste
+        for i, l in enumerate(leads):
+            if l.get("id") == lead.get("id"):
+                leads[i]["strategy_brief"] = strategy_brief
+                leads[i]["status"] = "STRATEGY_CREATED"
+                break
+        
+        # Output
+        score = result["score"]["total_score"]
+        grade = result["score"]["grade"]
+        
+        print(f"\n📋 {agent_lead['name']}")
         print(f"   Score: {score}/100 ({grade})")
-        print(f"   🎨 Hero: {r['images']['hero']['credit'][:50]}...")
-        for rec in recs:
+        print(f"   🎨 Hero: {result['images']['hero']['credit'][:50]}...")
+        print(f"   ✅ Strategie erstellt und gespeichert!")
+        
+        for rec in result["score"]["recommendations"]:
             print(f"   {rec}")
+        
+        processed_count += 1
     
-    print(f"\n📊 Stats: {agent.stats}")
+    # Speichere alle Leads zurück
+    save_leads(leads)
+    
+    print("\n" + "=" * 70)
+    print(f"✅ {processed_count} Strategien erstellt und in Memory gespeichert!")
+    print(f"📊 Stats: {agent.stats}")
+    print("=" * 70)
 
 
 if __name__ == "__main__":
     main()
+

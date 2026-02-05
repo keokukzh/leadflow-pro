@@ -41,8 +41,31 @@
     "location": "Hochstrasse 17, 8200 Schaffhausen, Switzerland",
     "rating": 4.8,
     "review_count": 52,
-    "status": "DISCOVERED",
-    "created_at": "2026-02-05T11:34:18.979Z"
+    "status": "STRATEGY_CREATED",
+    "created_at": "2026-02-05T11:34:18.979Z",
+    "strategy_brief": {
+      "brandTone": "Ihr Garage-Partner in Hochstrasse 17, 8200 Schaffhausen, Switzerland.",
+      "keySells": [
+        "🔴 URGENT: Lead hat keine Website - sofort kontaktieren!",
+        "Premium Garage Service",
+        "Bewertung: 4.8/5 Sterne"
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#3b82f6"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#10b981"
+        },
+        {
+          "name": "Accent",
+          "hex": "#f59e0b"
+        }
+      ],
+      "layoutType": "modern-split"
+    }
   },
   {
     "id": "jp6dsqf",
@@ -52,8 +75,31 @@
     "location": "Langgasse 152, 9008 St. Gallen, Switzerland",
     "rating": 5,
     "review_count": 5,
-    "status": "DISCOVERED",
-    "created_at": "2026-02-05T11:34:20.852Z"
+    "status": "STRATEGY_CREATED",
+    "created_at": "2026-02-05T11:34:20.852Z",
+    "strategy_brief": {
+      "brandTone": "Ihr Garage-Partner in Langgasse 152, 9008 St. Gallen, Switzerland.",
+      "keySells": [
+        "🔴 URGENT: Lead hat keine Website - sofort kontaktieren!",
+        "Premium Garage Service",
+        "Bewertung: 5/5 Sterne"
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#3b82f6"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#10b981"
+        },
+        {
+          "name": "Accent",
+          "hex": "#f59e0b"
+        }
+      ],
+      "layoutType": "modern-split"
+    }
   },
   {
     "id": "4ivfyzy",
@@ -63,8 +109,31 @@
     "location": "Bogenstrasse 13, 9000 St. Gallen, Switzerland",
     "rating": 5,
     "review_count": 27,
-    "status": "DISCOVERED",
-    "created_at": "2026-02-05T11:34:22.808Z"
+    "status": "STRATEGY_CREATED",
+    "created_at": "2026-02-05T11:34:22.808Z",
+    "strategy_brief": {
+      "brandTone": "Professionell. Regional. Zuverlässig.",
+      "keySells": [
+        "🔴 URGENT: Lead hat keine Website - sofort kontaktieren!",
+        "Premium Garage Service",
+        "Bewertung: 5/5 Sterne"
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#3b82f6"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#10b981"
+        },
+        {
+          "name": "Accent",
+          "hex": "#f59e0b"
+        }
+      ],
+      "layoutType": "modern-split"
+    }
   },
   {
     "id": "5ql7eg7",
@@ -198,8 +267,31 @@
     "location": "Schweizersbildstrasse 31, 8207 Schaffhausen, Switzerland",
     "rating": 4,
     "review_count": 4,
-    "status": "DISCOVERED",
-    "created_at": "2026-02-05T19:24:39.591Z"
+    "status": "STRATEGY_CREATED",
+    "created_at": "2026-02-05T19:24:39.591Z",
+    "strategy_brief": {
+      "brandTone": "Qualität aus Schweizersbildstrasse 31, 8207 Schaffhausen, Switzerland.",
+      "keySells": [
+        "🔴 URGENT: Lead hat keine Website - sofort kontaktieren!",
+        "Premium Handwerk Service",
+        "Bewertung: 4/5 Sterne"
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#3b82f6"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#10b981"
+        },
+        {
+          "name": "Accent",
+          "hex": "#f59e0b"
+        }
+      ],
+      "layoutType": "modern-split"
+    }
   },
   {
     "id": "zogvo8x",
@@ -298,31 +390,31 @@
     },
     "preview_data": {
       "businessName": "Coiffure Angi",
-      "industry": "Coiffeur",
+      "industry": "Luxury Hair Styling & Coiffeur",
       "layoutType": "minimal-soft",
       "primaryColor": "#1A5F72",
       "secondaryColor": "#E8C0B4",
-      "heroHeadline": "Ihre Eleganz – unser Handwerk: Zeitloses Styling mit Perfektion in Herisau",
-      "heroSubheadline": "Wo handwerkliche Expertise auf stilvolle Ästhetik trifft. Entdecken Sie ein unvergessliches Erlebnis für Haar, Kopfhaut und Ausstrahlung.",
-      "heroImageUrl": "elegant hair salon interior with soft lighting",
+      "heroHeadline": "\"Ihre Silhouette wird zur Kunst – präzise, zeitlos, einzigartig.\"",
+      "heroSubheadline": "\"Verabschieden Sie sich von Standard-Styling. Hier beginnt Ihr persönliches Statement, handgefertigt mit Swiss Precision und internationalem Flair.\"",
+      "heroImageUrl": "hair-styling-luxury-interior-minimalist-swiss-design",
       "usps": [
         {
-          "title": "Handwerkliche Perfektion",
-          "description": "Jeder Schnitt ist ein Kunstwerk – präzise, langlebig und individuell auf Ihre Bedürfnisse zugeschnitten."
+          "title": "\"Cut, das bleibt\"",
+          "description": "\"Unser präziser Schnitt ist kein Trend – er ist die Basis für ein Leben voller eleganter Selbstbewusstsein. Jede Linie erzählt eine Geschichte: Ihre.\""
         },
         {
-          "title": "Stilvolle Ästhetik",
-          "description": "Minimal-softes Design trifft auf zeitlose Eleganz. Ein Raum, der nicht nur Ihren Haarschnitt, sondern auch Ihr Wohlbefinden umrahmt."
+          "title": "\"Die Kunst der Textur\"",
+          "description": "\"Ob Strähnen, Locken oder sanfte Wellen: Wir transformieren Haar in ein lebendiges Werk. Handwerk trifft auf digitale Perfektion – für Ergebnisse, die atmen.\""
         },
         {
-          "title": "Persönliche Betreuung",
-          "description": "Mehr als ein Friseurbesuch: Ein Gespräch, das Ihre Wünsche versteht und in exklusives Styling übersetzt."
+          "title": "\"Exklusivität ohne Kompromisse\"",
+          "description": "\"Keine Wartezeit, keine Standard-Köppe. Ihr Termin ist Ihr Raum: Intimität, Professionalität und eine Atmosphäre, in der Stil entsteht – nicht nur wird geschnitten.\""
         }
       ],
-      "reviewScore": "4.6",
-      "reviewCount": 19,
+      "reviewScore": "4.9",
+      "reviewCount": 21,
       "location": "Poststrasse 4, 9100 Herisau, Switzerland",
-      "phoneNumber": "044 123 45 67"
+      "phoneNumber": "+41 (0) 71 368 45 23"
     }
   },
   {
@@ -333,8 +425,31 @@
     "location": "Altweg 16, 8500 Frauenfeld, Switzerland",
     "rating": 4.9,
     "review_count": 83,
-    "status": "DISCOVERED",
-    "created_at": "2026-02-05T20:48:56.936Z"
+    "status": "STRATEGY_CREATED",
+    "created_at": "2026-02-05T20:48:56.936Z",
+    "strategy_brief": {
+      "brandTone": "Ihr Sonstige-Partner in Altweg 16, 8500 Frauenfeld, Switzerland.",
+      "keySells": [
+        "🔴 URGENT: Lead hat keine Website - sofort kontaktieren!",
+        "Premium Sonstige Service",
+        "Bewertung: 4.9/5 Sterne"
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#3b82f6"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#10b981"
+        },
+        {
+          "name": "Accent",
+          "hex": "#f59e0b"
+        }
+      ],
+      "layoutType": "modern-split"
+    }
   },
   {
     "id": "m3sptq1",
@@ -468,8 +583,31 @@
     "location": "Grüneggstrasse 18, 6005 Luzern, Switzerland",
     "rating": 4.5,
     "review_count": 8,
-    "status": "DISCOVERED",
-    "created_at": "2026-02-05T21:05:37.086Z"
+    "status": "STRATEGY_CREATED",
+    "created_at": "2026-02-05T21:05:37.086Z",
+    "strategy_brief": {
+      "brandTone": "Professionell. Regional. Zuverlässig.",
+      "keySells": [
+        "🔴 URGENT: Lead hat keine Website - sofort kontaktieren!",
+        "Premium Sonstige Service",
+        "Bewertung: 4.5/5 Sterne"
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#3b82f6"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#10b981"
+        },
+        {
+          "name": "Accent",
+          "hex": "#f59e0b"
+        }
+      ],
+      "layoutType": "modern-split"
+    }
   },
   {
     "id": "m21p6om",
@@ -479,8 +617,31 @@
     "location": "Sonnhalderain 74, 6030 Ebikon, Switzerland",
     "rating": 4.2,
     "review_count": 5,
-    "status": "DISCOVERED",
-    "created_at": "2026-02-05T21:05:45.926Z"
+    "status": "STRATEGY_CREATED",
+    "created_at": "2026-02-05T21:05:45.926Z",
+    "strategy_brief": {
+      "brandTone": "Professionell. Regional. Zuverlässig.",
+      "keySells": [
+        "🔴 URGENT: Lead hat keine Website - sofort kontaktieren!",
+        "Premium Sonstige Service",
+        "Bewertung: 4.2/5 Sterne"
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#3b82f6"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#10b981"
+        },
+        {
+          "name": "Accent",
+          "hex": "#f59e0b"
+        }
+      ],
+      "layoutType": "modern-split"
+    }
   },
   {
     "id": "8ym27zm",
@@ -490,8 +651,31 @@
     "location": "Grüneggstrasse 18, 6005 Luzern, Switzerland",
     "rating": 4.5,
     "review_count": 8,
-    "status": "DISCOVERED",
-    "created_at": "2026-02-05T22:10:14.505Z"
+    "status": "STRATEGY_CREATED",
+    "created_at": "2026-02-05T22:10:14.505Z",
+    "strategy_brief": {
+      "brandTone": "Professionell. Regional. Zuverlässig.",
+      "keySells": [
+        "🔴 URGENT: Lead hat keine Website - sofort kontaktieren!",
+        "Premium Sonstige Service",
+        "Bewertung: 4.5/5 Sterne"
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#3b82f6"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#10b981"
+        },
+        {
+          "name": "Accent",
+          "hex": "#f59e0b"
+        }
+      ],
+      "layoutType": "modern-split"
+    }
   },
   {
     "id": "3m70zcj",
