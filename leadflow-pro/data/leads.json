@@ -521,31 +521,9 @@
     "location": "Badenerstrasse 540, 8048 Zürich, Switzerland",
     "rating": 5,
     "review_count": 4,
-    "status": "PREVIEW_READY",
+    "status": "PREVIEW_GENERATING",
     "created_at": "2026-02-05T21:05:21.349Z",
-    "strategy_brief": {
-      "brandTone": "Präzision trifft auf handwerkliche Leidenschaft – technisch versiert, aber mit dem Charme einer traditionsreichen Werkstatt.",
-      "keySells": [
-        "Exklusive Partnerschaften mit Premium-Marken wie Porsche, BMW und Mercedes",
-        "Hochwertige Reparaturen mit originalen Ersatzteilen und digitaler Diagnose-Technologie",
-        "Premium-Service für Luxusfahrzeuge in Zürichs exklusivster Werkstattatmosphäre"
-      ],
-      "colorPalette": [
-        {
-          "name": "Primary",
-          "hex": "#1A1A2E"
-        },
-        {
-          "name": "Accent",
-          "hex": "#00F5D4"
-        },
-        {
-          "name": "Secondary",
-          "hex": "#3A3A5C"
-        }
-      ],
-      "layoutType": "emotional-dark"
-    },
+    "strategy_brief": {},
     "preview_data": {
       "businessName": "Autowerkstatt Zürich",
       "industry": "Sonstige",
@@ -583,7 +561,7 @@
     "location": "Grüneggstrasse 18, 6005 Luzern, Switzerland",
     "rating": 4.5,
     "review_count": 8,
-    "status": "STRATEGY_CREATED",
+    "status": "PREVIEW_READY",
     "created_at": "2026-02-05T21:05:37.086Z",
     "strategy_brief": {
       "brandTone": "Professionell. Regional. Zuverlässig.",
@@ -607,6 +585,34 @@
         }
       ],
       "layoutType": "modern-split"
+    },
+    "preview_data": {
+      "businessName": "Abächerli Heizung Sanitär Service",
+      "industry": "Heizung & Sanitär",
+      "layoutType": "modern-split",
+      "primaryColor": "#3b82f6",
+      "secondaryColor": "#10b981",
+      "heroHeadline": "\"Wir bauen nicht nur Heizungen – wir gestalten Ihr Zuhause. Präzise, effizient, made in Luzern.\"",
+      "heroSubheadline": "\"Von der ersten Beratung bis zur perfekten Montage: Wir eliminieren Ihre Unsicherheiten und liefern handfeste Lösungen – ohne Schnickschnack, mit Schweizer Präzision.\"",
+      "heroImageUrl": "modern-luzern-industrial-heating-system",
+      "usps": [
+        {
+          "title": "\"Schweizer Ingenieurskunst im Detail\"",
+          "description": "\"Jede Heizung ist ein Präzisionsinstrument – wir montieren sie wie ein Uhrmacher: millimetergenau, langlebig und mit dem Stolz eines regionalen Handwerksbetriebs. Kein Massenschrott, nur maßgeschneidertes Design für Ihre vier Wände.\""
+        },
+        {
+          "title": "\"Sanitär, das fließt wie ein Luzerner Bach\"",
+          "description": "\"Ihre Wasserleitung darf nicht ruckeln wie ein überlasteter SBB-Zug. Wir installieren Systeme, die so reibungslos laufen wie der Reuss – und das bei Temperaturen, die selbst im Luzerner Winter keine Kompromisse zulassen.\""
+        },
+        {
+          "title": "\"Notdienst: Wenn’s brennt (oder einfriert) – wir sind da\"",
+          "description": "\"24/7. 365 Tage. Egal ob Ihre Heizung streikt oder die Spüle überläuft wie ein ungemeldeter Gast bei einem Seeräuber-Dinner: Wir kommen, bevor es richtig kalt wird – und rechnen nicht nach Kilometern, sondern nach Lösungen.\""
+        }
+      ],
+      "reviewScore": "4.9",
+      "reviewCount": 12,
+      "location": "Grüneggstrasse 18, 6005 Luzern, Switzerland",
+      "phoneNumber": "+41 (41) 123 45 67"
     }
   },
   {
