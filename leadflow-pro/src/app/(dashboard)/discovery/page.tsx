@@ -10,21 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle2, Map, Briefcase, AlertTriangle } from "lucide-react";
 
-const INDUSTRIES = [
-  // Beauty & Wellness
-  "Coiffeur", "Beauty Salon", "Massage", "Nagelstudio", "Wellness Spa", "Kosmetik", "Waxing",
-  // Gesundheit
-  "Arzt", "Zahnarzt", "Physiotherapie", "Osteopathie", "Chiropraktik", "Podologie", "Naturheilpraxis",
-  // Gastronomie & Retail
-  "Restaurant", "Metzgerei",
-  // Handwerk
-  "Schreinerei", "Elektro", "Sanitär", "Gartenbau", "Malerei", "Dachdeckerei", "Schlosserei", "Polsterei", "Glaserei",
-  // Dienstleistungen
-  "Anwalt", "Treuhand", "Architekt",
-  // Auto & Fitness
-  "Fitnessstudio", "Garage"
-];
-
 const CANTONS = [
   "Zürich", "Bern", "Luzern", "Uri", "Schwyz", "Obwalden", "Nidwalden", "Glarus", "Zug", 
   "Freiburg", "Solothurn", "Basel-Stadt", "Basel-Landschaft", "Schaffhausen", 
@@ -164,22 +149,79 @@ export default function DiscoveryPage() {
         <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 shadow-2xl space-y-6 flex-1 max-w-4xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-slate-300 font-semibold mb-2">
-                <Briefcase className="w-4 h-4 text-blue-400" />
-                Branchen wählen
+              <div className="flex items-center justify-between gap-2 text-slate-300 font-semibold mb-2">
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-blue-400" />
+                  Branchen wählen
+                </div>
+                <span className="text-xs text-blue-400 font-normal">{selectedIndustries.length} gewählt</span>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {INDUSTRIES.map((ind) => (
-                  <Badge 
-                    key={ind}
-                    variant={selectedIndustries.includes(ind) ? "default" : "outline"}
-                    className={`cursor-pointer transition-all ${selectedIndustries.includes(ind) ? "bg-blue-600 hover:bg-blue-500 scale-105" : "border-slate-700 hover:border-slate-500"}`}
-                    onClick={() => toggleIndustry(ind)}
-                  >
-                    {ind}
-                  </Badge>
-                ))}
-              </div>
+              <ScrollArea className="h-[180px] rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+                {/* Beauty & Wellness */}
+                <div className="mb-3">
+                  <p className="text-[10px] uppercase tracking-wider text-pink-400 font-bold mb-2">💅 Beauty & Wellness</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["Coiffeur", "Beauty Salon", "Massage", "Nagelstudio", "Wellness Spa", "Kosmetik", "Waxing"].map((ind) => (
+                      <Badge 
+                        key={ind}
+                        variant={selectedIndustries.includes(ind) ? "default" : "outline"}
+                        className={`cursor-pointer transition-all text-xs px-3 py-1 ${selectedIndustries.includes(ind) ? "bg-pink-600 hover:bg-pink-500 text-white border-pink-500" : "border-slate-700 hover:border-pink-400 text-slate-300 hover:text-pink-300"}`}
+                        onClick={() => toggleIndustry(ind)}
+                      >
+                        {ind}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                {/* Gesundheit */}
+                <div className="mb-3">
+                  <p className="text-[10px] uppercase tracking-wider text-green-400 font-bold mb-2">🏥 Gesundheit</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["Arzt", "Zahnarzt", "Physiotherapie", "Osteopathie", "Chiropraktik", "Podologie", "Naturheilpraxis"].map((ind) => (
+                      <Badge 
+                        key={ind}
+                        variant={selectedIndustries.includes(ind) ? "default" : "outline"}
+                        className={`cursor-pointer transition-all text-xs px-3 py-1 ${selectedIndustries.includes(ind) ? "bg-green-600 hover:bg-green-500 text-white border-green-500" : "border-slate-700 hover:border-green-400 text-slate-300 hover:text-green-300"}`}
+                        onClick={() => toggleIndustry(ind)}
+                      >
+                        {ind}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                {/* Handwerk */}
+                <div className="mb-3">
+                  <p className="text-[10px] uppercase tracking-wider text-orange-400 font-bold mb-2">🔧 Handwerk</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["Schreinerei", "Elektro", "Sanitär", "Gartenbau", "Malerei", "Dachdeckerei", "Schlosserei", "Polsterei", "Glaserei"].map((ind) => (
+                      <Badge 
+                        key={ind}
+                        variant={selectedIndustries.includes(ind) ? "default" : "outline"}
+                        className={`cursor-pointer transition-all text-xs px-3 py-1 ${selectedIndustries.includes(ind) ? "bg-orange-600 hover:bg-orange-500 text-white border-orange-500" : "border-slate-700 hover:border-orange-400 text-slate-300 hover:text-orange-300"}`}
+                        onClick={() => toggleIndustry(ind)}
+                      >
+                        {ind}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                {/* Dienstleistungen & Sonstige */}
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-blue-400 font-bold mb-2">💼 Dienstleistungen</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {["Restaurant", "Metzgerei", "Anwalt", "Treuhand", "Architekt", "Fitnessstudio", "Garage"].map((ind) => (
+                      <Badge 
+                        key={ind}
+                        variant={selectedIndustries.includes(ind) ? "default" : "outline"}
+                        className={`cursor-pointer transition-all text-xs px-3 py-1 ${selectedIndustries.includes(ind) ? "bg-blue-600 hover:bg-blue-500 text-white border-blue-500" : "border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-300"}`}
+                        onClick={() => toggleIndustry(ind)}
+                      >
+                        {ind}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </ScrollArea>
               <div className="pt-2">
                 <Input 
                   placeholder="Andere Branche..."
