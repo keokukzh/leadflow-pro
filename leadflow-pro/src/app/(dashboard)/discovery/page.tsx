@@ -11,9 +11,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CheckCircle2, Map, Briefcase, AlertTriangle } from "lucide-react";
 
 const INDUSTRIES = [
-  "Schreinerei", "Arzt", "Restaurant", "Coiffeur", "Anwalt", 
-  "Fitnessstudio", "Garage", "Architekt", "Zahnarzt", "Physiotherapie",
-  "Treuhand", "Elektro", "Sanitär", "Gartenbau", "Metzgerei"
+  // Beauty & Wellness
+  "Coiffeur", "Beauty Salon", "Massage", "Nagelstudio", "Wellness Spa", "Kosmetik", "Waxing",
+  // Gesundheit
+  "Arzt", "Zahnarzt", "Physiotherapie", "Osteopathie", "Chiropraktik", "Podologie", "Naturheilpraxis",
+  // Gastronomie & Retail
+  "Restaurant", "Metzgerei",
+  // Handwerk
+  "Schreinerei", "Elektro", "Sanitär", "Gartenbau", "Malerei", "Dachdeckerei", "Schlosserei", "Polsterei", "Glaserei",
+  // Dienstleistungen
+  "Anwalt", "Treuhand", "Architekt",
+  // Auto & Fitness
+  "Fitnessstudio", "Garage"
 ];
 
 const CANTONS = [
