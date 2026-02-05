@@ -140,9 +140,10 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description="Sync Health Monitor")
     parser.add_argument("--report", action="store_true", help="Generate full health report")
+    parser.add_argument("--linear-key", help="Linear API key")
     args = parser.parse_args()
 
-    monitor = SyncHealthMonitor()
+    monitor = SyncHealthMonitor(linear_key=args.linear_key)
     if args.report:
         report = monitor.get_full_report()
         print(json.dumps(report, indent=2))

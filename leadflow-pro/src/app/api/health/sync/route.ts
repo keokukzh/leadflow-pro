@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { exec } from "child_process";
 import { promisify } from "util";
 import path from "path";
+import { getSettings } from "@/lib/settings";
 
 const execAsync = promisify(exec);
 
@@ -9,13 +10,17 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const scope = searchParams.get("scope") || "all";
+    
+    // Fetch settings to get Linear API key
+    const settings = await getSettings();
+    const linearApiKey = settings.linearApiKey;
 
     // Path to the Python diagnostic script
     const scriptPath = path.join(process.cwd(), "..", "sync_health_monitor.py");
     
-    // Execute the Python script
-    // Note: In a production environment, you might want to cache this or use a more robust way to run background tasks
-    const { stdout, stderr } = await execAsync(`python "${scriptPath}" --report`);
+    // Execute the Python script with potential linear key
+    const cmd = `python "${scriptPath}" --report ${linearApiKey ? `--linear-key "${linearApiKey}"` : ""}`;
+    const { stdout, stderr } = await execAsync(cmd);
     
     if (stderr && !stdout) {
       console.error("Diagnostic script error:", stderr);

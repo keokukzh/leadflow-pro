@@ -11,6 +11,7 @@ export interface Settings {
   elevenLabsApiKey: string;
   resendApiKey: string;
   apifyToken: string;
+  linearApiKey: string;
   discoveryProvider: 'serpapi' | 'apify';
 }
 
@@ -24,6 +25,7 @@ const DEFAULT_SETTINGS: Settings = {
   elevenLabsApiKey: '',
   resendApiKey: '',
   apifyToken: '',
+  linearApiKey: '',
   discoveryProvider: 'serpapi',
 };
 
@@ -37,6 +39,7 @@ export async function getSettings(): Promise<Settings> {
     elevenLabsApiKey: settings.elevenLabsApiKey || process.env.ELEVENLABS_API_KEY || '',
     resendApiKey: settings.resendApiKey || process.env.RESEND_API_KEY || '',
     apifyToken: settings.apifyToken || process.env.APIFY_TOKEN || '',
+    linearApiKey: settings.linearApiKey || process.env.LINEAR_API_KEY || '',
   };
 }
 

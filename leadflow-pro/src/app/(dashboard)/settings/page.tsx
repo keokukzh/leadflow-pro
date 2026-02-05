@@ -188,6 +188,20 @@ export default function SettingsPage() {
                 </div>
                 <p className="text-xs text-slate-500">Get your token at <a href="https://console.apify.com/account#/integrations" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">console.apify.com</a></p>
               </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-slate-500">Linear API Key</Label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
+                  <Input 
+                    type="password"
+                    value={settings.linearApiKey} 
+                    onChange={(e) => setSettings({...settings, linearApiKey: e.target.value})}
+                    className="bg-slate-950 border-slate-800 pl-10"
+                    placeholder="lin_api_..."
+                  />
+                </div>
+                <p className="text-xs text-slate-500">Get your key at <a href="https://linear.app/settings/api" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">linear.app/settings/api</a></p>
+              </div>
             </div>
           </CardContent>
         </Card>
