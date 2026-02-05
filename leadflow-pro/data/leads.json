@@ -778,5 +778,50 @@
     "review_count": 0,
     "status": "DISCOVERED",
     "created_at": "2026-02-05T23:03:04.303Z"
+  },
+  {
+    "id": "tckyfrm",
+    "company_name": "HAIR STYLE",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Baarerstrasse 44, 6300 Zug, Switzerland",
+    "rating": 4.4,
+    "review_count": 73,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T23:23:08.906Z"
+  },
+  {
+    "id": "xus7md3",
+    "company_name": "Coiffure Sofia",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Neugasse 10, 6300 Zug, Switzerland",
+    "rating": 4.9,
+    "review_count": 15,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T23:23:12.112Z"
+  },
+  {
+    "id": "u3ugvq4",
+    "company_name": "Traditional Asian Massage",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Hauptstrasse 35, 8750 Glarus, Switzerland",
+    "rating": 5,
+    "review_count": 2,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T23:23:13.558Z"
+  },
+  {
+    "id": "7pqil6e",
+    "company_name": "Massage Martina",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Rösslistrasse 50, 8752 Näfels, Switzerland",
+    "rating": 5,
+    "review_count": 16,
+    "status": "PREVIEW_GENERATING",
+    "created_at": "2026-02-05T23:23:16.397Z",
+    "strategy_brief": {}
   }
 ]

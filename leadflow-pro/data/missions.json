@@ -792,5 +792,89 @@
       }
     ],
     "created_at": "2026-02-05T22:59:44.055Z"
+  },
+  {
+    "id": "bsu7f3v",
+    "industry": "Coiffeur, Beauty Salon, Massage, Nagelstudio, Wellness Spa, Kosmetik, Waxing",
+    "locations": [
+      "Obwalden",
+      "Zug",
+      "Glarus"
+    ],
+    "currentLocationIndex": 0,
+    "status": "COMPLETED",
+    "results": [
+      {
+        "place_id": "ChIJ22JKuFmqmkcRbZoB8llNYKQ",
+        "name": "HAIR STYLE",
+        "rating": 4.4,
+        "user_ratings_total": 73,
+        "vicinity": "Baarerstrasse 44, 6300 Zug, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ22JKuFmqmkcRbZoB8llNYKQ",
+        "query_source": "\"Coiffeur Zug Bewertungen\""
+      },
+      {
+        "place_id": "ChIJE1dWSPeqmkcRqfog1JQlSAU",
+        "name": "Coiffure Sofia",
+        "rating": 4.9,
+        "user_ratings_total": 15,
+        "vicinity": "Neugasse 10, 6300 Zug, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJE1dWSPeqmkcRqfog1JQlSAU",
+        "query_source": "\"Coiffeur Zug Bewertungen\""
+      },
+      {
+        "place_id": "ChIJWUM9crIthUcRzJ5yi0tWXbU",
+        "name": "Traditional Asian Massage",
+        "rating": 5,
+        "user_ratings_total": 2,
+        "vicinity": "Hauptstrasse 35, 8750 Glarus, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJWUM9crIthUcRzJ5yi0tWXbU",
+        "query_source": "\"Beste Massage in Glarus\""
+      },
+      {
+        "place_id": "ChIJQ4i28iXTmkcRWTs5n0WY5gU",
+        "name": "Massage Martina",
+        "rating": 5,
+        "user_ratings_total": 16,
+        "vicinity": "Rösslistrasse 50, 8752 Näfels, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJQ4i28iXTmkcRWTs5n0WY5gU",
+        "query_source": "\"Beste Massage in Glarus\""
+      },
+      {
+        "place_id": "ChIJp3wbZaYthUcRKDmliEnnYLk",
+        "name": "Praxis für klassische Massagen, Esthi Hösli",
+        "rating": 5,
+        "user_ratings_total": 2,
+        "vicinity": "Gerichtshausstrasse 11, 8750 Glarus, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJp3wbZaYthUcRKDmliEnnYLk",
+        "query_source": "\"Beste Massage in Glarus\""
+      },
+      {
+        "place_id": "ChIJdxLO6q0thUcRpG4cIU2J3hA",
+        "name": "InStyle Nails",
+        "rating": 5,
+        "user_ratings_total": 16,
+        "vicinity": "Schweizerhofstrasse 16, 8750 Glarus, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJdxLO6q0thUcRpG4cIU2J3hA",
+        "query_source": "\"Nagelstudio mit Maniküre und Pediküre Glarus\""
+      },
+      {
+        "place_id": "ChIJW2kQzimgvIkRejKSwX2Lpb8",
+        "name": "Fusspflege Glarus - Pedicures Glarus",
+        "rating": 5,
+        "user_ratings_total": 10,
+        "vicinity": "Im Moos 16a, 8753 Mollis, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJW2kQzimgvIkRejKSwX2Lpb8",
+        "query_source": "\"Nagelstudio mit Maniküre und Pediküre Glarus\""
+      }
+    ],
+    "created_at": "2026-02-05T23:22:02.792Z"
   }
 ]
