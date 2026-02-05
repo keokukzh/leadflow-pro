@@ -30,8 +30,22 @@ export const STRATEGY_PROMPT = (lead: Lead) => `
       { "name": "Accent", "hex": "#HEX2" },
       { "name": "Secondary", "hex": "#HEX3" }
     ],
-    "layoutType": "modern-split | minimal-soft | emotional-dark | clean-professional"
+    "layoutType": "modern-split | minimal-soft | emotional-dark | clean-professional",
+    "creationToolPrompt": "A detailed English prompt for Stitch/Midjourney (see instructions below)"
   }
+
+  CREATION TOOL PROMPT INSTRUCTIONS:
+  Generate a comprehensive, visually descriptive English prompt for AI design tools (Google Stitch, Midjourney).
+  The prompt MUST include:
+  - Industry context and business type (e.g., "professional plumbing company website")
+  - Color palette with specific hex codes from colorPalette
+  - Layout style matching layoutType
+  - Hero section description (imagery, typography style, atmosphere)
+  - Brand personality and tone matching brandTone
+  - Key visual elements (icons, photos, gradients, shadows)
+  - Modern design trends (glassmorphism, micro-animations, bold typography)
+  
+  Example format: "Create a modern, high-converting landing page for [business] in [location]. Primary color [hex], accent [hex]. Hero section with [imagery], [typography style]. Sections: Hero, Services, Reviews, Contact. Style: [modern/minimal/bold]. Atmosphere: [professional/warm/luxurious]."
 
   ANTWORTE NUR MIT VALIDEM JSON.
 `;

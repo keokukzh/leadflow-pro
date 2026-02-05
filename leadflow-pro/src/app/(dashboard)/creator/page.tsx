@@ -93,9 +93,11 @@ function CreatorContent() {
 
   const copyStitchPrompt = () => {
     if (!selectedLead) return;
-    const prompt = `Create a high-converting website for ${selectedLead.company_name} in the ${selectedLead.industry} industry. 
+    // Use AI-generated prompt if available, fallback to hardcoded
+    const prompt = selectedLead.strategy_brief?.creationToolPrompt 
+      || `Create a high-converting website for ${selectedLead.company_name} in the ${selectedLead.industry} industry. 
     Tone: ${selectedLead.strategy_brief?.brandTone}. 
-    Key Selling Points: ${selectedLead.strategy_brief?.keySells.join(', ')}.
+    Key Selling Points: ${selectedLead.strategy_brief?.keySells?.join(', ') || 'N/A'}.
     Design a modern, professional layout with sections for Hero, Services, Reviews, and Contact. 
     Location: ${selectedLead.location}.`;
     navigator.clipboard.writeText(prompt);

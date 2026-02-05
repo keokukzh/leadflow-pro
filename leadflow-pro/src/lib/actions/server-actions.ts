@@ -48,6 +48,7 @@ export interface Lead {
     keySells: string[];
     colorPalette: { name: string; hex: string }[];
     layoutType?: 'modern-split' | 'minimal-soft' | 'emotional-dark' | 'clean-professional';
+    creationToolPrompt?: string;
   };
   analysis?: {
     priorityScore: number;
@@ -360,7 +361,7 @@ export async function getLeadInteractions(leadId: string) {
     return interactions.filter(i => i.lead_id === leadId);
 }
 
-export async function updateLeadStrategy(leadId: string, strategy: { brandTone: string; keySells: string[]; colorPalette: { name: string; hex: string }[] }) {
+export async function updateLeadStrategy(leadId: string, strategy: { brandTone: string; keySells: string[]; colorPalette: { name: string; hex: string }[]; creationToolPrompt?: string }) {
   const leads = await getLeads();
   const lead = leads.find(l => l.id === leadId);
   if (lead) {

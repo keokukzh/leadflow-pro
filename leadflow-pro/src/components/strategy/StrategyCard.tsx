@@ -12,6 +12,7 @@ export interface StrategyBrief {
     hex: string;
   }[];
   vision?: string;
+  creationToolPrompt?: string;
 }
 
 interface StrategyCardProps {
@@ -82,6 +83,35 @@ export function StrategyCard({ strategy, companyName }: StrategyCardProps) {
             )) : <p className="text-slate-500 italic">Keine Farbpalette generiert</p>}
           </div>
         </div>
+
+        {/* Creation Tool Prompt */}
+        {strategy.creationToolPrompt && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-400 uppercase tracking-wider">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                Stitch / AI Design Prompt
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(strategy.creationToolPrompt || "");
+                  const btn = document.activeElement as HTMLButtonElement;
+                  const original = btn.textContent;
+                  btn.textContent = "Kopiert!";
+                  setTimeout(() => { btn.textContent = original; }, 1500);
+                }}
+                className="text-[10px] font-bold bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Kopieren
+              </button>
+            </div>
+            <div className="bg-purple-500/5 border border-purple-500/10 p-4 rounded-xl">
+              <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+                {strategy.creationToolPrompt}
+              </p>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
