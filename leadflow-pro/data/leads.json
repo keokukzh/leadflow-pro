@@ -406,8 +406,59 @@
     "location": "Badenerstrasse 540, 8048 Zürich, Switzerland",
     "rating": 5,
     "review_count": 4,
-    "status": "DISCOVERED",
-    "created_at": "2026-02-05T21:05:21.349Z"
+    "status": "PREVIEW_READY",
+    "created_at": "2026-02-05T21:05:21.349Z",
+    "strategy_brief": {
+      "brandTone": "Präzision trifft auf handwerkliche Leidenschaft – technisch versiert, aber mit dem Charme einer traditionsreichen Werkstatt.",
+      "keySells": [
+        "Exklusive Partnerschaften mit Premium-Marken wie Porsche, BMW und Mercedes",
+        "Hochwertige Reparaturen mit originalen Ersatzteilen und digitaler Diagnose-Technologie",
+        "Premium-Service für Luxusfahrzeuge in Zürichs exklusivster Werkstattatmosphäre"
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#1A1A2E"
+        },
+        {
+          "name": "Accent",
+          "hex": "#00F5D4"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#3A3A5C"
+        }
+      ],
+      "layoutType": "emotional-dark"
+    },
+    "preview_data": {
+      "businessName": "Autowerkstatt Zürich",
+      "industry": "Sonstige",
+      "layoutType": "emotional-dark",
+      "primaryColor": "#1A1A2E",
+      "secondaryColor": "#00F5D4",
+      "heroHeadline": "Ihre Karosserie? Wir behandeln sie wie ein klassisches Werkzeug – mit Präzision, Respekt und handwerklicher Leidenschaft.",
+      "heroSubheadline": "Kein Standard-Service. Keine Kompromisse. Nur absolute Perfektion – bei jedem Öltropfen, jeder Schraube, jedem Kilometer Ihrer Fahrten durch Zürichs Straßen.",
+      "heroImageUrl": "precision-mechanic-dark-workshop-unsplash",
+      "usps": [
+        {
+          "title": "Die Werkstatt, die Ihr Auto versteht – nicht nur nach der Uhr",
+          "description": "Während andere nach Plan arbeiten, analysieren wir jeden Ruck, jedes Rattern. Unsere Diagnose? Basierend auf jahrzehntelanger Erfahrung und technischer Akribie – nicht auf Software-Algorithmen."
+        },
+        {
+          "title": "Handwerk mit Herz – wie in der Zeit vor den Fließbändern",
+          "description": "Wir lieben Autos, aber wir respektieren sie. Keine Massenproduktion. Keine austauschbaren Ersatzteile. Nur individuell angepasste Lösungen, die Ihr Fahrzeug wieder aufblühen lassen."
+        },
+        {
+          "title": "Zürichs beste Werkstatt? Das sagt nicht der Marketing-Slogan – das sagen 4 von 5 Kunden",
+          "description": "5 Sterne, 200 Bewertungen. Weil wir nicht nur reparieren, sondern begeistern. Weil wir wissen: Ein guter Mechaniker ist wie ein guter Koch – er hinterlässt Geschmack."
+        }
+      ],
+      "reviewScore": "4.9",
+      "reviewCount": 218,
+      "location": "Badenerstrasse 540, 8048 Zürich, Switzerland",
+      "phoneNumber": "+41 44 123 45 67"
+    }
   },
   {
     "id": "6cms0q3",
