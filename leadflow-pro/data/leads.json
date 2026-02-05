@@ -719,31 +719,64 @@
     },
     "preview_data": {
       "businessName": "Garage Zenuni",
-      "industry": "Automotive Craftsmanship & Innovation",
+      "industry": "Luxury Automotive Craftsmanship & Design",
       "layoutType": "modern-split",
       "primaryColor": "#0A192F",
       "secondaryColor": "#3B82F6",
-      "heroHeadline": "Precision Engineered. Perfection Assembled.",
-      "heroSubheadline": "Where Swiss craftsmanship meets automotive innovation—engineered to elevate your drive, not just your vehicle.",
-      "heroImageUrl": "minimalist-mechanic-precision-engineering-swiss",
+      "heroHeadline": "Where Precision Meets Perfection: Engineering Luxury, One Detail at a Time.",
+      "heroSubheadline": "Exclusive automotive craftsmanship that redefines elegance and performance. Because your vehicle deserves more than just assembly—it deserves artistry.",
+      "heroImageUrl": "luxury-automotive-interior-close-up-industrial-precision",
       "usps": [
         {
-          "title": "Swiss Precision, Global Standards",
-          "description": "Every component we craft adheres to the relentless precision of Swiss engineering. No compromise on quality—just seamless performance that meets international benchmarks."
+          "title": "Handcrafted Mastery",
+          "description": "Every component is meticulously crafted, from hand-selected materials to precision engineering. This isn’t assembly; it’s a labor of love and expertise."
         },
         {
-          "title": "Custom Solutions, Tailored for You",
-          "description": "Your vehicle is unique. Our expertise lies in bespoke solutions—whether it’s a classic restoration or cutting-edge modification—to ensure your drive reflects your vision."
+          "title": "Dynamic Yet Refinement",
+          "description": "We blend cutting-edge technology with understated elegance. Your vehicle doesn’t just perform—it exudes sophistication in motion and at rest."
         },
         {
-          "title": "Innovation with an Artisan Touch",
-          "description": "We merge the rigor of technical innovation with the finesse of craftsmanship. Expect results that are as dynamic as they are meticulously refined—no gimmicks, just excellence."
+          "title": "Exclusive Artistry",
+          "description": "Limited editions that are more than vehicles; they’re statement pieces. Designed for those who see transportation as an extension of their identity."
         }
       ],
       "reviewScore": "4.9",
-      "reviewCount": 28,
+      "reviewCount": 42,
       "location": "6030 Ebikon, Switzerland",
       "phoneNumber": "+41 44 123 45 67"
     }
+  },
+  {
+    "id": "qr5ri31",
+    "company_name": "Garage Holecek",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Bürgenstockstrasse 12, 6362 Stansstad, Switzerland",
+    "rating": 4.4,
+    "review_count": 9,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T23:00:13.911Z"
+  },
+  {
+    "id": "7n5g1ct",
+    "company_name": "Lieli Garage Gmbh",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Obere Allmend 10, 6375 Beckenried, Switzerland",
+    "rating": 4,
+    "review_count": 7,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T23:00:44.558Z"
+  },
+  {
+    "id": "0031fgy",
+    "company_name": "von Holzen Markus Büro für Architektur, Raumplanung und Bauökologie GmbH",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Frongasse 10, 6374 Buochs, Switzerland",
+    "rating": 0,
+    "review_count": 0,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T23:03:04.303Z"
   }
 ]

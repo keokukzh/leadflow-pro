@@ -720,5 +720,77 @@
       }
     ],
     "created_at": "2026-02-05T21:04:31.018Z"
+  },
+  {
+    "id": "3y9io01",
+    "industry": "Garage, Architekt",
+    "locations": [
+      "Nidwalden"
+    ],
+    "currentLocationIndex": 0,
+    "status": "COMPLETED",
+    "results": [
+      {
+        "place_id": "ChIJ4eqYF0X3j0cRY69StzpVXFs",
+        "name": "Garage Holecek",
+        "rating": 4.4,
+        "user_ratings_total": 9,
+        "vicinity": "Bürgenstockstrasse 12, 6362 Stansstad, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ4eqYF0X3j0cRY69StzpVXFs",
+        "query_source": "Garage und Auto Service in Nidwalden mit besten Bewertungen"
+      },
+      {
+        "place_id": "ChIJp0406Uf3j0cRcdqyngcL-QY",
+        "name": "Electric Motorcycles Charging Station",
+        "rating": 5,
+        "user_ratings_total": 1,
+        "vicinity": "Rotzbergstrasse 19, 6362 Stansstad, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJp0406Uf3j0cRcdqyngcL-QY",
+        "query_source": "Spezialisierte Garage für Elektroautos und Ladeinfrastruktur in Nidwalden"
+      },
+      {
+        "place_id": "ChIJ_Tc1FMhZhUcRTORTqfBHbMo",
+        "name": "von Holzen Markus Büro für Architektur, Raumplanung und Bauökologie GmbH",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Frongasse 10, 6374 Buochs, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJ_Tc1FMhZhUcRTORTqfBHbMo",
+        "query_source": "Architekturplanung für moderne Wohnhäuser in Nidwalden ohne digitale Portfolio-Website"
+      },
+      {
+        "place_id": "ChIJvd2WK-v3j0cRycZ7beRH2_o",
+        "name": "Kim Furrer Architektur + Innenarchitektur",
+        "rating": 0,
+        "user_ratings_total": 0,
+        "vicinity": "Erlenwäldlistrasse 11, 6370 Stans, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJvd2WK-v3j0cRycZ7beRH2_o",
+        "query_source": "Architekturplanung für moderne Wohnhäuser in Nidwalden ohne digitale Portfolio-Website"
+      },
+      {
+        "place_id": "ChIJlxNrPCBahUcRqnRSodX3xZY",
+        "name": "Garage Näpflin AG",
+        "rating": 4.8,
+        "user_ratings_total": 16,
+        "vicinity": "Hinterhostattstrasse 7, 6376 Emmetten, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJlxNrPCBahUcRqnRSodX3xZY",
+        "query_source": "Garagen mit Werkstatt in Nidwalden für Notfallreparaturen - keine Online-Terminbuchung"
+      },
+      {
+        "place_id": "ChIJOYHlXTNYhUcRpEea2Glw1W0",
+        "name": "Lieli Garage Gmbh",
+        "rating": 4,
+        "user_ratings_total": 7,
+        "vicinity": "Obere Allmend 10, 6375 Beckenried, Switzerland",
+        "website": null,
+        "source_url": "https://www.google.com/maps/place/?q=place_id:ChIJOYHlXTNYhUcRpEea2Glw1W0",
+        "query_source": "Garagen mit Werkstatt in Nidwalden für Notfallreparaturen - keine Online-Terminbuchung"
+      }
+    ],
+    "created_at": "2026-02-05T22:59:44.055Z"
   }
 ]
