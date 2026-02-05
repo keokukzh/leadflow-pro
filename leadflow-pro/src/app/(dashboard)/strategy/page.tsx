@@ -48,6 +48,7 @@ export default function StrategyPage() {
     try {
       const data = await generateStrategyAction(selectedLeadId);
       setGeneratedStrategy(data.strategy);
+      setIsSaved(true); // Strategy is now auto-saved by generateStrategyAction
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Generierung fehlgeschlagen");
     } finally {

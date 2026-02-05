@@ -496,17 +496,18 @@ export async function generateStrategyAction(leadId: string) {
     const content = await getCompletion(strategyPrompt, "Du bist ein Elite-Webdesign-Stratege.");
     const strategy = JSON.parse(content || '{}');
     
-    // We don't save immediately here as the user reviews it in the UI first (based on current page logic)
-    // But we need to reset the status if it fails or completes.
-    // Actually, current Strategy page saves manually.
-    // To keep activity indicator accurate, we should mark as finished when AI returns.
-    
+    // Save strategy immediately to the lead so it persists in memory
     const finalLeads = await getLeads();
     const finishedLeads = finalLeads.map(l => 
-      l.id === leadId ? { ...l, status: l.status === 'STRATEGY_GENERATING' ? 'DISCOVERED' : l.status } : l
+      l.id === leadId ? { 
+        ...l, 
+        strategy_brief: strategy,
+        status: 'STRATEGY_CREATED' as const 
+      } : l
     );
     await writeData(LEADS_FILE, finishedLeads);
     revalidatePath("/strategy");
+    revalidatePath("/memory");
     
     return { strategy };
   } catch (err) {
