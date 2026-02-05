@@ -1,0 +1,553 @@
+<!doctype html>
+
+<html class="dark" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Garage Zenuni | Luxury Technology & Design</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#0a182e",
+              accent: "#3B82F6",
+              "background-light": "#f6f7f8",
+              "background-dark": "#0A192F",
+            },
+            fontFamily: {
+              display: ["Space Grotesk", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .glass-header {
+        background: rgba(10, 24, 46, 0.7);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+      }
+      .diagonal-split {
+        clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+      }
+      .hero-gradient {
+        background: radial-gradient(
+          circle at top right,
+          rgba(59, 130, 246, 0.15),
+          transparent
+        );
+      }
+    </style>
+  </head>
+  <body
+    class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 selection:bg-accent selection:text-white"
+  >
+    <header class="fixed top-0 w-full z-50 glass-header">
+      <div
+        class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-3">
+          <div class="text-accent">
+            <span class="material-symbols-outlined text-4xl">database</span>
+          </div>
+          <h1 class="text-xl font-bold tracking-tighter uppercase">
+            Garage Zenuni
+          </h1>
+        </div>
+        <nav class="hidden md:flex items-center gap-10">
+          <a
+            class="text-sm font-medium hover:text-accent transition-colors"
+            href="#services"
+            >Services</a
+          >
+          <a
+            class="text-sm font-medium hover:text-accent transition-colors"
+            href="#portfolio"
+            >Portfolio</a
+          >
+          <a
+            class="text-sm font-medium hover:text-accent transition-colors"
+            href="#about"
+            >About</a
+          >
+          <a
+            class="text-sm font-medium hover:text-accent transition-colors"
+            href="#contact"
+            >Contact</a
+          >
+        </nav>
+        <div class="flex items-center gap-4">
+          <button
+            class="px-6 py-2.5 bg-accent text-white rounded-full text-sm font-bold hover:bg-blue-600 transition-all shadow-lg shadow-accent/20"
+          >
+            Get Started
+          </button>
+        </div>
+      </div>
+    </header>
+    <main>
+      <!-- Hero Section -->
+      <section
+        class="relative min-h-screen flex items-center pt-20 overflow-hidden bg-background-dark"
+      >
+        <div class="absolute inset-0 hero-gradient"></div>
+        <div
+          class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10"
+        >
+          <div class="space-y-8">
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-bold uppercase tracking-widest"
+            >
+              <span class="relative flex h-2 w-2">
+                <span
+                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"
+                ></span>
+                <span
+                  class="relative inline-flex rounded-full h-2 w-2 bg-accent"
+                ></span>
+              </span>
+              Swiss Precision Engineering
+            </div>
+            <h1
+              class="text-6xl md:text-8xl font-bold leading-[0.9] tracking-tighter"
+            >
+              Designing the <span class="text-accent">Future</span> of
+              Technology
+            </h1>
+            <p class="text-lg text-slate-400 max-w-lg leading-relaxed">
+              Monumental design and high-tech engineering for modern industry.
+              We bridge the gap between aesthetic luxury and functional
+              complexity.
+            </p>
+            <div class="flex flex-wrap gap-4 pt-4">
+              <button
+                class="px-8 py-4 bg-accent text-white rounded-lg font-bold hover:translate-y-[-2px] transition-all"
+              >
+                Explore Innovation
+              </button>
+              <button
+                class="px-8 py-4 bg-primary text-white border border-slate-700 rounded-lg font-bold hover:bg-slate-800 transition-all"
+              >
+                View Portfolio
+              </button>
+            </div>
+          </div>
+          <div class="relative">
+            <div
+              class="w-full aspect-square rounded-2xl bg-slate-800/50 border border-slate-700 overflow-hidden shadow-2xl relative"
+            >
+              <div
+                class="absolute inset-0 bg-center bg-cover opacity-60 mix-blend-overlay"
+                data-alt="High-tech industrial manufacturing robotic arm"
+                style="
+                  background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuD1jJVf-J9pFmk57IXbBRQHxjxkt5NyDfvs8heJb2wHhYypGDHcosl6aMZ6KiTeYsHyJvwMgmkgdXaRtwpVu5mrdNmZhfTzoH2DyWkiUTiQKCuNUg9AYmaSAMfEbS-pBALXLse4DqQFjAPPfL0qk5ftXZuMh7SYCxKL0YUljQfMDht3jVBnkxsS_BpA56EpQaHXYFrF-3_Eh9Kj5c89bRVLU8of70AjuZ-tU7TGSgiXDJv1YURAuxroPApFAzbXrpS7_KDHDN4nwCg&quot;);
+                "
+              ></div>
+              <!-- Floating Glass Cards -->
+              <div
+                class="absolute top-10 -left-10 p-6 glass-header rounded-xl border border-white/10 shadow-2xl hidden xl:block"
+              >
+                <div class="flex items-center gap-4">
+                  <span class="material-symbols-outlined text-accent text-3xl"
+                    >bolt</span
+                  >
+                  <div>
+                    <p class="text-xs uppercase text-slate-400 font-bold">
+                      Latency
+                    </p>
+                    <p class="text-xl font-bold">0.002ms</p>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="absolute bottom-10 -right-10 p-6 glass-header rounded-xl border border-white/10 shadow-2xl hidden xl:block"
+              >
+                <div class="flex items-center gap-4">
+                  <span
+                    class="material-symbols-outlined text-green-400 text-3xl"
+                    >check_circle</span
+                  >
+                  <div>
+                    <p class="text-xs uppercase text-slate-400 font-bold">
+                      System Status
+                    </p>
+                    <p class="text-xl font-bold">Optimized</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Stats Section -->
+      <section class="py-20 border-y border-slate-800">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="space-y-1">
+              <p
+                class="text-slate-500 text-sm font-medium uppercase tracking-widest"
+              >
+                Active Projects
+              </p>
+              <p class="text-4xl font-bold">150+</p>
+            </div>
+            <div class="space-y-1">
+              <p
+                class="text-slate-500 text-sm font-medium uppercase tracking-widest"
+              >
+                Awards Won
+              </p>
+              <p class="text-4xl font-bold text-accent">24</p>
+            </div>
+            <div class="space-y-1">
+              <p
+                class="text-slate-500 text-sm font-medium uppercase tracking-widest"
+              >
+                Tech Partners
+              </p>
+              <p class="text-4xl font-bold">40+</p>
+            </div>
+            <div class="space-y-1">
+              <p
+                class="text-slate-500 text-sm font-medium uppercase tracking-widest"
+              >
+                Trust Rating
+              </p>
+              <div class="flex items-center gap-2">
+                <p class="text-4xl font-bold">4.2</p>
+                <span class="material-symbols-outlined text-yellow-500 fill-1"
+                  >star</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Services Section -->
+      <section
+        class="py-24 bg-background-light dark:bg-background-dark overflow-hidden"
+        id="services"
+      >
+        <div class="max-w-7xl mx-auto px-6">
+          <div
+            class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16"
+          >
+            <div class="max-w-2xl">
+              <h2
+                class="text-accent text-sm font-bold uppercase tracking-widest mb-4"
+              >
+                What we do
+              </h2>
+              <h3 class="text-4xl md:text-5xl font-bold tracking-tight">
+                Advanced Industrial Solutions
+              </h3>
+            </div>
+            <p class="text-slate-400 max-w-sm">
+              Pushing the boundaries of what's possible through iterative design
+              and precision manufacturing.
+            </p>
+          </div>
+          <div class="grid md:grid-cols-3 gap-0 relative">
+            <div
+              class="group p-10 border border-slate-800 hover:bg-accent/5 transition-all relative z-10"
+            >
+              <span class="material-symbols-outlined text-accent text-4xl mb-6"
+                >architecture</span
+              >
+              <h4 class="text-xl font-bold mb-4">Digital Architecture</h4>
+              <p class="text-slate-400 mb-8">
+                Creating robust digital foundations for complex infrastructure
+                projects across Europe.
+              </p>
+              <a
+                class="inline-flex items-center gap-2 text-accent text-sm font-bold group-hover:gap-4 transition-all"
+                href="#"
+              >
+                Learn more
+                <span class="material-symbols-outlined text-sm"
+                  >arrow_forward</span
+                >
+              </a>
+            </div>
+            <div
+              class="group p-10 border-y md:border-y-0 md:border-x border-slate-800 bg-primary/20 hover:bg-accent/5 transition-all scale-105 z-20 shadow-2xl shadow-black/50"
+            >
+              <span class="material-symbols-outlined text-accent text-4xl mb-6"
+                >settings_input_component</span
+              >
+              <h4 class="text-xl font-bold mb-4">Hardware Engineering</h4>
+              <p class="text-slate-400 mb-8">
+                Custom hardware design focusing on durability, efficiency, and
+                industrial-grade aesthetics.
+              </p>
+              <a
+                class="inline-flex items-center gap-2 text-accent text-sm font-bold group-hover:gap-4 transition-all"
+                href="#"
+              >
+                Learn more
+                <span class="material-symbols-outlined text-sm"
+                  >arrow_forward</span
+                >
+              </a>
+            </div>
+            <div
+              class="group p-10 border border-slate-800 hover:bg-accent/5 transition-all relative z-10"
+            >
+              <span class="material-symbols-outlined text-accent text-4xl mb-6"
+                >dynamic_feed</span
+              >
+              <h4 class="text-xl font-bold mb-4">Smart Integration</h4>
+              <p class="text-slate-400 mb-8">
+                Seamlessly connecting legacy systems with cutting-edge AI and
+                IoT protocols.
+              </p>
+              <a
+                class="inline-flex items-center gap-2 text-accent text-sm font-bold group-hover:gap-4 transition-all"
+                href="#"
+              >
+                Learn more
+                <span class="material-symbols-outlined text-sm"
+                  >arrow_forward</span
+                >
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Portfolio Section -->
+      <section class="py-24 bg-primary" id="portfolio">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="mb-16 text-center">
+            <h2 class="text-5xl md:text-7xl font-light italic mb-6">
+              Selected Works
+            </h2>
+            <div class="h-px w-24 bg-accent mx-auto"></div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-12">
+            <div class="group cursor-pointer">
+              <div
+                class="aspect-[4/5] overflow-hidden rounded-xl bg-slate-800 mb-6"
+              >
+                <img
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  data-alt="Modern geometric skyscraper facade"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7KmagTApLhSCmr_zCopDz13vxpJA2MoggSpF9oITYvCnApYzwcjg0mwBJc2oVDO7gXRNt79-0-hrAL0B_zjEn_M3OISalsOtkXQa7Jk0CuiC1h8l3lDvtMUHk5lQgW4RNXxHilTf_hN40nihot1MelWPbBpW5eCIFOZ41wa8bXKD0A5RQKz8piSvvbWZ39jPKm-ocku8Oukpa897g3I20xv7VUYV3WHHC_p4wRVK5voWB_YiViUL6BxU8ctJYkag57vvdJ5Q7Fog"
+                />
+              </div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="text-2xl font-bold">The Vertex Project</h4>
+                  <p class="text-slate-400">Zurich, Switzerland</p>
+                </div>
+                <span
+                  class="text-accent text-sm font-bold uppercase tracking-widest pt-2"
+                  >2023</span
+                >
+              </div>
+            </div>
+            <div class="group cursor-pointer mt-12 md:mt-24">
+              <div
+                class="aspect-[4/5] overflow-hidden rounded-xl bg-slate-800 mb-6"
+              >
+                <img
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  data-alt="Futuristic server room with neon lighting"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEtcb8Ii8FlFhnAzNGDrrFeGF8pAlA_DCFQ9f-xPz_7ZyBvS2D7SaY6L3-n0LscWt_bP4uX539yCp5unfeP0dtT7RkMW98eXzCf6KX_PG4i8BVoa6HskJM0Ix8nY69gZ3wYdVFcnCQWYM6aZh7KWyVtCDJm5nNMZG24Cq9dgN8WNMnODwoX3ztpmbdu2--ZvYTquz_395rmdzPKorJSbe7vfjQckT3EGrUa0_F6yqPLBE_kXeHXzqlfMyOAf8PgZ_2qWYoYtF24G0"
+                />
+              </div>
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="text-2xl font-bold">Nova Core Systems</h4>
+                  <p class="text-slate-400">Geneva, Switzerland</p>
+                </div>
+                <span
+                  class="text-accent text-sm font-bold uppercase tracking-widest pt-2"
+                  >2024</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- Reviews Section -->
+      <section class="py-24 bg-background-dark">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+          <span
+            class="material-symbols-outlined text-accent text-5xl mb-8 opacity-50"
+            >format_quote</span
+          >
+          <p class="text-2xl md:text-3xl leading-relaxed font-medium mb-10">
+            "Garage Zenuni transformed our production floor. Their eye for
+            detail and commitment to technical excellence is unmatched in the
+            industry."
+          </p>
+          <div class="flex flex-col items-center gap-2">
+            <div
+              class="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined">person</span>
+            </div>
+            <p class="font-bold">Marc-Andre Weber</p>
+            <p class="text-slate-500 text-sm">CTO, Helvetia Dynamics</p>
+          </div>
+        </div>
+      </section>
+      <!-- Contact Section -->
+      <section class="py-24 border-t border-slate-800" id="contact">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20">
+          <div class="space-y-12">
+            <div>
+              <h2 class="text-5xl font-bold mb-6">
+                Let's build the future together
+              </h2>
+              <p class="text-slate-400 text-lg">
+                Have a vision for a project? Our team is ready to provide the
+                technical expertise needed to bring it to life.
+              </p>
+            </div>
+            <div class="space-y-6">
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-full border border-accent/30 flex items-center justify-center text-accent"
+                >
+                  <span class="material-symbols-outlined">mail</span>
+                </div>
+                <div>
+                  <p
+                    class="text-xs text-slate-500 font-bold uppercase tracking-widest"
+                  >
+                    Email Us
+                  </p>
+                  <p class="text-lg font-medium">contact@garagezenuni.ch</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 rounded-full border border-accent/30 flex items-center justify-center text-accent"
+                >
+                  <span class="material-symbols-outlined">location_on</span>
+                </div>
+                <div>
+                  <p
+                    class="text-xs text-slate-500 font-bold uppercase tracking-widest"
+                  >
+                    Visit Us
+                  </p>
+                  <p
+                    class="text-lg font-medium"
+                    data-location="Zurich, Switzerland"
+                  >
+                    Zentralsstrasse 42, 8003 Zurich
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="bg-primary/40 border border-slate-800 p-8 rounded-2xl relative"
+          >
+            <div
+              class="absolute -top-4 -right-4 w-24 h-24 bg-accent/10 blur-3xl rounded-full"
+            ></div>
+            <form class="space-y-6 relative z-10">
+              <div class="grid md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="text-sm font-medium text-slate-400">Name</label>
+                  <input
+                    class="w-full bg-background-dark border border-slate-700 rounded-lg p-3 focus:border-accent focus:ring-1 focus:ring-accent transition-all outline-none"
+                    type="text"
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label class="text-sm font-medium text-slate-400"
+                    >Email</label
+                  >
+                  <input
+                    class="w-full bg-background-dark border border-slate-700 rounded-lg p-3 focus:border-accent focus:ring-1 focus:ring-accent transition-all outline-none"
+                    type="email"
+                  />
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-slate-400"
+                  >Project Type</label
+                >
+                <select
+                  class="w-full bg-background-dark border border-slate-700 rounded-lg p-3 focus:border-accent focus:ring-1 focus:ring-accent transition-all outline-none"
+                >
+                  <option>Industrial Design</option>
+                  <option>Software Engineering</option>
+                  <option>Hardware Integration</option>
+                  <option>Consultancy</option>
+                </select>
+              </div>
+              <div class="space-y-2">
+                <label class="text-sm font-medium text-slate-400"
+                  >Message</label
+                >
+                <textarea
+                  class="w-full bg-background-dark border border-slate-700 rounded-lg p-3 focus:border-accent focus:ring-1 focus:ring-accent transition-all outline-none"
+                  rows="4"
+                ></textarea>
+              </div>
+              <button
+                class="w-full py-4 bg-accent text-white rounded-lg font-bold hover:bg-blue-600 transition-all shadow-xl shadow-accent/20"
+                type="submit"
+              >
+                Send Request
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="py-12 bg-background-dark border-t border-slate-800">
+      <div
+        class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8"
+      >
+        <div class="flex items-center gap-3 opacity-50">
+          <span class="material-symbols-outlined">database</span>
+          <span class="font-bold uppercase tracking-tighter"
+            >Garage Zenuni</span
+          >
+        </div>
+        <p class="text-slate-500 text-sm">
+          © 2024 Garage Zenuni SA. All rights reserved. Precision crafted in
+          Switzerland.
+        </p>
+        <div class="flex gap-6">
+          <a class="text-slate-400 hover:text-accent transition-colors" href="#"
+            >LinkedIn</a
+          >
+          <a class="text-slate-400 hover:text-accent transition-colors" href="#"
+            >Instagram</a
+          >
+          <a class="text-slate-400 hover:text-accent transition-colors" href="#"
+            >Twitter</a
+          >
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

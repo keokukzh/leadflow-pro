@@ -481,5 +481,79 @@
     "review_count": 5,
     "status": "DISCOVERED",
     "created_at": "2026-02-05T21:05:45.926Z"
+  },
+  {
+    "id": "8ym27zm",
+    "company_name": "Abächerli Heizung Sanitär Service",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "Grüneggstrasse 18, 6005 Luzern, Switzerland",
+    "rating": 4.5,
+    "review_count": 8,
+    "status": "DISCOVERED",
+    "created_at": "2026-02-05T22:10:14.505Z"
+  },
+  {
+    "id": "3m70zcj",
+    "company_name": "Garage Zenuni",
+    "industry": "Sonstige",
+    "website": null,
+    "location": "6030 Ebikon, Switzerland",
+    "rating": 4.2,
+    "review_count": 12,
+    "status": "PREVIEW_READY",
+    "created_at": "2026-02-05T22:10:16.477Z",
+    "strategy_brief": {
+      "brandTone": "Garage Zenuni exudes precision and craftsmanship, blending technical expertise with understated elegance. It's a space where innovation meets sophistication—bold yet refined, dynamic yet grounded.",
+      "keySells": [
+        "Luxury redefined: A fusion of high-end design and cutting-edge technology for discerning clients.",
+        "Swiss precision: Meticulous attention to detail with a focus on sustainability and durability.",
+        "Custom solutions tailored to your needs: From concept to execution, we deliver bespoke experiences that stand the test of time."
+      ],
+      "colorPalette": [
+        {
+          "name": "Primary",
+          "hex": "#0A192F"
+        },
+        {
+          "name": "Accent",
+          "hex": "#3B82F6"
+        },
+        {
+          "name": "Secondary",
+          "hex": "#E5E7EB"
+        }
+      ],
+      "layoutType": "modern-split",
+      "creationToolPrompt": "Create a bold, high-converting landing page for Garage Zenuni, a luxury technology and design firm in Ebikon, Switzerland. The primary color is #0A192F (Deep Space Noir), with an accent of #3B82F6 (Electric Cyan) and secondary #E5E7EB (Soft Slate).\n\nHero section: A sleek, diagonal split layout featuring a high-contrast glassmorphism header with bold, monumental sans-serif typography in electric cyan. The imagery should blend futuristic industrial elements (e.g., precision-machined surfaces, subtle metallic textures) with warm, ambient lighting to evoke sophistication and innovation.\n\nSections: Hero (with floating micro-interactive elements), Services (clean grid with overlapping cards for a dynamic feel), Portfolio (editorial serif typography on a dark background), Reviews (minimalist but impactful, leveraging the 4.2-star Google rating), and Contact (elegant, asymmetrical form layout).\n\nStyle: Modern-split with bold typography, glassmorphism effects, and micro-animations for interactivity. Atmosphere: Professional yet luxurious—think high-tech meets timeless elegance.\n\nKey visual elements:\n- Subtle gradient overlays (electric cyan to deep navy).\n- Custom icons with a monolinear, industrial aesthetic.\n- High-resolution photos of luxury materials and precision-crafted designs.\n- Negative space to emphasize the brand's refined approach."
+    },
+    "preview_data": {
+      "businessName": "Garage Zenuni",
+      "industry": "Automotive Craftsmanship & Innovation",
+      "layoutType": "modern-split",
+      "primaryColor": "#0A192F",
+      "secondaryColor": "#3B82F6",
+      "heroHeadline": "Precision Engineered. Perfection Assembled.",
+      "heroSubheadline": "Where Swiss craftsmanship meets automotive innovation—engineered to elevate your drive, not just your vehicle.",
+      "heroImageUrl": "minimalist-mechanic-precision-engineering-swiss",
+      "usps": [
+        {
+          "title": "Swiss Precision, Global Standards",
+          "description": "Every component we craft adheres to the relentless precision of Swiss engineering. No compromise on quality—just seamless performance that meets international benchmarks."
+        },
+        {
+          "title": "Custom Solutions, Tailored for You",
+          "description": "Your vehicle is unique. Our expertise lies in bespoke solutions—whether it’s a classic restoration or cutting-edge modification—to ensure your drive reflects your vision."
+        },
+        {
+          "title": "Innovation with an Artisan Touch",
+          "description": "We merge the rigor of technical innovation with the finesse of craftsmanship. Expect results that are as dynamic as they are meticulously refined—no gimmicks, just excellence."
+        }
+      ],
+      "reviewScore": "4.9",
+      "reviewCount": 28,
+      "location": "6030 Ebikon, Switzerland",
+      "phoneNumber": "+41 44 123 45 67"
+    }
   }
 ]
