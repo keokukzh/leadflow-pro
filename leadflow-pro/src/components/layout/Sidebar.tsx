@@ -9,7 +9,8 @@ import {
   Palette, 
   Mail, 
   Database,
-  Settings
+  Settings,
+  Activity
 } from "lucide-react";
 import clsx from "clsx";
 import { getGlobalAgentStatus, GlobalAgentStatus } from "@/lib/actions/server-actions";
@@ -22,6 +23,7 @@ const navigation = [
   { name: "Creator Agent", href: "/creator", icon: Palette, key: "creator" as keyof GlobalAgentStatus },
   { name: "Contact Agent", href: "/contact", icon: Mail, key: "contact" as keyof GlobalAgentStatus },
   { name: "Memory / CRM", href: "/memory", icon: Database, key: "memory" as keyof GlobalAgentStatus | "dashboard" | "memory" },
+  { name: "System Health", href: "/health", icon: Activity, key: "health" as string },
 ];
 
 export function Sidebar() {
