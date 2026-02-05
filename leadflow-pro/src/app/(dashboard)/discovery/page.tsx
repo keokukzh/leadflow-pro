@@ -73,6 +73,15 @@ export default function DiscoveryPage() {
     );
   };
 
+  const toggleIndustryCategory = (industries: string[]) => {
+    const allSelected = industries.every(ind => selectedIndustries.includes(ind));
+    if (allSelected) {
+      setSelectedIndustries(prev => prev.filter(ind => !industries.includes(ind)));
+    } else {
+      setSelectedIndustries(prev => Array.from(new Set([...prev, ...industries])));
+    }
+  };
+
   const toggleCanton = (canton: string) => {
     setSelectedCantons(prev => 
       prev.includes(canton) ? prev.filter(c => c !== canton) : [...prev, canton]
@@ -156,67 +165,129 @@ export default function DiscoveryPage() {
                 </div>
                 <span className="text-xs text-blue-400 font-normal">{selectedIndustries.length} gewählt</span>
               </div>
-              <ScrollArea className="h-[180px] rounded-lg border border-slate-800 bg-slate-950/50 p-3">
+              <ScrollArea className="h-[220px] rounded-lg border border-slate-800 bg-slate-950/50 p-3 shadow-inner">
                 {/* Beauty & Wellness */}
-                <div className="mb-3">
-                  <p className="text-[10px] uppercase tracking-wider text-pink-400 font-bold mb-2">💅 Beauty & Wellness</p>
+                <div className="mb-4">
+                  <div 
+                    className="flex items-center justify-between group cursor-pointer mb-2"
+                    onClick={() => toggleIndustryCategory(["Coiffeur", "Beauty Salon", "Massage", "Nagelstudio", "Wellness Spa", "Kosmetik", "Waxing"])}
+                  >
+                    <p className="text-[10px] uppercase tracking-wider text-pink-400 font-bold">💅 Beauty & Wellness</p>
+                    <span className="text-[9px] text-slate-600 group-hover:text-pink-400 transition-colors">Alle wählen</span>
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {["Coiffeur", "Beauty Salon", "Massage", "Nagelstudio", "Wellness Spa", "Kosmetik", "Waxing"].map((ind) => (
+                    {[
+                      { name: "Coiffeur", icon: "✂️" },
+                      { name: "Beauty Salon", icon: "💄" },
+                      { name: "Massage", icon: "💆" },
+                      { name: "Nagelstudio", icon: "💅" },
+                      { name: "Wellness Spa", icon: "🧖" },
+                      { name: "Kosmetik", icon: "✨" },
+                      { name: "Waxing", icon: "🍯" }
+                    ].map((ind) => (
                       <Badge 
-                        key={ind}
-                        variant={selectedIndustries.includes(ind) ? "default" : "outline"}
-                        className={`cursor-pointer transition-all text-xs px-3 py-1 ${selectedIndustries.includes(ind) ? "bg-pink-600 hover:bg-pink-500 text-white border-pink-500" : "border-slate-700 hover:border-pink-400 text-slate-300 hover:text-pink-300"}`}
-                        onClick={() => toggleIndustry(ind)}
+                        key={ind.name}
+                        variant={selectedIndustries.includes(ind.name) ? "default" : "outline"}
+                        className={`cursor-pointer transition-all text-xs px-2.5 py-1 gap-1.5 ${selectedIndustries.includes(ind.name) ? "bg-pink-600 hover:bg-pink-500 text-white border-pink-500 shadow-lg shadow-pink-500/20" : "border-slate-800 hover:border-pink-500/50 text-slate-400 hover:text-pink-300"}`}
+                        onClick={() => toggleIndustry(ind.name)}
                       >
-                        {ind}
+                        <span className="text-sm">{ind.icon}</span>
+                        {ind.name}
                       </Badge>
                     ))}
                   </div>
                 </div>
                 {/* Gesundheit */}
-                <div className="mb-3">
-                  <p className="text-[10px] uppercase tracking-wider text-green-400 font-bold mb-2">🏥 Gesundheit</p>
+                <div className="mb-4">
+                  <div 
+                    className="flex items-center justify-between group cursor-pointer mb-2"
+                    onClick={() => toggleIndustryCategory(["Arzt", "Zahnarzt", "Physiotherapie", "Osteopathie", "Chiropraktik", "Podologie", "Naturheilpraxis"])}
+                  >
+                    <p className="text-[10px] uppercase tracking-wider text-green-400 font-bold">🏥 Gesundheit</p>
+                    <span className="text-[9px] text-slate-600 group-hover:text-green-400 transition-colors">Alle wählen</span>
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {["Arzt", "Zahnarzt", "Physiotherapie", "Osteopathie", "Chiropraktik", "Podologie", "Naturheilpraxis"].map((ind) => (
+                    {[
+                      { name: "Arzt", icon: "👨‍⚕️" },
+                      { name: "Zahnarzt", icon: "🦷" },
+                      { name: "Physiotherapie", icon: "💪" },
+                      { name: "Osteopathie", icon: "🦴" },
+                      { name: "Chiropraktik", icon: "🧘" },
+                      { name: "Podologie", icon: "🦶" },
+                      { name: "Naturheilpraxis", icon: "🌿" }
+                    ].map((ind) => (
                       <Badge 
-                        key={ind}
-                        variant={selectedIndustries.includes(ind) ? "default" : "outline"}
-                        className={`cursor-pointer transition-all text-xs px-3 py-1 ${selectedIndustries.includes(ind) ? "bg-green-600 hover:bg-green-500 text-white border-green-500" : "border-slate-700 hover:border-green-400 text-slate-300 hover:text-green-300"}`}
-                        onClick={() => toggleIndustry(ind)}
+                        key={ind.name}
+                        variant={selectedIndustries.includes(ind.name) ? "default" : "outline"}
+                        className={`cursor-pointer transition-all text-xs px-2.5 py-1 gap-1.5 ${selectedIndustries.includes(ind.name) ? "bg-green-600 hover:bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20" : "border-slate-800 hover:border-green-500/50 text-slate-400 hover:text-green-300"}`}
+                        onClick={() => toggleIndustry(ind.name)}
                       >
-                        {ind}
+                        <span className="text-sm">{ind.icon}</span>
+                        {ind.name}
                       </Badge>
                     ))}
                   </div>
                 </div>
                 {/* Handwerk */}
-                <div className="mb-3">
-                  <p className="text-[10px] uppercase tracking-wider text-orange-400 font-bold mb-2">🔧 Handwerk</p>
+                <div className="mb-4">
+                  <div 
+                    className="flex items-center justify-between group cursor-pointer mb-2"
+                    onClick={() => toggleIndustryCategory(["Schreinerei", "Elektro", "Sanitär", "Gartenbau", "Malerei", "Dachdeckerei", "Schlosserei", "Polsterei", "Glaserei"])}
+                  >
+                    <p className="text-[10px] uppercase tracking-wider text-orange-400 font-bold">🔧 Handwerk</p>
+                    <span className="text-[9px] text-slate-600 group-hover:text-orange-400 transition-colors">Alle wählen</span>
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {["Schreinerei", "Elektro", "Sanitär", "Gartenbau", "Malerei", "Dachdeckerei", "Schlosserei", "Polsterei", "Glaserei"].map((ind) => (
+                    {[
+                      { name: "Schreinerei", icon: "🪵" },
+                      { name: "Elektro", icon: "⚡" },
+                      { name: "Sanitär", icon: "🚰" },
+                      { name: "Gartenbau", icon: "🌳" },
+                      { name: "Malerei", icon: "🎨" },
+                      { name: "Dachdeckerei", icon: "🏠" },
+                      { name: "Schlosserei", icon: "🔑" },
+                      { name: "Polsterei", icon: "🛋️" },
+                      { name: "Glaserei", icon: "💎" }
+                    ].map((ind) => (
                       <Badge 
-                        key={ind}
-                        variant={selectedIndustries.includes(ind) ? "default" : "outline"}
-                        className={`cursor-pointer transition-all text-xs px-3 py-1 ${selectedIndustries.includes(ind) ? "bg-orange-600 hover:bg-orange-500 text-white border-orange-500" : "border-slate-700 hover:border-orange-400 text-slate-300 hover:text-orange-300"}`}
-                        onClick={() => toggleIndustry(ind)}
+                        key={ind.name}
+                        variant={selectedIndustries.includes(ind.name) ? "default" : "outline"}
+                        className={`cursor-pointer transition-all text-xs px-2.5 py-1 gap-1.5 ${selectedIndustries.includes(ind.name) ? "bg-orange-600 hover:bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/20" : "border-slate-800 hover:border-orange-500/50 text-slate-400 hover:text-orange-300"}`}
+                        onClick={() => toggleIndustry(ind.name)}
                       >
-                        {ind}
+                        <span className="text-sm">{ind.icon}</span>
+                        {ind.name}
                       </Badge>
                     ))}
                   </div>
                 </div>
                 {/* Dienstleistungen & Sonstige */}
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-blue-400 font-bold mb-2">💼 Dienstleistungen</p>
+                  <div 
+                    className="flex items-center justify-between group cursor-pointer mb-2"
+                    onClick={() => toggleIndustryCategory(["Restaurant", "Metzgerei", "Anwalt", "Treuhand", "Architekt", "Fitnessstudio", "Garage"])}
+                  >
+                    <p className="text-[10px] uppercase tracking-wider text-blue-400 font-bold">💼 Dienstleistungen</p>
+                    <span className="text-[9px] text-slate-600 group-hover:text-blue-400 transition-colors">Alle wählen</span>
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {["Restaurant", "Metzgerei", "Anwalt", "Treuhand", "Architekt", "Fitnessstudio", "Garage"].map((ind) => (
+                    {[
+                      { name: "Restaurant", icon: "🍽️" },
+                      { name: "Metzgerei", icon: "🥩" },
+                      { name: "Anwalt", icon: "⚖️" },
+                      { name: "Treuhand", icon: "📊" },
+                      { name: "Architekt", icon: "📏" },
+                      { name: "Fitnessstudio", icon: "🏋️" },
+                      { name: "Garage", icon: "🚗" }
+                    ].map((ind) => (
                       <Badge 
-                        key={ind}
-                        variant={selectedIndustries.includes(ind) ? "default" : "outline"}
-                        className={`cursor-pointer transition-all text-xs px-3 py-1 ${selectedIndustries.includes(ind) ? "bg-blue-600 hover:bg-blue-500 text-white border-blue-500" : "border-slate-700 hover:border-blue-400 text-slate-300 hover:text-blue-300"}`}
-                        onClick={() => toggleIndustry(ind)}
+                        key={ind.name}
+                        variant={selectedIndustries.includes(ind.name) ? "default" : "outline"}
+                        className={`cursor-pointer transition-all text-xs px-2.5 py-1 gap-1.5 ${selectedIndustries.includes(ind.name) ? "bg-blue-600 hover:bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20" : "border-slate-800 hover:border-blue-500/50 text-slate-400 hover:text-blue-300"}`}
+                        onClick={() => toggleIndustry(ind.name)}
                       >
-                        {ind}
+                        <span className="text-sm">{ind.icon}</span>
+                        {ind.name}
                       </Badge>
                     ))}
                   </div>
@@ -224,7 +295,7 @@ export default function DiscoveryPage() {
               </ScrollArea>
               <div className="pt-2">
                 <Input 
-                  placeholder="Andere Branche..."
+                   placeholder="Andere Branche..."
                   className="bg-slate-950 border-slate-800 h-9 text-xs"
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
@@ -238,27 +309,30 @@ export default function DiscoveryPage() {
                   <Map className="w-4 h-4 text-blue-400" />
                   Schweiz / Kantone
                 </div>
-                <Button 
-                  type="button"
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-[10px] h-6 px-2 hover:bg-blue-500/10 text-blue-400"
-                  onClick={selectAllCantons}
-                >
-                  {selectedCantons.length === CANTONS.length ? "Alle abwählen" : "Alle wählen"}
-                </Button>
+                <div className="flex items-center gap-2">
+                   <span className="text-xs text-blue-400 font-normal">{selectedCantons.length} gewählt</span>
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-[10px] h-6 px-2 hover:bg-blue-500/10 text-blue-400"
+                    onClick={selectAllCantons}
+                  >
+                    {selectedCantons.length === CANTONS.length ? "Alle abwählen" : "Alle wählen"}
+                  </Button>
+                </div>
               </div>
-              <ScrollArea className="h-[120px] rounded-md border border-slate-800 bg-slate-950 p-2">
-                <div className="flex flex-wrap gap-1.5">
+              <ScrollArea className="h-[220px] rounded-lg border border-slate-800 bg-slate-950/50 p-3 shadow-inner">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                   {CANTONS.map((c) => (
-                    <Badge 
+                    <div 
                       key={c}
-                      variant={selectedCantons.includes(c) ? "secondary" : "outline"}
-                      className={`text-[9px] cursor-pointer transition-all ${selectedCantons.includes(c) ? "bg-blue-500/20 text-blue-300 border-blue-500/30" : "border-slate-800 hover:border-slate-700 text-slate-500"}`}
                       onClick={() => toggleCanton(c)}
+                      className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-all ${selectedCantons.includes(c) ? "bg-blue-500/20 border-blue-500/40 text-blue-300" : "bg-slate-900/40 border-slate-800 hover:border-slate-700 text-slate-500 hover:text-slate-300"}`}
                     >
-                      {c}
-                    </Badge>
+                      <div className={`w-1.5 h-1.5 rounded-full ${selectedCantons.includes(c) ? "bg-blue-400 animate-pulse" : "bg-slate-800"}`} />
+                      <span className="text-[10px] font-medium">{c}</span>
+                    </div>
                   ))}
                 </div>
               </ScrollArea>
