@@ -123,3 +123,48 @@ export function useRefreshLeads() {
     queryClient.invalidateQueries({ queryKey: leadQueries.leads });
   };
 }
+
+export interface AnalyticsData {
+  totalLeads: number;
+  convertedLeads: number;
+  totalRevenue: number;
+  conversionRate: number;
+  avgDealSize: number;
+  responseTime: number;
+}
+
+export function useAnalytics() {
+  return useQuery<AnalyticsData>({
+    queryKey: queryKeys.analytics,
+    queryFn: async () => {
+      const response = await fetch("/api/analytics");
+      if (!response.ok) {
+        throw new Error("Failed to fetch analytics");
+      }
+      return response.json();
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+export interface WorkflowTemplate {
+  id: string;
+  name: string;
+  description: string;
+  steps: any[];
+  active: boolean;
+}
+
+export function useWorkflowTemplates() {
+  return useQuery<WorkflowTemplate[]>({
+    queryKey: queryKeys.workflows,
+    queryFn: async () => {
+      const response = await fetch("/api/workflows/templates");
+      if (!response.ok) {
+        throw new Error("Failed to fetch workflow templates");
+      }
+      return response.json();
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
