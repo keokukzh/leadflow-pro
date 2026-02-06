@@ -1,1 +1,4 @@
 id,name,city,industry,reviews,rating,website
+lead_zh_001,Restaurant Limmat,Zürich,restaurant,45,4.5,
+lead_zh_002,Schreinerei Meier,Zürich,restaurant,22,4.2,http://veraltet-meier.ch
+lead_zh_003,Coiffeur Schönheit,Zürich,restaurant,67,4.8,
