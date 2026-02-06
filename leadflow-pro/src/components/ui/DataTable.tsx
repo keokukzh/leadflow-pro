@@ -1,16 +1,16 @@
-import { memo, useMemo, useState, useCallback } from "react";
+import { memo, useState } from "react";
 import { 
-  useReactTable, 
+  useReactTable,
   getCoreRowModel, 
   getSortedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   flexRender,
-  createColumnHelper,
   SortingState,
-  ColumnFiltersState
+  ColumnFiltersState,
+  ColumnDef
 } from "@tanstack/react-table";
-import { LeadCard } from "./LeadCard";
+
 import { ChevronUp, ChevronDown, Search, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 
 interface DataTableProps<T> {
   data: T[];
-  columns: any[];
+  columns: ColumnDef<T>[];
   getRowKey?: (row: T) => string;
   onRowClick?: (row: T) => void;
   selectedId?: string;

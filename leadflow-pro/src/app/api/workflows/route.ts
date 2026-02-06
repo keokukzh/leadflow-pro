@@ -3,8 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 // Initialize Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Import workflow engine (will be created in lib/automation)

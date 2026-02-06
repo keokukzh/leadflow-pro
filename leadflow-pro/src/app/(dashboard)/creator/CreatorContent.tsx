@@ -1,27 +1,13 @@
+
 "use client";
 
-import { useState } from "react";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { 
-  Sparkles, 
-  Monitor, 
-  Smartphone, 
-  Tablet, 
-  Copy, 
-  CheckCircle,
-  RefreshCw 
-} from "lucide-react";
 import { useLeads, useGenerateSiteConfig } from "@/lib/hooks/useLeads";
-import { Lead } from "@/lib/actions/server-actions";
+import { LeadSidebar } from "@/components/creator/LeadSidebar";
+import { CreatorToolbar } from "@/components/creator/CreatorToolbar";
+import { Monitor, Cpu, Fingerprint } from "lucide-react";
+import { clsx } from "clsx";
 
 type Viewport = "desktop" | "tablet" | "mobile";
 
@@ -35,7 +21,6 @@ export default function CreatorContent() {
   } = useLeads({});
   
   const leads = data?.leads || [];
-  const totalLeads = data?.total || 0;
   
   const [selectedLeadId, setSelectedLeadId] = useState<string>("");
   const [viewport, setViewport] = useState<Viewport>("desktop");
@@ -47,182 +32,123 @@ export default function CreatorContent() {
   const selectedLead = leads.find(l => l.id === selectedLeadId);
   const isGenerating = generateMutation.isPending || selectedLead?.status === 'PREVIEW_GENERATING';
   
-  const handleGenerate = async (overrideId?: string) => {
-    const targetId = overrideId || selectedLeadId;
-    if (!targetId) return;
+  // Initialize from URL
+  useEffect(() => {
+    const leadId = searchParams.get("leadId");
+    if (leadId && leads.length > 0) {
+      const exists = leads.find(l => l.id === leadId);
+      if (exists) {
+          setSelectedLeadId(leadId);
+      }
+    }
+  }, [searchParams, leads]);
+
+  const handleGenerate = async () => {
+    if (!selectedLeadId) return;
     setLocalError(null);
     try {
-      await generateMutation.mutateAsync(targetId);
+      await generateMutation.mutateAsync(selectedLeadId);
     } catch (err: unknown) {
-      setLocalError(err instanceof Error ? err.message : "Fehler bei der Website-Erstellung");
+      setLocalError(err instanceof Error ? err.message : "Analysis synth failure.");
     }
   };
-
-  // Initialize from URL
-  const initFromParams = () => {
-    const leadId = searchParams.get("leadId");
-    const autoStart = searchParams.get("autoStart") === "true";
-    if (leadId) {
-      setSelectedLeadId(leadId);
-      if (autoStart) setTimeout(() => handleGenerate(leadId), 100);
-    }
-  };
-
-  if (leads.length > 0 && !selectedLeadId) {
-    initFromParams();
-  }
 
   const previewUrl = selectedLeadId ? `${window.origin}/preview/${selectedLeadId}` : "";
 
   const copyToClipboard = () => {
+    if (!previewUrl) return;
     navigator.clipboard.writeText(previewUrl);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const copyStitchPrompt = () => {
-    if (!selectedLead?.strategy_brief?.creationToolPrompt) return;
-    navigator.clipboard.writeText(selectedLead.strategy_brief.creationToolPrompt);
-  };
-
   const deviceDimensions = {
-    desktop: "w-full",
-    tablet: "max-w-[768px] mx-auto",
-    mobile: "max-w-[375px] mx-auto"
+    desktop: "w-full h-full border-none rounded-none shadow-none",
+    tablet: "w-[768px] h-[1024px] border border-white/5 shadow-[0_48px_100px_rgba(0,0,0,0.6)] rounded-3xl my-12",
+    mobile: "w-[375px] h-[667px] border border-white/5 shadow-[0_48px_100px_rgba(0,0,0,0.6)] rounded-[3rem] my-12"
   };
 
   return (
-    <>
-      {/* Lead Selection Card */}
-      <div className="bg-white rounded-xl p-6 shadow-sm">
-        <div className="flex gap-4 mb-4">
-          <div className="flex-1">
-            <label className="text-sm font-medium mb-2 block">Lead auswählen</label>
-            <Select 
-              value={selectedLeadId} 
-              onValueChange={setSelectedLeadId}
-              disabled={isLoading || leads.length === 0}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Lead auswählen..." />
-              </SelectTrigger>
-              <SelectContent>
-                {leads.map((lead) => (
-                  <SelectItem key={lead.id} value={lead.id}>
-                    {lead.company_name} - {lead.location}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="flex-1">
-            <label className="text-sm font-medium mb-2 block">Geräte-Vorschau</label>
-            <div className="flex gap-2">
-              <Button variant={viewport === "desktop" ? "default" : "outline"} size="sm" onClick={() => setViewport("desktop")}>
-                <Monitor className="w-4 h-4" />
-              </Button>
-              <Button variant={viewport === "tablet" ? "default" : "outline"} size="sm" onClick={() => setViewport("tablet")}>
-                <Tablet className="w-4 h-4" />
-              </Button>
-              <Button variant={viewport === "mobile" ? "default" : "outline"} size="sm" onClick={() => setViewport("mobile")}>
-                <Smartphone className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-400">{isLoading ? "Laden..." : `${totalLeads} Leads`}</span>
-          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Aktualisieren
-          </Button>
-        </div>
+    <div className="flex h-full bg-slate-950 overflow-hidden luxury-gradient relative">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,35,53,0.05),transparent)] pointer-events-none" />
+      
+      {/* Sidebar - Integrated Glass */}
+      <div className="w-80 flex-shrink-0 h-full relative z-20">
+         <LeadSidebar 
+            leads={leads}
+            selectedLeadId={selectedLeadId}
+            onSelectLead={setSelectedLeadId}
+            isLoading={isLoading}
+            onRefresh={refetch}
+          />
       </div>
-
-      {/* Error Display */}
-      {(localError || generateMutation.isError) && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-red-700">
-            <span>⚠️</span>
-            <span>{localError || "Ein Fehler ist aufgetreten"}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Preview Card */}
-      {selectedLead && (
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold">{selectedLead.company_name}</h2>
-              <p className="text-sm text-slate-400">{selectedLead.industry} • {selectedLead.location}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {selectedLead.rating > 0 && <Badge variant="secondary">⭐ {selectedLead.rating}</Badge>}
-              <Badge variant="outline">{selectedLead.status}</Badge>
-            </div>
-          </div>
-          
-          <div className="flex gap-2 mb-4">
-            <Button 
-              onClick={() => handleGenerate()}
-              disabled={isGenerating}
-              className="flex-1"
-            >
-              {isGenerating ? (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
-                  Generiere...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Website generieren
-                </>
-              )}
-            </Button>
+      
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col h-full min-w-0 relative z-10">
+        {selectedLead ? (
+          <>
+            <CreatorToolbar
+              currentDevice={viewport}
+              onDeviceChange={setViewport}
+              onGenerate={handleGenerate}
+              isGenerating={isGenerating}
+              previewUrl={previewUrl}
+              onCopyLink={copyToClipboard}
+              isCopied={isCopied}
+              onOpenPreview={() => window.open(previewUrl, "_blank")}
+            />
             
-            <Button 
-              variant="outline"
-              onClick={copyStitchPrompt}
-              disabled={!selectedLead.strategy_brief?.creationToolPrompt}
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Prompt
-            </Button>
+            <div className="flex-1 overflow-auto flex justify-center p-8 relative custom-scrollbar">
+               <div 
+                 className={clsx(
+                   "bg-white transition-all duration-700 origin-top shadow-[0_0_80px_rgba(0,0,0,0.4)]",
+                   deviceDimensions[viewport],
+                   viewport !== 'desktop' && 'transform scale-[0.85] mt-4'
+                 )}
+                 style={viewport === 'desktop' ? { width: '100%', height: '100%' } : {}}
+               >
+                 <iframe 
+                   src={previewUrl} 
+                   className="w-full h-full"
+                   style={{ border: 'none' }}
+                   title="Swiss Core Preview"
+                 />
+               </div>
+            </div>
             
-            <Button variant="outline" onClick={copyToClipboard} disabled={!previewUrl}>
-              {isCopied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            </Button>
+            {localError && (
+              <div className="absolute bottom-12 right-12 glass-panel border-primary/20 bg-primary/10 text-primary-foreground px-6 py-4 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-6 duration-700">
+                <div className="flex items-center gap-3">
+                    <Cpu className="w-5 h-5 animate-spin text-primary" />
+                    <span className="font-serif italic tracking-wide">{localError}</span>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center p-12 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-20">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] animate-pulse" />
+            </div>
+            
+            <div className="relative group hover:scale-105 transition-transform duration-700">
+                <div className="w-32 h-32 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex items-center justify-center mb-10 shadow-2xl ring-1 ring-white/10 group-hover:ring-accent/20 transition-all duration-700">
+                  <Fingerprint className="w-12 h-12 text-white/10 group-hover:text-accent/40 transition-colors duration-700" />
+                </div>
+            </div>
+            
+            <h2 className="text-3xl font-serif text-white/90 mb-4 tracking-tight">Select Market Node</h2>
+            <p className="max-w-md text-center text-white/30 font-medium leading-relaxed tracking-wide text-sm">
+              Initialize the Swiss Intelligence Creator by selecting a lead from the acquisition lattice to generate an optimized digital presence.
+            </p>
+            
+            <div className="mt-12 flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-accent/40 bg-accent/5 px-4 py-2 rounded-full border border-accent/10">
+                <div className="w-1 h-1 rounded-full bg-accent animate-pulse" />
+                Awaiting Authorization
+            </div>
           </div>
-          
-          <div className={`${deviceDimensions[viewport]} transition-all duration-300`}>
-            <iframe src={previewUrl} className="w-full h-[600px] border rounded-lg bg-white" title="Preview" />
-          </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!selectedLead && !isLoading && leads.length === 0 && (
-        <div className="bg-white rounded-xl p-12 text-center shadow-sm">
-          <Sparkles className="w-12 h-12 mx-auto text-slate-400 mb-4" />
-          <h3 className="text-lg font-medium mb-2">Keine Leads mit Strategie</h3>
-          <p className="text-slate-400 mb-4">Generieren Sie zuerst eine Strategie.</p>
-          <Button asChild>
-            <a href="/strategy">Zur Strategie-Seite</a>
-          </Button>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {isLoading && leads.length === 0 && (
-        <div className="bg-white rounded-xl p-12 text-center shadow-sm">
-          <RefreshCw className="w-8 h-8 mx-auto animate-spin text-blue-500 mb-4" />
-          <p className="text-slate-400">Laden...</p>
-        </div>
-      )}
-    </>
+        )}
+      </div>
+    </div>
   );
 }

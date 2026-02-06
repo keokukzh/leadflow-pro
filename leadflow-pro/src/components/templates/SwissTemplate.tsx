@@ -15,14 +15,22 @@ const SWISS_COLORS = {
   eco: { primary: "#166534", accent: "#84cc16", secondary: "#f0fdf4" },
 };
 
-export function SwissTemplate({ lead, showDebug = false, ...props }: SwissTemplateProps) {
+export function SwissTemplate({
+  lead,
+  showDebug = false,
+  ...props
+}: SwissTemplateProps) {
   const colors = SWISS_COLORS.neutral; // Default
   const companyName = lead?.company_name || props.companyName || "Company";
   const location = lead?.location || "Schweiz";
   const rating = lead?.rating || "Neu";
   const industry = lead?.industry || "Branche";
-  const strategy: any = lead?.strategy_brief || { brandTone: props.brandTone, keySells: props.keySells, swissSpecific: {} };
-  
+  const strategy: any = lead?.strategy_brief || {
+    brandTone: props.brandTone,
+    keySells: props.keySells,
+    swissSpecific: {},
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
       {/* Debug Info */}
@@ -33,7 +41,7 @@ export function SwissTemplate({ lead, showDebug = false, ...props }: SwissTempla
       )}
 
       {/* Header */}
-      <header 
+      <header
         className="relative py-20 px-6 text-center text-white"
         style={{ backgroundColor: colors.primary }}
       >
@@ -43,26 +51,34 @@ export function SwissTemplate({ lead, showDebug = false, ...props }: SwissTempla
             <span>|</span>
             <span>⭐ {rating}</span>
           </div>
-          
+
           <h1 className="text-4xl md:text-6xl font-black tracking-tight">
             {companyName}
           </h1>
-          
+
           <p className="text-xl md:text-2xl opacity-90 max-w-2xl mx-auto">
             {strategy.brandTone || `${industry} mit Qualität und Erfahrung`}
           </p>
 
           {/* Trust Signals */}
           <div className="flex justify-center gap-4 pt-4 text-sm">
-            {strategy.swissSpecific?.trustSignals?.map((signal: string, i: number) => (
-              <span key={i} className="bg-white/20 px-3 py-1 rounded-full">
-                {signal}
-              </span>
-            )) || (
+            {strategy.swissSpecific?.trustSignals?.map(
+              (signal: string, i: number) => (
+                <span key={i} className="bg-white/20 px-3 py-1 rounded-full">
+                  {signal}
+                </span>
+              ),
+            ) || (
               <>
-                <span className="bg-white/20 px-3 py-1 rounded-full">Meisterbetrieb</span>
-                <span className="bg-white/20 px-3 py-1 rounded-full">Regional</span>
-                <span className="bg-white/20 px-3 py-1 rounded-full">Erfahren</span>
+                <span className="bg-white/20 px-3 py-1 rounded-full">
+                  Meisterbetrieb
+                </span>
+                <span className="bg-white/20 px-3 py-1 rounded-full">
+                  Regional
+                </span>
+                <span className="bg-white/20 px-3 py-1 rounded-full">
+                  Erfahren
+                </span>
               </>
             )}
           </div>
@@ -75,11 +91,17 @@ export function SwissTemplate({ lead, showDebug = false, ...props }: SwissTempla
           <h2 className="text-2xl font-bold mb-8 text-center">
             Warum {companyName}?
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {(strategy.keySells || ["Qualität aus der Region", "Persönliche Beratung", "Flexible Öffnungszeiten"]).map((sell, i) => (
+            {(
+              strategy.keySells || [
+                "Qualität aus der Region",
+                "Persönliche Beratung",
+                "Flexible Öffnungszeiten",
+              ]
+            ).map((sell: string, i: number) => (
               <div key={i} className="bg-white p-6 rounded-xl shadow-sm border">
-                <div 
+                <div
                   className="w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-white font-bold"
                   style={{ backgroundColor: colors.accent }}
                 >
@@ -96,12 +118,22 @@ export function SwissTemplate({ lead, showDebug = false, ...props }: SwissTempla
       <section className="py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl font-bold mb-8">Unsere Leistungen</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {["Dienstleistung 1", "Dienstleistung 2", "Dienstleistung 3", "Dienstleistung 4", "Dienstleistung 5", "Dienstleistung 6"].map((service, i) => (
-              <div key={i} className="p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer">
+            {[
+              "Dienstleistung 1",
+              "Dienstleistung 2",
+              "Dienstleistung 3",
+              "Dienstleistung 4",
+              "Dienstleistung 5",
+              "Dienstleistung 6",
+            ].map((service, i) => (
+              <div
+                key={i}
+                className="p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+              >
                 <div className="flex items-center gap-3">
-                  <div 
+                  <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
                     style={{ backgroundColor: colors.primary }}
                   >
@@ -116,7 +148,7 @@ export function SwissTemplate({ lead, showDebug = false, ...props }: SwissTempla
       </section>
 
       {/* Trust & Reviews */}
-      <section 
+      <section
         className="py-16 px-6 text-white text-center"
         style={{ backgroundColor: colors.primary }}
       >
@@ -125,12 +157,15 @@ export function SwissTemplate({ lead, showDebug = false, ...props }: SwissTempla
             <span className="text-6xl font-bold">⭐ {rating}</span>
             <div className="text-left">
               <p className="font-bold text-xl">Google Bewertungen</p>
-              <p className="opacity-80">{lead?.review_count || "0"} Bewertungen</p>
+              <p className="opacity-80">
+                {lead?.review_count || "0"} Bewertungen
+              </p>
             </div>
           </div>
-          
+
           <p className="text-xl opacity-90">
-            &quot;{strategy.brandTone || "Ihre Zufriedenheit ist unser Ziel"}&quot;
+            &quot;{strategy.brandTone || "Ihre Zufriedenheit ist unser Ziel"}
+            &quot;
           </p>
         </div>
       </section>
@@ -140,23 +175,26 @@ export function SwissTemplate({ lead, showDebug = false, ...props }: SwissTempla
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold mb-6">Über uns</h2>
           <p className="text-slate-600 leading-relaxed text-lg">
-            {companyName} ist Ihr {industry}-Partner in {location}. 
-            Mit Erfahrung und Engagement setzen wir uns für Ihre Anliegen ein.
-            {" "}{strategy.swissSpecific?.urgencyFactor || "Profitieren Sie von unserer Expertise."}
+            {companyName} ist Ihr {industry}-Partner in {location}. Mit
+            Erfahrung und Engagement setzen wir uns für Ihre Anliegen ein.{" "}
+            {strategy.swissSpecific?.urgencyFactor ||
+              "Profitieren Sie von unserer Expertise."}
           </p>
         </div>
       </section>
 
       {/* CTA / Contact */}
-      <section 
+      <section
         className="py-20 px-6 text-center text-white"
         style={{ backgroundColor: colors.accent }}
       >
-        <h2 className="text-3xl font-bold mb-6">Bereit für {strategy.brandTone?.split(" ")[0] || "unsere Leistungen"}?</h2>
+        <h2 className="text-3xl font-bold mb-6">
+          Bereit für {strategy.brandTone?.split(" ")[0] || "unsere Leistungen"}?
+        </h2>
         <p className="text-xl mb-8 opacity-90">
           Kontaktieren Sie uns jetzt für ein unverbindliches Gespräch.
         </p>
-        
+
         <div className="flex flex-col md:flex-row justify-center gap-4">
           <button className="bg-white text-slate-900 px-8 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform">
             📞 Anrufen

@@ -6,5 +6,6 @@
   "elevenLabsApiKey": "",
   "resendApiKey": "",
   "apifyToken": "",
-  "linearApiKey": ""
+  "linearApiKey": "",
+  "discoveryProvider": "apify"
 }
