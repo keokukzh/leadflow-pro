@@ -12,8 +12,6 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-const client = twilio(accountSid, authToken);
-
 interface VoiceCall {
   id: string;
   leadId: string;
@@ -25,14 +23,30 @@ interface VoiceCall {
   duration?: number;
 }
 
+/**
+ * @env TWILIO_ACCOUNT_SID
+ * @env TWILIO_AUTH_TOKEN
+ * @env TWILIO_PHONE_NUMBER
+ * @env NEXT_PUBLIC_APP_URL
+ * @throws {429} - Rate limit exceeded
+ * @throws {400} - Validation error or missing phone
+ * @throws {500} - Configuration or Twilio error
+ */
 export async function POST(req: NextRequest) {
   // 1. Rate Limiting Check
   const ip = req.headers.get('x-forwarded-for') || 'anonymous';
-  const { success: limitOk } = await apiRateLimit.check(req as any, 5, ip); // Stricter limit for voice
+  const { success: limitOk } = await apiRateLimit.check(req as any, 5, ip); // Stricter for voice
   if (!limitOk) {
     logger.warn({ ip }, "Rate limit exceeded for voice call");
     return NextResponse.json<ApiResponse>({ success: false, error: "Zu viele Anfragen. Bitte warten Sie eine Minute." }, { status: 429 });
   }
+
+  if (!accountSid || !authToken || !twilioNumber) {
+    logger.error({}, "Twilio credentials missing");
+    return NextResponse.json<ApiResponse>({ success: false, error: "Twilio Konfiguration fehlt." }, { status: 500 });
+  }
+
+  const client = twilio(accountSid, authToken);
 
   try {
     const jsonBody = await req.json();

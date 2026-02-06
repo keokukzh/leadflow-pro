@@ -6,10 +6,16 @@ import { SearchDiscoverySchema, ApiResponse, SearchDiscoveryData } from '@/lib/s
 import { performLeadResearch, generateSearchQueries, updateMission, getMissionById, DiscoveryMission } from '@/lib/actions/server-actions';
 import { logger } from '@/lib/logger';
 
+/**
+ * @env PERPLEXITY_API_KEY
+ * @env NEXT_PUBLIC_SUPABASE_URL
+ * @throws {429} - Rate limit exceeded
+ * @throws {400} - Validation error
+ */
 export async function POST(req: Request) {
   // 1. Rate Limiting Check
   const ip = req.headers.get('x-forwarded-for') || 'anonymous';
-  const { success: limitOk } = await apiRateLimit.check(req as unknown as any, 10, ip);
+  const { success: limitOk } = await apiRateLimit.check(req as any, 10, ip);
   if (!limitOk) {
     logger.warn({ ip }, "Rate limit exceeded for discovery search");
     return NextResponse.json<ApiResponse>({ success: false, error: "Zu viele Anfragen. Bitte warten Sie eine Minute." }, { status: 429 });
@@ -113,7 +119,8 @@ export async function POST(req: Request) {
           if (currentMission?.status !== 'IN_PROGRESS') {
             console.log(`[SearchSpecialist] Mission ${missionId} stopped or changed status. Breaking loop.`);
             return NextResponse.json({ results: Array.from(allResultsMap.values()).map((res) => {
-              const { reviews_short: _r, ...rest } = res;
+              const rest = { ...res };
+              delete (rest as Record<string, unknown>).reviews_short;
               return rest;
             }) });
           }
@@ -123,24 +130,25 @@ export async function POST(req: Request) {
         
         try {
           const response = await fetch(url);
-          const data = await response.json();
+          const data = await response.json() as Record<string, unknown>;
 
           if (data.local_results) {
-            const filtered = data.local_results.filter((res: { rating?: number; website?: string }) => 
-               (res.rating && res.rating >= 4.0 || !res.rating) && !res.website
+            const results = data.local_results as Array<Record<string, unknown>>;
+            const filtered = results.filter((res) => 
+               (res.rating && (res.rating as number) >= 4.0 || !res.rating) && !res.website
             );
 
             for (const res of filtered) {
-              if (!allResultsMap.has(res.place_id)) {
-                allResultsMap.set(res.place_id, {
+              if (!allResultsMap.has(res.place_id as string)) {
+                allResultsMap.set(res.place_id as string, {
                   place_id: res.place_id,
-                  name: (res as any).title,
-                  rating: (res as any).rating || 0,
-                  user_ratings_total: (res as any).reviews || 0,
-                  vicinity: (res as any).address,
+                  name: res.title,
+                  rating: res.rating || 0,
+                  user_ratings_total: res.reviews || 0,
+                  vicinity: res.address,
                   website: null,
                   source_url: `https://www.google.com/maps/place/?q=place_id:${res.place_id}`,
-                  reviews_short: (res as any).reviews_short,
+                  reviews_short: res.reviews_short,
                   query_source: query
                 });
               }
@@ -155,7 +163,9 @@ export async function POST(req: Request) {
       // Update intermediate results for persistence if user navigates away
       if (missionId) {
         const currentResults = Array.from(allResultsMap.values()).map((res) => {
-          const { reviews_short: _r, ...rest } = res;
+          // Exclude reviews_short from persisted data to save space/memory
+          const rest = { ...res };
+          delete (rest as Record<string, unknown>).reviews_short;
           return rest;
         });
         await updateMission(missionId, { results: currentResults as DiscoveryMission['results'] });
@@ -163,24 +173,25 @@ export async function POST(req: Request) {
     }
 
     const resultsArray = Array.from(allResultsMap.values())
-      .sort((a, b) => ((b.rating || 0) * (b.reviews || 0)) - ((a.rating || 0) * (a.reviews || 0)))
+      .sort((a, b) => ((b.rating || 0) * (b.user_ratings_total || 0)) - ((a.rating || 0) * (a.user_ratings_total || 0)))
       .slice(0, 15);
 
     console.log(`[SearchSpecialist] Synthesizing deep research for top 3 leads...`);
     for (const res of resultsArray.slice(0, 3)) {
       if (res.reviews_short) {
-        const reviewsText = res.reviews_short.map((r: any) => r.snippet).join(" | ");
+        const reviewsText = (res.reviews_short as Array<Record<string, string>>).map((r) => r.snippet).join(" | ");
         const leadContext = {
-          company_name: res.name,
+          company_name: res.name as string,
           industry: industry,
-          location: res.vicinity
+          location: res.vicinity as string
         };
         res.analysis = await performLeadResearch(leadContext, reviewsText);
       }
     }
 
     const finalResults = resultsArray.map((res) => {
-      const { reviews_short: _r, ...rest } = res;
+      const rest = { ...res };
+      delete (rest as Record<string, unknown>).reviews_short;
       return rest;
     });
 
