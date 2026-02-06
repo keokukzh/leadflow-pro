@@ -318,13 +318,87 @@ export async function saveLeadToCRM(leadData: {
   return { success: true, lead: newLead };
 }
 
-export async function getLeads() {
-  return await readData<Lead[]>(LEADS_FILE, []);
+export async function getLeads(filters?: {
+  status?: string;
+  industry?: string;
+  location?: string;
+  search?: string;
+  minScore?: number;
+  maxScore?: number;
+  page?: number;
+  limit?: number;
+  sortBy?: 'created_at' | 'rating' | 'score';
+  sortOrder?: 'asc' | 'desc';
+}): Promise<{ leads: Lead[]; total: number; page: number; totalPages: number }> {
+  let leads = await readData<Lead[]>(LEADS_FILE, []);
+  
+  if (filters) {
+    if (filters.status) {
+      leads = leads.filter(l => l.status === filters.status);
+    }
+    if (filters.industry) {
+      leads = leads.filter(l => l.industry.toLowerCase().includes(filters.industry!.toLowerCase()));
+    }
+    if (filters.location) {
+      leads = leads.filter(l => l.location.toLowerCase().includes(filters.location!.toLowerCase()));
+    }
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      leads = leads.filter(l => 
+        l.company_name.toLowerCase().includes(searchLower) ||
+        l.industry.toLowerCase().includes(searchLower) ||
+        l.location.toLowerCase().includes(searchLower)
+      );
+    }
+    if (filters.minScore !== undefined) {
+      leads = leads.filter(l => (l.analysis?.priorityScore || 0) >= filters.minScore!);
+    }
+    if (filters.maxScore !== undefined) {
+      leads = leads.filter(l => (l.analysis?.priorityScore || 0) <= filters.maxScore!);
+    }
+    
+    leads.sort((a, b) => {
+      let comparison = 0;
+      switch (filters.sortBy) {
+        case 'created_at':
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'rating':
+          comparison = a.rating - b.rating;
+          break;
+        case 'score':
+          comparison = (a.analysis?.priorityScore || 0) - (b.analysis?.priorityScore || 0);
+          break;
+      }
+      return filters.sortOrder === 'desc' ? -comparison : comparison;
+    });
+    
+    const page = filters.page || 1;
+    const limit = filters.limit || 20;
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    
+    return {
+      leads: leads.slice(start, end),
+      total: leads.length,
+      page,
+      totalPages: Math.ceil(leads.length / limit),
+    };
+  }
+  
+  leads.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  
+  return {
+    leads,
+    total: leads.length,
+    page: 1,
+    totalPages: 1,
+  };
 }
 
 export async function getLeadById(id: string) {
-  const leads = await getLeads();
-  return leads.find(l => l.id === id) || null;
+  const result = await getLeads();
+  return result.leads.find(l => l.id === id) || null;
 }
 
 export async function logInteraction(leadId: string, type: 'EMAIL' | 'CALL', content: string, status: string = 'Sent') {
