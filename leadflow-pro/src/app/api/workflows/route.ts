@@ -1,57 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { readData, writeData } from "@/lib/storage";
+import { WorkflowOrchestrator } from "@/lib/orchestrator/orchestrator";
+import { WorkflowConfig, TaskConfig, TriggerType } from "@/lib/orchestrator/types";
 
-// Initialize Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key";
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Import workflow engine (will be created in lib/automation)
-let workflowEngine: any = null;
-
-function getWorkflowEngine(): any {
-  if (!workflowEngine) {
-    // Lazy initialization - in real implementation, import from lib
-    workflowEngine = {
-      _workflows: {},
-      create_workflow: (name: string, trigger: string, conditions: any[], actions: any[]) => ({
-        id: Math.random().toString(36).substring(7),
-        name,
-        trigger,
-        conditions,
-        actions,
-        status: "pending"
-      }),
-      execute_workflow: (workflowId: string, context: any) => ({
-        success: true,
-        workflow_id: workflowId,
-        actions_executed: []
-      }),
-      get_workflow_templates: () => [
-        {
-          id: "welcome_new_leads",
-          name: "Willkommens-E-Mail",
-          trigger: "lead_created",
-          actions: [
-            { type: "send_email", template_id: "welcome" },
-            { type: "create_task", title: "Neuen Lead kontaktieren" }
-          ]
-        },
-        {
-          id: "high_value_alert",
-          name: "High-Value Alert",
-          trigger: "lead_score_changed",
-          conditions: [{ field: "calculated_score", operator: "greater_than", value: 80 }],
-          actions: [
-            { type: "notify_slack", channel: "#sales-leads" }
-          ]
-        }
-      ]
-    };
-  }
-  return workflowEngine;
-}
+const WORKFLOWS_FILE = "workflows.json";
+const WORKFLOW_LOGS_FILE = "workflow_logs.json";
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -59,17 +13,18 @@ function getWorkflowEngine(): any {
 
 const WorkflowExecutionSchema = z.object({
   workflow_id: z.string().min(1, "workflow_id is required"),
-  lead_id: z.string().uuid().optional(),
-  context: z.record(z.any()).optional()
+  lead_id: z.string().optional(),
+  context: z.record(z.unknown()).optional()
 });
 
 const CreateWorkflowSchema = z.object({
   name: z.string().min(1).max(100),
   trigger: z.enum(["lead_created", "lead_score_changed", "website_status_changed", "schedule", "manual"]),
+  description: z.string().optional(),
   conditions: z.array(z.object({
     field: z.string(),
     operator: z.enum(["equals", "not_equals", "greater_than", "less_than", "contains", "not_contains"]),
-    value: z.any()
+    value: z.unknown()
   })).optional(),
   actions: z.array(z.object({
     type: z.enum(["send_email", "create_task", "update_lead", "notify_slack", "webhook", "delay"]),
@@ -87,57 +42,58 @@ const CreateWorkflowSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    // Validate input
     const validationResult = WorkflowExecutionSchema.safeParse(body);
+    
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: validationResult.error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Validation failed", details: validationResult.error.errors }, { status: 400 });
     }
     
     const { workflow_id, lead_id, context } = validationResult.data;
-    const engine = getWorkflowEngine();
+    const workflows = await readData<Record<string, unknown>[]>(WORKFLOWS_FILE, []);
+    const workflow = workflows.find(w => w.id === workflow_id);
     
-    // Build context from lead data if not provided
-    let executionContext = context || {};
-    
-    if (lead_id) {
-      const { data: lead, error } = await supabase
-        .from("leads")
-        .select("*")
-        .eq("id", lead_id)
-        .single();
-      
-      if (!error && lead) {
-        executionContext = {
-          ...executionContext,
-          lead_id: lead.id,
-          company_name: lead.company_name,
-          industry: lead.industry,
-          location: lead.location,
-          website_status: lead.website_status,
-          calculated_score: lead.calculated_score,
-          rating: lead.rating,
-          phone: lead.phone,
-          email: lead.email
-        };
-      }
+    if (!workflow) {
+      return NextResponse.json({ error: "Workflow not found" }, { status: 404 });
     }
     
-    // Execute workflow
-    const result = engine.execute_workflow(workflow_id, executionContext);
+    // Map UI actions to Orchestrator tasks
+    const tasks: TaskConfig[] = (workflow.actions as Record<string, unknown>[] || []).map((action: any, index: number) => {
+      const id = `task_${index}`;
+      switch (action.type) {
+        case "send_email":
+          return { id, name: "Send Email", type: "http", url: "/api/contact/email", method: "POST", data: { template_id: action.template_id, lead_id } };
+        case "notify_slack":
+          return { id, name: "Notify Slack", type: "http", url: action.webhook || "/api/notifications/slack", method: "POST", data: { channel: action.channel, message: "Workflow Alert" } };
+        case "delay":
+          return { id, name: "Delay", type: "javascript", command: `await new Promise(r => setTimeout(r, ${action.delay_hours * 3600000}))` };
+        default:
+          return { id, name: action.type, type: "javascript", command: "console.log('Action executed')" };
+      }
+    });
+
+    const config: WorkflowConfig = {
+      name: (workflow.name as string) || "Unnamed Workflow",
+      version: "1.0",
+      description: (workflow.description as string) || "",
+      trigger: { type: (workflow.trigger as TriggerType) || "manual", config: {} },
+      environment: (context as Record<string, string>) || {},
+      tasks
+    };
+
+    const orchestrator = new WorkflowOrchestrator();
+    const report = await orchestrator.execute(config);
     
-    // Log execution (sanitized - no sensitive data)
-    await supabase.from("workflow_logs").insert({
+    // Log execution
+    const logs = await readData<Record<string, unknown>[]>(WORKFLOW_LOGS_FILE, []);
+    logs.push({
+      ...report,
+      lead_id,
       workflow_id,
-      lead_id: lead_id || null,
-      result: { success: result.success },
       executed_at: new Date().toISOString()
     });
+    await writeData(WORKFLOW_LOGS_FILE, logs);
     
-    return NextResponse.json(result);
+    return NextResponse.json(report);
     
   } catch (error) {
     console.error("Workflow execution error:", error);
@@ -153,26 +109,16 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const action = searchParams.get("action");
-    const engine = getWorkflowEngine();
-    
-    if (action === "templates") {
-      return NextResponse.json({
-        templates: engine.get_workflow_templates()
-      });
-    }
     
     if (action === "list") {
-      const { data: workflows } = await supabase
-        .from("workflows")
-        .select("*")
-        .order("created_at", { ascending: false });
-      
-      return NextResponse.json({ workflows: workflows || [] });
+      const workflows = await readData<Record<string, unknown>[]>(WORKFLOWS_FILE, []);
+      return NextResponse.json({ workflows });
     }
     
+    const logs = await readData<Record<string, unknown>[]>(WORKFLOW_LOGS_FILE, []);
     return NextResponse.json({
       status: "active",
-      workflows_count: Object.keys(engine._workflows).length
+      logs_count: logs.length
     });
     
   } catch (error) {
@@ -188,46 +134,30 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    // Validate input
     const validationResult = CreateWorkflowSchema.safeParse(body);
+    
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: validationResult.error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Validation failed", details: validationResult.error.errors }, { status: 400 });
     }
     
-    const { name, trigger, conditions, actions } = validationResult.data;
-    const engine = getWorkflowEngine();
+    const { name, trigger, conditions, actions, description } = validationResult.data;
+    const workflows = await readData<Record<string, unknown>[]>(WORKFLOWS_FILE, []);
     
-    const workflow = engine.create_workflow(
+    const newWorkflow = {
+      id: Math.random().toString(36).substring(7),
       name,
+      description,
       trigger,
-      conditions || [],
-      actions || []
-    );
+      conditions: conditions || [],
+      actions: actions || [],
+      status: "active",
+      created_at: new Date().toISOString()
+    };
     
-    // Save to database
-    const { data, error } = await supabase
-      .from("workflows")
-      .insert({
-        id: workflow.id,
-        name: workflow.name,
-        trigger: workflow.trigger,
-        conditions: workflow.conditions,
-        actions: workflow.actions,
-        status: workflow.status,
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single();
+    workflows.push(newWorkflow);
+    await writeData(WORKFLOWS_FILE, workflows);
     
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    
-    return NextResponse.json({ workflow: data });
+    return NextResponse.json({ workflow: newWorkflow });
     
   } catch (error) {
     console.error("Create workflow error:", error);

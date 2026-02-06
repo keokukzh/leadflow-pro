@@ -1,84 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { readData, writeData } from "@/lib/storage";
+import { supabase } from "@/lib/supabase";
 
-// Initialize Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-key";
-const supabase = createClient(supabaseUrl, supabaseKey);
+const EVENTS_FILE = "analytics_events.json";
+const AB_TESTS_FILE = "ab_tests.json";
 
-// Analytics dashboard singleton (lazy initialization)
-let analyticsDashboard: any = null;
+interface AnalyticsEvent {
+  id: string;
+  event_type: string;
+  lead_id?: string;
+  user_id?: string;
+  properties: Record<string, unknown>;
+  timestamp: string;
+}
 
-function getAnalyticsDashboard(): any {
-  if (!analyticsDashboard) {
-    analyticsDashboard = {
-      _events: [],
-      _ab_tests: {},
-      track_event: function(eventType: string, leadId?: string, userId?: string, props?: Record<string, any>) {
-        this._events.push({
-          id: Math.random().toString(36).substring(7),
-          event_type: eventType,
-          lead_id: leadId,
-          user_id: userId,
-          properties: props || {},
-          timestamp: new Date()
-        });
-      },
-      create_ab_test: function(name: string, variants: Record<string, any>, trafficSplit: Record<string, number>) {
-        const test = {
-          id: Math.random().toString(36).substring(7),
-          name,
-          variants,
-          traffic_split: trafficSplit,
-          metrics: Object.keys(variants).reduce((acc: Record<string, any>, v) => {
-            acc[v] = { visitors: 0, conversions: 0, revenue: 0, conversion_rate: 0 };
-            return acc;
-          }, {}),
-          status: "running",
-          start_date: new Date()
-        };
-        this._ab_tests[test.id] = test;
-        return test;
-      },
-      assign_variant: function(testId: string, userId: string) {
-        const test = this._ab_tests[testId];
-        if (!test) return "a";
-        // Deterministic assignment
-        const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const keys = Object.keys(test.traffic_split);
-        const index = hash % keys.length;
-        return keys[index];
-      },
-      record_conversion: function(testId: string, variant: string, value: number) {
-        const test = this._ab_tests[testId];
-        if (test && test.metrics[variant]) {
-          test.metrics[variant].conversions += 1;
-          test.metrics[variant].revenue += value;
-          const visitors = test.metrics[variant].visitors;
-          test.metrics[variant].conversion_rate = visitors > 0 ? test.metrics[variant].conversions / visitors : 0;
-        }
-      },
-      get_dashboard_data: function() {
-        const now = new Date();
-        const recentEvents = this._events.filter((e: any) => 
-          now.getTime() - new Date(e.timestamp).getTime() < 24 * 60 * 60 * 1000
-        );
-        return {
-          overview: {
-            total_events: this._events.length,
-            events_24h: recentEvents.length,
-            active_ab_tests: Object.values(this._ab_tests).filter((t: any) => t.status === "running").length,
-            conversion_rate_24h: 0
-          }
-        };
-      },
-      export_report: function(format: string) {
-        return JSON.stringify(this.get_dashboard_data(), null, 2);
-      }
-    };
-  }
-  return analyticsDashboard;
+interface ABTest {
+  id: string;
+  name: string;
+  variants: Record<string, unknown>;
+  traffic_split: Record<string, number>;
+  metrics: Record<string, { visitors: number; conversions: number; revenue: number; conversion_rate: number }>;
+  status: "running" | "paused" | "completed";
+  start_date: string;
 }
 
 // ============================================
@@ -92,22 +36,14 @@ const TrackEventSchema = z.object({
   properties: z.record(z.any()).optional()
 });
 
-const CreateABTestSchema = z.object({
-  name: z.string().min(1).max(100),
-  variants: z.record(z.object({})),
-  traffic_split: z.record(z.number().min(0).max(1))
-});
-
 const ABTestActionSchema = z.object({
   action: z.enum(["create_test", "assign", "convert"]),
   test_id: z.string().optional(),
   variant: z.string().optional(),
   value: z.number().min(0).optional(),
   user_id: z.string().optional(),
-  metadata: z.record(z.any()).optional(),
-  // For create_test
   name: z.string().optional(),
-  variants: z.record(z.object({})).optional(),
+  variants: z.record(z.any()).optional(),
   traffic_split: z.record(z.number()).optional()
 });
 
@@ -115,20 +51,43 @@ const ABTestActionSchema = z.object({
 // ANALYTICS DASHBOARD API
 // ============================================
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const range = searchParams.get("range") || "24h";
+    // Echte Metriken aus Supabase
+    const { data: leads, error } = await supabase
+      .from('leads')
+      .select('status, created_at');
     
-    // Validate range
-    if (!["24h", "7d", "30d", "90d"].includes(range)) {
-      return NextResponse.json({ error: "Invalid range parameter" }, { status: 400 });
+    if (error) {
+      console.error("Supabase analytics error:", error);
+      return NextResponse.json({ error: "Failed to fetch from Supabase" }, { status: 500 });
     }
+
+    const totalLeads = leads?.length || 0;
+    const convertedLeads = leads?.filter(l => l.status === 'WON').length || 0;
+    // Calculation: Total revenue (Avg 2500 CHF per WON lead)
+    const totalRevenue = convertedLeads * 2500;
     
-    const dashboard = getAnalyticsDashboard();
-    const data = dashboard.get_dashboard_data();
+    // Calculate conversion rate
+    const conversionRate = totalLeads > 0 ? (convertedLeads / totalLeads) * 100 : 0;
+
+    const metrics = {
+      totalLeads,
+      convertedLeads,
+      totalRevenue,
+      conversionRate: parseFloat(conversionRate.toFixed(2)),
+      avgDealSize: 2500,
+      responseTime: 24 // hours avg placeholder
+    };
     
-    return NextResponse.json(data);
+    // Also include A/B test data from local storage for now
+    const abTests = await readData<ABTest[]>(AB_TESTS_FILE, []);
+
+    return NextResponse.json({
+      overview: metrics,
+      ab_tests: abTests,
+      source: "supabase"
+    });
     
   } catch (error) {
     console.error("Analytics error:", error);
@@ -143,30 +102,28 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    // Validate input
     const validationResult = TrackEventSchema.safeParse(body);
+    
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: validationResult.error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Validation failed", details: validationResult.error.errors }, { status: 400 });
     }
     
     const { event_type, lead_id, user_id, properties } = validationResult.data;
-    const dashboard = getAnalyticsDashboard();
+    const events = await readData<AnalyticsEvent[]>(EVENTS_FILE, []);
     
-    dashboard.track_event(event_type, lead_id, user_id, properties);
-    
-    // Store in database (sanitized)
-    await supabase.from("analytics_events").insert({
+    const newEvent: AnalyticsEvent = {
+      id: Math.random().toString(36).substring(7),
       event_type,
-      lead_id: lead_id || null,
-      user_id: user_id || null,
-      created_at: new Date().toISOString()
-    }).select();
+      lead_id,
+      user_id,
+      properties: properties || {},
+      timestamp: new Date().toISOString()
+    };
     
-    return NextResponse.json({ success: true });
+    events.push(newEvent);
+    await writeData(EVENTS_FILE, events);
+    
+    return NextResponse.json({ success: true, event: newEvent });
     
   } catch (error) {
     console.error("Track event error:", error);
@@ -181,73 +138,66 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    
     const validationResult = ABTestActionSchema.safeParse(body);
+    
     if (!validationResult.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: validationResult.error.errors },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Validation failed", details: validationResult.error.errors }, { status: 400 });
     }
     
     const { action, test_id, variant, value, user_id } = validationResult.data;
-    const dashboard = getAnalyticsDashboard();
+    const abTests = await readData<ABTest[]>(AB_TESTS_FILE, []);
     
     if (action === "create_test") {
       const { name, variants, traffic_split } = validationResult.data;
-      
       if (!name || !variants || !traffic_split) {
-        return NextResponse.json({ error: "Missing required fields for create_test" }, { status: 400 });
+        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
       }
       
-      const createResult = CreateABTestSchema.safeParse({ name, variants, traffic_split });
-      if (!createResult.success) {
-        return NextResponse.json(
-          { error: "Invalid test configuration", details: createResult.error.errors },
-          { status: 400 }
-        );
-      }
+      const newTest: ABTest = {
+        id: Math.random().toString(36).substring(7),
+        name,
+        variants,
+        traffic_split,
+        metrics: Object.keys(variants).reduce((acc: Record<string, { visitors: number; conversions: number; revenue: number; conversion_rate: number }>, v) => {
+          acc[v] = { visitors: 0, conversions: 0, revenue: 0, conversion_rate: 0 };
+          return acc;
+        }, {}),
+        status: "running",
+        start_date: new Date().toISOString()
+      };
       
-      const test = dashboard.create_ab_test(name, variants, traffic_split);
-      
-      // Save to database
-      await supabase.from("ab_tests").insert({
-        id: test.id,
-        name: test.name,
-        variants: test.variants,
-        traffic_split: test.traffic_split,
-        metrics: test.metrics,
-        status: test.status,
-        start_date: test.start_date.toISOString()
-      });
-      
-      return NextResponse.json({ test });
+      abTests.push(newTest);
+      await writeData(AB_TESTS_FILE, abTests);
+      return NextResponse.json({ test: newTest });
     }
     
     if (action === "assign") {
-      if (!test_id) {
-        return NextResponse.json({ error: "test_id is required" }, { status: 400 });
-      }
+      const test = abTests.find(t => t.id === test_id);
+      if (!test) return NextResponse.json({ error: "Test not found" }, { status: 404 });
       
-      const assignedUserId = user_id || "anonymous";
-      const assigned_variant = dashboard.assign_variant(test_id, assignedUserId);
+      const hash = (user_id || "anon").split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const keys = Object.keys(test.traffic_split);
+      const assigned_variant = keys[hash % keys.length];
       
-      // Update test metrics
-      const test = dashboard._ab_tests[test_id];
-      if (test && test.metrics[assigned_variant]) {
-        test.metrics[assigned_variant].visitors += 1;
-      }
+      test.metrics[assigned_variant].visitors += 1;
+      await writeData(AB_TESTS_FILE, abTests);
       
       return NextResponse.json({ variant: assigned_variant });
     }
     
     if (action === "convert") {
-      if (!test_id || !variant) {
-        return NextResponse.json({ error: "test_id and variant are required" }, { status: 400 });
+      const test = abTests.find(t => t.id === test_id);
+      if (!test || !variant || !test.metrics[variant]) {
+        return NextResponse.json({ error: "Invalid test or variant" }, { status: 400 });
       }
       
-      dashboard.record_conversion(test_id, variant, value || 0, {});
-      
+      test.metrics[variant].conversions += 1;
+      test.metrics[variant].revenue += (value || 0);
+      test.metrics[variant].conversion_rate = test.metrics[variant].visitors > 0 
+        ? test.metrics[variant].conversions / test.metrics[variant].visitors 
+        : 0;
+        
+      await writeData(AB_TESTS_FILE, abTests);
       return NextResponse.json({ success: true });
     }
     
@@ -255,39 +205,6 @@ export async function PUT(request: NextRequest) {
     
   } catch (error) {
     console.error("A/B test error:", error);
-    return NextResponse.json({ error: "A/B test operation failed" }, { status: 500 });
-  }
-}
-
-// ============================================
-// EXPORT ANALYTICS
-// ============================================
-
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const format = searchParams.get("format") || "json";
-    
-    if (!["json", "csv"].includes(format)) {
-      return NextResponse.json({ error: "Invalid format. Use 'json' or 'csv'" }, { status: 400 });
-    }
-    
-    const dashboard = getAnalyticsDashboard();
-    const report = dashboard.export_report(format);
-    
-    if (format === "json") {
-      return NextResponse.json(JSON.parse(report));
-    }
-    
-    return new NextResponse(report, {
-      headers: {
-        "Content-Type": "text/csv",
-        "Content-Disposition": `attachment; filename="analytics-report-${Date.now()}.csv"`
-      }
-    });
-    
-  } catch (error) {
-    console.error("Export error:", error);
-    return NextResponse.json({ error: "Failed to export analytics" }, { status: 500 });
+    return NextResponse.json({ error: "A/B test failed" }, { status: 500 });
   }
 }
