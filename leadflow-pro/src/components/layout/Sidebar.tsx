@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
@@ -113,8 +114,27 @@ export function Sidebar() {
           })}
         </nav>
 
+        {/* Animation Display */}
+        <div className="px-0 py-0 -mt-32 flex flex-col items-center overflow-visible pointer-events-none">
+          <div className="relative w-80 h-80 group">
+            <Image 
+              src="/sidebar-animation.gif" 
+              alt="System Intelligence Animation" 
+              fill
+              className="object-contain mix-blend-screen brightness-125 contrast-125 transition-all duration-1000 scale-125"
+              unoptimized
+            />
+            {/* Ambient Glow */}
+            <div className="absolute inset-x-0 bottom-1/4 h-1/2 bg-primary/30 blur-[60px] rounded-full -z-10 animate-pulse" />
+          </div>
+          <div className="-mt-16 flex items-center space-x-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 backdrop-blur-sm relative z-10">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_15px_#9b2335] animate-pulse" />
+            <span className="text-[9px] font-bold text-white/70 uppercase tracking-[0.2em]">Neural Link Active</span>
+          </div>
+        </div>
+
         {/* Footer Settings */}
-        <div className="p-6 mt-auto border-t border-white/5 bg-white/2">
+        <div className="p-6 mt-auto border-t border-white/5 bg-white/2 relative z-20">
           <Link
             href="/settings"
             className="flex items-center justify-between px-4 py-3 text-sm font-medium text-white/40 rounded-2xl hover:bg-white/5 hover:text-white transition-all duration-300 group"

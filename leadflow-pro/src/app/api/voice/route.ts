@@ -72,8 +72,16 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       config: {
-        twilioNumber,
-        hasApiKey: !!process.env.ELEVENLABS_API_KEY,
+        twilio: {
+          accountSid: accountSid ? `${accountSid.substring(0, 10)}...` : 'MISSING',
+          phoneNumber: twilioNumber || 'MISSING',
+          status: accountSid && authToken && twilioNumber ? 'CONFIGURED' : 'INCOMPLETE'
+        },
+        elevenlabs: {
+          voiceId: process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL',
+          hasApiKey: !!process.env.ELEVENLABS_API_KEY,
+          status: process.env.ELEVENLABS_API_KEY ? 'CONFIGURED' : 'MISSING_API_KEY'
+        }
       },
       recentCalls: logs.slice(-10).reverse(),
     });
