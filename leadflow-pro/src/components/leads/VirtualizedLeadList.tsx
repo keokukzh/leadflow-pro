@@ -192,7 +192,7 @@ function VirtualizedLeadListInner({ onLeadSelect, filters }: LeadListProps) {
                     variant={
                       lead.status === 'STRATEGY_CREATED' ? 'default' :
                       lead.status === 'PREVIEW_GENERATING' ? 'secondary' :
-                      lead.status === 'COMPLETED' ? 'outline' : 'ghost'
+                      'outline'
                     }
                     className="flex-shrink-0"
                   >

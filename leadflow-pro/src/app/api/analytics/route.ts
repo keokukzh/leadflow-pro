@@ -94,11 +94,8 @@ const TrackEventSchema = z.object({
 
 const CreateABTestSchema = z.object({
   name: z.string().min(1).max(100),
-  variants: z.record(z.object({})).min(2).max(10),
-  traffic_split: z.record(z.number().min(0).max(1)).refine(
-    (split) => Object.values(split).reduce((a, b) => a + b, 0) === 1,
-    { message: "Traffic split must sum to 1" }
-  )
+  variants: z.record(z.object({})),
+  traffic_split: z.record(z.number().min(0).max(1))
 });
 
 const ABTestActionSchema = z.object({

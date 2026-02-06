@@ -33,7 +33,7 @@ export function PipelineBoard() {
     const fetchLeads = async () => {
       setIsLoading(true);
       const data = await getLeads();
-      setLeads(data);
+      setLeads(data.leads);
       setIsLoading(false);
     };
     fetchLeads();

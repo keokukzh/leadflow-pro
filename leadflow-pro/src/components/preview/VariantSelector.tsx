@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Lead } from "@/lib/types";
+import { Lead } from "@/lib/actions/server-actions";
 
 interface VariantSelectorProps {
   lead: Lead;

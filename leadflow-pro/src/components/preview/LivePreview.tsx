@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense, lazy } from "react";
-import { Lead } from "@/lib/types";
+import { Lead } from "@/lib/actions/server-actions";
 import { DeviceToggle } from "./DeviceToggle";
 import { VariantSelector } from "./VariantSelector";
 import { PreviewHeader } from "./PreviewHeader";
@@ -16,7 +16,7 @@ interface LivePreviewProps {
   initialDevice?: "desktop" | "tablet" | "mobile";
 }
 
-type DeviceType = "desktop" | "tablet" | "mobile";
+export type DeviceType = "desktop" | "tablet" | "mobile";
 
 export function LivePreview({ 
   lead, 

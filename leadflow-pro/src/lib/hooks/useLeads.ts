@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { leadQueries, LeadFilters } from "@/lib/query-client";
+import { leadQueries, queryKeys, LeadFilters } from "@/lib/query-client";
+export type { LeadFilters };
 import { 
   getLeads, 
   getLeadById, 

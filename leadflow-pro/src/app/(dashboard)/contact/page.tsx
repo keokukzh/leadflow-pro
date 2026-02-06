@@ -55,7 +55,7 @@ export default function ContactPage() {
   useEffect(() => {
     const fetchLeads = async () => {
       const allLeads = await getLeads();
-      setLeads(allLeads.filter(l => l.strategy_brief));
+      setLeads(allLeads.leads.filter(l => l.strategy_brief));
     };
     fetchLeads();
   }, []);

@@ -4,5 +4,7 @@
   "serpApiKey": "e8a62d598f1605b0f9e5b043101f86de6cca3e9306855c12ef03390c140156f2",
   "openaiApiKey": "",
   "elevenLabsApiKey": "",
-  "resendApiKey": ""
+  "resendApiKey": "",
+  "apifyToken": "",
+  "linearApiKey": ""
 }

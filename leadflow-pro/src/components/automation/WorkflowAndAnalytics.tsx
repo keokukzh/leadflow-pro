@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lead } from "@/lib/types";
+import { Lead } from "@/lib/actions/server-actions";
 
 // ============================================
 // WORKFLOW BUILDER COMPONENT

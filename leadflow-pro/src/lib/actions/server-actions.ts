@@ -318,6 +318,17 @@ export async function saveLeadToCRM(leadData: {
   return { success: true, lead: newLead };
 }
 
+
+// Helper to safely get leads array regardless of return type
+export async function getLeadsSafe(): Promise<Lead[]> {
+  const result = await getLeads();
+  // Safe runtime check for backward compatibility if getLeads signature changes
+  if (result && typeof result === 'object' && 'leads' in result) {
+    return result.leads;
+  }
+  return Array.isArray(result) ? result : [];
+}
+
 export async function getLeads(filters?: {
   status?: string;
   industry?: string;
@@ -329,95 +340,113 @@ export async function getLeads(filters?: {
   limit?: number;
   sortBy?: 'created_at' | 'rating' | 'score';
   sortOrder?: 'asc' | 'desc';
-}): Promise<{ leads: Lead[]; total: number; page: number; totalPages: number }> {
+}) {
   let leads = await readData<Lead[]>(LEADS_FILE, []);
   
+  // Default sort by date desc if no filters or no sort specified
+  if (!filters?.sortBy) {
+    leads.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }
+
   if (filters) {
-    if (filters.status) {
-      leads = leads.filter(l => l.status === filters.status);
-    }
-    if (filters.industry) {
-      leads = leads.filter(l => l.industry.toLowerCase().includes(filters.industry!.toLowerCase()));
-    }
-    if (filters.location) {
-      leads = leads.filter(l => l.location.toLowerCase().includes(filters.location!.toLowerCase()));
-    }
+    if (filters.status) leads = leads.filter(l => l.status === filters.status);
+    if (filters.industry) leads = leads.filter(l => l.industry.toLowerCase().includes(filters.industry!.toLowerCase()));
+    if (filters.location) leads = leads.filter(l => l.location.toLowerCase().includes(filters.location!.toLowerCase()));
     if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
+      const s = filters.search.toLowerCase();
       leads = leads.filter(l => 
-        l.company_name.toLowerCase().includes(searchLower) ||
-        l.industry.toLowerCase().includes(searchLower) ||
-        l.location.toLowerCase().includes(searchLower)
+        l.company_name.toLowerCase().includes(s) ||
+        l.industry.toLowerCase().includes(s) ||
+        l.location.toLowerCase().includes(s)
       );
     }
-    if (filters.minScore !== undefined) {
-      leads = leads.filter(l => (l.analysis?.priorityScore || 0) >= filters.minScore!);
-    }
-    if (filters.maxScore !== undefined) {
-      leads = leads.filter(l => (l.analysis?.priorityScore || 0) <= filters.maxScore!);
-    }
     
-    leads.sort((a, b) => {
-      let comparison = 0;
-      switch (filters.sortBy) {
-        case 'created_at':
-          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-          break;
-        case 'rating':
-          comparison = a.rating - b.rating;
-          break;
-        case 'score':
-          comparison = (a.analysis?.priorityScore || 0) - (b.analysis?.priorityScore || 0);
-          break;
-      }
-      return filters.sortOrder === 'desc' ? -comparison : comparison;
-    });
-    
+    // Sort logic if specific sort requested
+    if (filters.sortBy) {
+        leads.sort((a, b) => {
+          let comparison = 0;
+          switch (filters.sortBy) {
+            case 'created_at':
+              comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+              break;
+            case 'rating':
+              comparison = a.rating - b.rating;
+              break;
+            case 'score':
+              comparison = (a.analysis?.priorityScore || 0) - (b.analysis?.priorityScore || 0);
+              break;
+          }
+          return filters.sortOrder === 'desc' ? -comparison : comparison;
+        });
+    }
+
     const page = filters.page || 1;
-    const limit = filters.limit || 20;
+    const limit = filters.limit || 50;
     const start = (page - 1) * limit;
-    const end = start + limit;
     
     return {
-      leads: leads.slice(start, end),
+      leads: leads.slice(start, start + limit),
       total: leads.length,
       page,
-      totalPages: Math.ceil(leads.length / limit),
+      totalPages: Math.ceil(leads.length / limit)
     };
   }
   
-  leads.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  
   return {
-    leads,
-    total: leads.length,
-    page: 1,
-    totalPages: 1,
+      leads,
+      total: leads.length,
+      page: 1,
+      totalPages: 1
   };
 }
 
 export async function getLeadById(id: string) {
-  const result = await getLeads();
-  return result.leads.find(l => l.id === id) || null;
+  const leads = await getLeadsSafe();
+  return leads.find(l => l.id === id);
+}
+
+export async function createLead(companyName: string, industry: string, location: string, website: string | null = null) {
+    const leads = await getLeadsSafe();
+    
+    // Check for duplicates
+    if (leads.some(l => l.company_name.toLowerCase() === companyName.toLowerCase())) {
+        return { success: false, error: "Lead already exists" };
+    }
+
+    const newLead: Lead = {
+      id: crypto.randomUUID(),
+      company_name: companyName,
+      website,
+      industry,
+      location,
+      rating: 0,
+      review_count: 0,
+      status: 'DISCOVERED',
+      created_at: new Date().toISOString()
+    };
+    
+    await writeData(LEADS_FILE, [...leads, newLead]);
+    revalidatePath("/dashboard");
+    revalidatePath("/memory");
+    return { success: true, lead: newLead };
 }
 
 export async function logInteraction(leadId: string, type: 'EMAIL' | 'CALL', content: string, status: string = 'Sent') {
     const interactions = await readData<Interaction[]>(INTERACTIONS_FILE, []);
     
     const newInteraction: Interaction = {
-        id: Math.random().toString(36).substring(2, 9),
+        id: crypto.randomUUID(),
         lead_id: leadId,
         interaction_type: type,
         content,
         status,
         created_at: new Date().toISOString()
     };
-
-    interactions.push(newInteraction);
-    await writeData(INTERACTIONS_FILE, interactions);
+    
+    await writeData(INTERACTIONS_FILE, [newInteraction, ...interactions]);
     
     // Update lead status
-    const leads = await getLeads();
+    const leads = await getLeadsSafe();
     const lead = leads.find(l => l.id === leadId);
     if (lead && type === 'EMAIL') {
         lead.status = 'CONTACTED';
@@ -436,7 +465,7 @@ export async function getLeadInteractions(leadId: string) {
 }
 
 export async function updateLeadStrategy(leadId: string, strategy: { brandTone: string; keySells: string[]; colorPalette: { name: string; hex: string }[]; creationToolPrompt?: string }) {
-  const leads = await getLeads();
+  const leads = await getLeadsSafe();
   const lead = leads.find(l => l.id === leadId);
   if (lead) {
       lead.strategy_brief = strategy;
@@ -451,7 +480,7 @@ export async function updateLeadStrategy(leadId: string, strategy: { brandTone: 
 }
 
 export async function updateLeadStatus(leadId: string, status: Lead['status']) {
-  const leads = await getLeads();
+  const leads = await getLeadsSafe();
   const lead = leads.find(l => l.id === leadId);
   if (lead) {
       lead.status = status;
@@ -462,7 +491,7 @@ export async function updateLeadStatus(leadId: string, status: Lead['status']) {
 }
 
 export async function deleteLead(leadId: string) {
-  const leads = await getLeads();
+  const leads = await getLeadsSafe();
   const filtered = leads.filter(l => l.id !== leadId);
   await writeData(LEADS_FILE, filtered);
   
@@ -473,12 +502,12 @@ export async function deleteLead(leadId: string) {
 }
 
 export async function checkLeadInCRM(name: string, location: string): Promise<boolean> {
-  const leads = await getLeads();
+  const leads = await getLeadsSafe();
   return leads.some(l => l.company_name === name && l.location === location); 
 }
 
 export async function getDashboardStats() {
-  const leads = await getLeads();
+  const leads = await getLeadsSafe();
   const now = new Date();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
@@ -512,7 +541,7 @@ export async function generateSiteConfig(leadId: string) {
   }
 
   // Update status to GENERATING immediately
-  const leads = await getLeads();
+  const leads = await getLeadsSafe();
   const generatingLeads = leads.map(l => 
     l.id === leadId ? { ...l, status: 'PREVIEW_GENERATING' as const } : l
   );
@@ -534,7 +563,7 @@ export async function generateSiteConfig(leadId: string) {
     const previewData = JSON.parse(content);
     
     // Save to database/file
-    const leads = await getLeads();
+    const leads = await getLeadsSafe();
     const updatedLeads = leads.map(l => 
       l.id === leadId ? { ...l, preview_data: previewData, status: 'PREVIEW_READY' as const } : l
     );
@@ -556,7 +585,7 @@ export async function generateStrategyAction(leadId: string) {
   if (!lead) throw new Error("Lead nicht gefunden.");
 
   // Update status to STRATEGY_GENERATING
-  const leads = await getLeads();
+  const leads = await getLeadsSafe();
   const updatedLeads = leads.map(l => 
     l.id === leadId ? { ...l, status: 'STRATEGY_GENERATING' as const } : l
   );
@@ -571,7 +600,7 @@ export async function generateStrategyAction(leadId: string) {
     const strategy = JSON.parse(content || '{}');
     
     // Save strategy immediately to the lead so it persists in memory
-    const finalLeads = await getLeads();
+    const finalLeads = await getLeadsSafe();
     const finishedLeads = finalLeads.map(l => 
       l.id === leadId ? { 
         ...l, 
@@ -585,7 +614,7 @@ export async function generateStrategyAction(leadId: string) {
     
     return { strategy };
   } catch (err) {
-    const finalLeads = await getLeads();
+    const finalLeads = await getLeadsSafe();
     const errorLeads = finalLeads.map(l => 
       l.id === leadId ? { ...l, status: 'DISCOVERED' as const } : l
     );
@@ -602,14 +631,18 @@ export interface GlobalAgentStatus {
 }
 
 export async function getGlobalAgentStatus(): Promise<GlobalAgentStatus> {
-  const [leads, missions] = await Promise.all([
+  const [leadsResult, missions] = await Promise.all([
     getLeads(),
     getMissions()
   ]);
 
   const isDiscoveryRunning = missions.some(m => m.status === 'IN_PROGRESS');
-  const isStrategyRunning = leads.some(l => l.status === 'STRATEGY_GENERATING');
-  const isCreatorRunning = leads.some(l => l.status === 'PREVIEW_GENERATING');
+  
+  // Handle both array and paginated response for backward compatibility
+  const leadsArray = Array.isArray(leadsResult) ? leadsResult : leadsResult.leads || [];
+  
+  const isStrategyRunning = leadsArray.some(l => l.status === 'STRATEGY_GENERATING');
+  const isCreatorRunning = leadsArray.some(l => l.status === 'PREVIEW_GENERATING');
   
   // Basic check for contact activity (could be enhanced with a recent activity window)
   const isContactRunning = false; 

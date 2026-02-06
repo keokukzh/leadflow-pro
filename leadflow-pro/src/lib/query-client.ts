@@ -22,11 +22,13 @@ export function createQueryClient() {
 export const queryKeys = {
   leads: ["leads"] as const,
   lead: (id: string) => ["leads", id] as const,
-  leadsFiltered: (filters: any) => ["leads", "filtered", filters] as const,
+  leadsFiltered: (filters: LeadFilters | Record<string, unknown>) => ["leads", "filtered", filters] as const,
   discovery: ["discovery"] as const,
   analytics: ["analytics"] as const,
   workflows: ["workflows"] as const,
 } as const;
+
+export const leadQueries = queryKeys;
 
 export interface LeadFilters {
   status?: string;

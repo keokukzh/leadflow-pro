@@ -1,7 +1,8 @@
 import { Lead } from "@/lib/actions/server-actions";
+import { TemplateProps } from "./HandwerkTemplate";
 
-interface SwissTemplateProps {
-  lead: Lead;
+interface SwissTemplateProps extends Partial<TemplateProps> {
+  lead?: Lead;
   showDebug?: boolean;
 }
 
@@ -14,9 +15,13 @@ const SWISS_COLORS = {
   eco: { primary: "#166534", accent: "#84cc16", secondary: "#f0fdf4" },
 };
 
-export function SwissTemplate({ lead, showDebug = false }: SwissTemplateProps) {
+export function SwissTemplate({ lead, showDebug = false, ...props }: SwissTemplateProps) {
   const colors = SWISS_COLORS.neutral; // Default
-  const strategy = lead.strategy_brief || {};
+  const companyName = lead?.company_name || props.companyName || "Company";
+  const location = lead?.location || "Schweiz";
+  const rating = lead?.rating || "Neu";
+  const industry = lead?.industry || "Branche";
+  const strategy: any = lead?.strategy_brief || { brandTone: props.brandTone, keySells: props.keySells, swissSpecific: {} };
   
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans">
@@ -34,22 +39,22 @@ export function SwissTemplate({ lead, showDebug = false }: SwissTemplateProps) {
       >
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex justify-center gap-2 text-sm opacity-80">
-            <span>📍 {lead.location}</span>
+            <span>📍 {location}</span>
             <span>|</span>
-            <span>⭐ {lead.rating || "Neu"}</span>
+            <span>⭐ {rating}</span>
           </div>
           
           <h1 className="text-4xl md:text-6xl font-black tracking-tight">
-            {lead.company_name}
+            {companyName}
           </h1>
           
           <p className="text-xl md:text-2xl opacity-90 max-w-2xl mx-auto">
-            {strategy.brandTone || `${lead.industry} mit Qualität und Erfahrung`}
+            {strategy.brandTone || `${industry} mit Qualität und Erfahrung`}
           </p>
 
           {/* Trust Signals */}
           <div className="flex justify-center gap-4 pt-4 text-sm">
-            {strategy.swissSpecific?.trustSignals?.map((signal, i) => (
+            {strategy.swissSpecific?.trustSignals?.map((signal: string, i: number) => (
               <span key={i} className="bg-white/20 px-3 py-1 rounded-full">
                 {signal}
               </span>
@@ -68,7 +73,7 @@ export function SwissTemplate({ lead, showDebug = false }: SwissTemplateProps) {
       <section className="py-16 px-6 bg-slate-50">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl font-bold mb-8 text-center">
-            Warum {lead.company_name}?
+            Warum {companyName}?
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -117,15 +122,15 @@ export function SwissTemplate({ lead, showDebug = false }: SwissTemplateProps) {
       >
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center items-center gap-4 mb-6">
-            <span className="text-6xl font-bold">⭐ {lead.rating || "Neu"}</span>
+            <span className="text-6xl font-bold">⭐ {rating}</span>
             <div className="text-left">
               <p className="font-bold text-xl">Google Bewertungen</p>
-              <p className="opacity-80">{lead.review_count || "0"} Bewertungen</p>
+              <p className="opacity-80">{lead?.review_count || "0"} Bewertungen</p>
             </div>
           </div>
           
           <p className="text-xl opacity-90">
-            "{strategy.brandTone || "Ihre Zufriedenheit ist unser Ziel"}"
+            &quot;{strategy.brandTone || "Ihre Zufriedenheit ist unser Ziel"}&quot;
           </p>
         </div>
       </section>
@@ -135,7 +140,7 @@ export function SwissTemplate({ lead, showDebug = false }: SwissTemplateProps) {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold mb-6">Über uns</h2>
           <p className="text-slate-600 leading-relaxed text-lg">
-            {lead.company_name} ist Ihr {lead.industry}-Partner in {lead.location}. 
+            {companyName} ist Ihr {industry}-Partner in {location}. 
             Mit Erfahrung und Engagement setzen wir uns für Ihre Anliegen ein.
             {" "}{strategy.swissSpecific?.urgencyFactor || "Profitieren Sie von unserer Expertise."}
           </p>
@@ -168,19 +173,19 @@ export function SwissTemplate({ lead, showDebug = false }: SwissTemplateProps) {
           </div>
           <div>
             <p className="font-bold mb-2">📧</p>
-            <p>info@{lead.company_name?.toLowerCase().replace(/\s+/g, "")}.ch</p>
+            <p>info@{companyName?.toLowerCase().replace(/\s+/g, "")}.ch</p>
           </div>
           <div>
             <p className="font-bold mb-2">📍</p>
-            <p>{lead.location}</p>
+            <p>{location}</p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 py-8 text-center text-sm">
-        <p>© 2026 {lead.company_name}. Alle Rechte vorbehalten.</p>
-        <p className="mt-2">🇨🇭 Schweizer Qualität aus {lead.location}</p>
+        <p>© 2026 {companyName}. Alle Rechte vorbehalten.</p>
+        <p className="mt-2">🇨🇭 Schweizer Qualität aus {location}</p>
       </footer>
     </div>
   );

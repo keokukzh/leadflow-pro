@@ -1,6 +1,6 @@
 "use client";
 
-import { Lead } from "@/lib/types";
+import { Lead } from "@/lib/actions/server-actions";
 import { DeviceType } from "./LivePreview";
 import { DeviceToggle } from "./DeviceToggle";
 

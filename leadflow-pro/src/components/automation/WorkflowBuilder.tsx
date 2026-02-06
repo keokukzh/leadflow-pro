@@ -2,6 +2,7 @@
 
 import { useState, memo } from "react";
 import { useWorkflowTemplates } from "@/lib/hooks/useLeads";
+import { Lead } from "@/lib/actions/server-actions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

@@ -30,7 +30,7 @@ export default function StrategyPage() {
   useEffect(() => {
     const fetchLeads = async () => {
       const data = await getLeads();
-      setLeads(data);
+      setLeads(data.leads);
     };
     fetchLeads();
   }, []);
