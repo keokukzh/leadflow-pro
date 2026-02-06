@@ -249,6 +249,7 @@ export async function enrichLeadWithApify(leadId: string): Promise<{
 
 export async function performLeadResearch(lead: LeadContext, reviewsText: string) {
   const prompt = LEAD_RESEARCH_PROMPT(lead, reviewsText);
+  // Using gpt-4o for deep research as it requires high quality analysis
   const content = await getCompletion(prompt, BOTTIE_SYSTEM_PROMPT);
   try {
     return JSON.parse(content || '{}');
@@ -259,6 +260,7 @@ export async function performLeadResearch(lead: LeadContext, reviewsText: string
 
 export async function generateSearchQueries(industry: string, location: string) {
   const prompt = SEARCH_STRATEGY_PROMPT(industry, location);
+  // Using gpt-4o-mini for query generation as it is a simpler task
   const content = await getCompletion(prompt, "Du bist ein Search Specialist für B2B-Lead-Generierung.");
   try {
     const queries = JSON.parse(content || '[]');
@@ -648,6 +650,7 @@ export async function generateStrategyAction(leadId: string) {
   const strategyPrompt = (await import("../prompts")).STRATEGY_PROMPT(lead);
   
   try {
+    // Using gpt-4o for complex strategy generation
     const content = await getCompletion(strategyPrompt, "Du bist ein Elite-Webdesign-Stratege.");
     const strategy = JSON.parse(content || '{}');
     

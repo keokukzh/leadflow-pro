@@ -12,7 +12,8 @@ export interface Settings {
   resendApiKey: string;
   apifyToken: string;
   linearApiKey: string;
-  discoveryProvider: 'serpapi' | 'apify';
+  discoveryProvider: 'serpapi' | 'apify' | 'perplexity';
+  perplexityApiKey: string;
 }
 
 const SETTINGS_FILE = 'settings.json';
@@ -27,6 +28,7 @@ const DEFAULT_SETTINGS: Settings = {
   apifyToken: '',
   linearApiKey: '',
   discoveryProvider: 'serpapi',
+  perplexityApiKey: '',
 };
 
 export async function getSettings(): Promise<Settings> {
@@ -40,6 +42,7 @@ export async function getSettings(): Promise<Settings> {
     resendApiKey: settings.resendApiKey || process.env.RESEND_API_KEY || '',
     apifyToken: settings.apifyToken || process.env.APIFY_TOKEN || '',
     linearApiKey: settings.linearApiKey || process.env.LINEAR_API_KEY || '',
+    perplexityApiKey: settings.perplexityApiKey || process.env.PERPLEXITY_API_KEY || '',
   };
 }
 

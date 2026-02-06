@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSettings } from '@/lib/settings';
 import { performLeadResearch, generateSearchQueries, updateMission, getMissionById } from '@/lib/actions/server-actions';
+import { searchLeadsWithPerplexity } from '@/lib/perplexity';
 
 export async function POST(req: Request) {
   let missionId: string | undefined;
@@ -10,13 +11,38 @@ export async function POST(req: Request) {
     const locations = body.locations;
     missionId = body.missionId;
     const settings = await getSettings();
-    const apiKey = settings.serpApiKey;
+    const targetLocations = Array.isArray(locations) ? locations : [locations];
 
     if (missionId) {
       await updateMission(missionId, { status: 'IN_PROGRESS' });
     }
 
-    const targetLocations = Array.isArray(locations) ? locations : [locations];
+    // --- Perplexity Logic ---
+    if (settings.discoveryProvider === 'perplexity') {
+      console.log(`[SearchSpecialist] Running Perplexity Autonomous Search...`);
+      const allPerplexityResults = [];
+      
+      for (const location of targetLocations) {
+        try {
+          const results = await searchLeadsWithPerplexity(industry, location);
+          allPerplexityResults.push(...results);
+          
+          if (missionId) {
+            await updateMission(missionId, { results: allPerplexityResults as any[] });
+          }
+        } catch (err) {
+          console.error(`Perplexity search failed for ${location}:`, err);
+        }
+      }
+
+      if (missionId) {
+        await updateMission(missionId, { results: allPerplexityResults as any[], status: 'COMPLETED' });
+      }
+
+      return NextResponse.json({ results: allPerplexityResults });
+    }
+
+    const apiKey = settings.serpApiKey;
     const allResultsMap = new Map<string, any>();
 
     if (!apiKey) {

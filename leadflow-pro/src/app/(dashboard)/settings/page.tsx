@@ -183,19 +183,19 @@ export default function SettingsPage() {
 
                 <div className={clsx(
                   "p-6 rounded-3xl border transition-all duration-700 flex items-center justify-between",
-                  settings.discoveryProvider === 'apify' ? "bg-cyan-500/5 border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.05)]" : "bg-white/2 border-white/5 opacity-40 shrink-0"
+                  settings.discoveryProvider === 'perplexity' ? "bg-purple-500/5 border-purple-500/20 shadow-[0_0_30px_rgba(168,85,247,0.05)]" : "bg-white/2 border-white/5 opacity-40 shrink-0"
                 )}>
                   <div className="flex items-center gap-5">
-                    <Bot className={clsx("w-8 h-8", settings.discoveryProvider === 'apify' ? "text-cyan-400" : "text-white/20")} />
+                    <Search className={clsx("w-8 h-8", settings.discoveryProvider === 'perplexity' ? "text-purple-400" : "text-white/20")} />
                     <div>
-                      <p className="font-bold text-white tracking-tight">Apify Crawler Agent</p>
-                      <p className="text-[10px] text-white/40 uppercase tracking-widest">Deep Web Extraction</p>
+                      <p className="font-bold text-white tracking-tight">Perplexity AI Search</p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest">Autonomous Research Agent</p>
                     </div>
                   </div>
                   <Switch 
-                    checked={settings.discoveryProvider === 'apify'} 
-                    onCheckedChange={(checked) => setSettings({...settings, discoveryProvider: checked ? 'apify' : 'serpapi'})}
-                    className="data-[state=checked]:bg-cyan-500"
+                    checked={settings.discoveryProvider === 'perplexity'} 
+                    onCheckedChange={(checked) => setSettings({...settings, discoveryProvider: checked ? 'perplexity' : 'serpapi'})}
+                    className="data-[state=checked]:bg-purple-500"
                   />
                 </div>
               </div>
@@ -227,6 +227,7 @@ export default function SettingsPage() {
                 { label: "Resend Gateway", key: "resendApiKey", icon: Cloud, color: "text-orange-400" },
                 { label: "Vocal Synthesis", key: "elevenLabsApiKey", icon: Bot, color: "text-purple-400" },
                 { label: "Crawler Token", key: "apifyToken", icon: Search, color: "text-cyan-400" },
+                { label: "Perplexity AI", key: "perplexityApiKey", icon: Zap, color: "text-purple-400" },
                 { label: "Linear Sync", key: "linearApiKey", icon: ShieldCheck, color: "text-white/60" },
               ].map((item) => (
                 <div key={item.key} className="space-y-3 group">

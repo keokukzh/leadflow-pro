@@ -10,10 +10,13 @@ export async function getCompletion(prompt: string, systemPrompt: string = "You 
     }
     
     const isOpenRouter = settings.openaiApiKey.startsWith('sk-or-');
+    const isPerplexity = settings.openaiApiKey.startsWith('pplx-') || (settings.llmProvider === 'cloud' && !settings.openaiApiKey && settings.perplexityApiKey);
+    const apiKey = isPerplexity ? settings.perplexityApiKey : settings.openaiApiKey;
+    const baseURL = isPerplexity ? "https://api.perplexity.ai" : (isOpenRouter ? "https://openrouter.ai/api/v1" : undefined);
     
     const openai = new OpenAI({
-      apiKey: settings.openaiApiKey,
-      baseURL: isOpenRouter ? "https://openrouter.ai/api/v1" : undefined,
+      apiKey: apiKey,
+      baseURL: baseURL,
       defaultHeaders: isOpenRouter ? {
         "HTTP-Referer": "https://leadflow-pro.local", // Optional, for OpenRouter ranking
         "X-Title": "LeadFlow Pro",
@@ -21,7 +24,7 @@ export async function getCompletion(prompt: string, systemPrompt: string = "You 
     });
 
     const response = await openai.chat.completions.create({
-      model: isOpenRouter ? "openai/gpt-4o" : "gpt-4o",
+      model: isPerplexity ? "sonar-reasoning-pro" : (isOpenRouter ? "openai/gpt-4o" : "gpt-4o"),
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt },
