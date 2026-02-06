@@ -5,58 +5,70 @@ import sys
 import os
 from dotenv import load_dotenv
 
-# Try to import googleplaces, handle missing dependency gracefully
+# Try to import googlemaps, handle missing dependency gracefully
 try:
-    from googleplaces import GooglePlaces, types, lang
-    HAS_GOOGLE_PLACES = True
+    import googlemaps
+    HAS_GOOGLE_MAPS = True
 except ImportError:
-    HAS_GOOGLE_PLACES = False
+    HAS_GOOGLE_MAPS = False
 
 # Load environment variables from .env.local
 load_dotenv(dotenv_path="leadflow-pro/.env.local")
 API_KEY = os.getenv("GOOGLE_PLACES_API_KEY")
 
-def extract_lead(place):
-    """Extract standard lead info from a Google Places result object."""
-    # Place needs to be fetched fully to get all details like website
-    place.get_details()
-    return {
-        "id": place.place_id,
-        "name": place.name,
-        "city": place.vicinity,
-        "industry": "Local Business",
-        "reviews": getattr(place, 'user_ratings_total', 0),
-        "rating": float(place.rating or 0),
-        "website": place.website
-    }
+def extract_lead(place_id, client):
+    """Extract standard lead info from a Google Places result."""
+    try:
+        # Get details for the specific place
+        details = client.place(place_id=place_id, fields=['name', 'vicinity', 'website', 'rating', 'user_ratings_total'])
+        result = details.get('result', {})
+        
+        return {
+            "id": place_id,
+            "name": result.get('name'),
+            "city": result.get('vicinity'),
+            "industry": "Local Business",
+            "reviews": result.get('user_ratings_total', 0),
+            "rating": float(result.get('rating', 0)),
+            "website": result.get('website')
+        }
+    except Exception as e:
+        print(f"Error extracting lead {place_id}: {e}")
+        return None
 
 def find_leads_real(city, industry, min_reviews, min_rating=4.0):
-    """Actual search using Google Places API."""
+    """Actual search using official Google Maps (Places) API."""
     if not API_KEY:
         print("ERROR: GOOGLE_PLACES_API_KEY not found in .env.local")
         return []
     
-    if not HAS_GOOGLE_PLACES:
-        print("ERROR: 'python-google-places' library not installed. Run: pip install python-google-places")
+    if not HAS_GOOGLE_MAPS:
+        print("ERROR: 'googlemaps' library not installed. Run: pip install googlemaps")
         return []
 
-    gp = GooglePlaces(API_KEY)
-    results = gp.nearby_search(
-        location=city,
-        keyword=industry,
-        radius=10000, # 10km radius
-        types=[types.TYPE_ESTABLISHMENT]
-    )
+    client = googlemaps.Client(key=API_KEY)
     
-    leads = []
-    # results.places is the list of results
-    for place in results.places:
-        lead = extract_lead(place)
-        # Apply filters
-        if lead["reviews"] >= min_reviews and lead["rating"] >= min_rating:
-            leads.append(lead)
-            
-    return leads
+    try:
+        # keyword search
+        query = f"{industry} in {city}"
+        results = client.places(query=query)
+        
+        leads = []
+        for result in results.get('results', []):
+            place_id = result.get('place_id')
+            if not place_id:
+                continue
+                
+            lead = extract_lead(place_id, client)
+            if lead:
+                # Apply filters
+                if lead["reviews"] >= min_reviews and lead["rating"] >= min_rating:
+                    leads.append(lead)
+                    
+        return leads
+    except Exception as e:
+        print(f"Search error: {e}")
+        return []
 
 def find_leads_mock(city, industry, min_reviews, min_rating):
     print(f"DEBUG: Using MOCK data for {industry} in {city}...")
