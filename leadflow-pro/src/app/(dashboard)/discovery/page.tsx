@@ -3,12 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, FilterX, RefreshCcw } from "lucide-react";
+import { Loader2, FilterX, RefreshCcw, Briefcase, Map, Activity, SearchIcon, Terminal, ChevronRight } from "lucide-react";
 import { DiscoveryResultCard, DiscoveryResult } from "@/components/discovery/DiscoveryResultCard";
 import { saveLeadToCRM, createDiscoveryMission, getLatestMission, getMissionById, stopDiscoveryMission } from "@/lib/actions/server-actions";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CheckCircle2, Map, Briefcase, AlertTriangle } from "lucide-react";
+import clsx from "clsx";
 
 const CANTONS = [
   "Zürich", "Bern", "Luzern", "Uri", "Schwyz", "Obwalden", "Nidwalden", "Glarus", "Zug", 
@@ -25,7 +25,6 @@ export default function DiscoveryPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<DiscoveryResult[]>([]);
   const [hasScanned, setHasScanned] = useState(false);
-  const [isSimulated, setIsSimulated] = useState(false);
   
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -47,10 +46,9 @@ export default function DiscoveryPage() {
           stopPolling();
         }
       }
-    }, 3000);
+    }, 5000);
   }, [stopPolling]);
 
-  // Load latest mission on mount
   useEffect(() => {
     const loadLatest = async () => {
       const mission = await getLatestMission();
@@ -94,20 +92,15 @@ export default function DiscoveryPage() {
 
   const handleScan = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     const finalIndustries = selectedIndustries.length > 0 ? selectedIndustries : (industry ? [industry] : []);
     const finalLocations = selectedCantons.length > 0 ? selectedCantons : (location.split(",").map(l => l.trim()).filter(l => l.length > 0));
-
     if (finalIndustries.length === 0 || finalLocations.length === 0) return;
-
     setIsLoading(true);
     setHasScanned(true);
     setResults([]);
-
     try {
       const mission = await createDiscoveryMission(finalIndustries.join(", "), finalLocations);
       startPolling(mission.id);
-
       fetch("/api/discovery/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -116,11 +109,7 @@ export default function DiscoveryPage() {
           locations: finalLocations,
           missionId: mission.id 
         })
-      }).then(async (response) => {
-        const data = await response.json();
-        setIsSimulated(!!data.isSimulated);
       });
-      
     } catch (error) {
       console.error("Scan failed:", error);
       setIsLoading(false);
@@ -148,284 +137,216 @@ export default function DiscoveryPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight text-white">Discovery Agent</h2>
-          <p className="text-slate-400">Suche nach potenziellen Kunden ohne Website.</p>
+    <div className="max-w-7xl mx-auto space-y-12 pb-20">
+      {/* Technical Header */}
+      <header className="stagger-item flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2 text-primary/80 font-mono tracking-widest uppercase text-[10px] font-bold">
+            <Terminal className="w-3 h-3" />
+            <span>Scanning Market Sectors</span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-serif text-white leading-[1.1]">
+            Market <span className="text-secondary-foreground italic">Intelligence</span>
+          </h1>
+          <p className="text-white/40 max-w-lg text-lg font-light leading-relaxed">
+            Deep-scan algorithms identifying Swiss businesses with under-optimized digital presence.
+          </p>
         </div>
+        
+        <div className="hidden lg:flex items-center gap-6 glass-panel py-4 px-8 rounded-3xl border-white/5 shadow-xl">
+           <div className="flex flex-col items-center">
+             <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Stability</span>
+             <span className="text-white/60 font-mono">99.9%</span>
+           </div>
+           <div className="w-px h-8 bg-white/5" />
+           <div className="flex flex-col items-center">
+             <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Active nodes</span>
+             <span className="text-primary font-mono font-bold animate-pulse">4 Nodes</span>
+           </div>
+        </div>
+      </header>
 
-        <div className="bg-slate-900/50 p-6 rounded-2xl border border-slate-800 shadow-2xl space-y-6 flex-1 max-w-4xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2 text-slate-300 font-semibold mb-2">
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4 text-blue-400" />
-                  Branchen wählen
+      {/* Control Panel Section */}
+      <div className="stagger-item glass-panel p-1 rounded-[2.5rem] bg-white/1 border-white/5" style={{ animationDelay: '200ms' }}>
+        <div className="p-8 md:p-12 space-y-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Sector module */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                   <div className="p-2 bg-primary/10 rounded-xl">
+                     <Briefcase className="w-5 h-5 text-primary" />
+                   </div>
+                   <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">Sector Selection</h3>
                 </div>
-                <span className="text-xs text-blue-400 font-normal">{selectedIndustries.length} gewählt</span>
+                <Badge variant="outline" className="text-[10px] border-white/10 text-white/40 font-mono">
+                  {selectedIndustries.length} Selected
+                </Badge>
               </div>
-              <ScrollArea className="h-[220px] rounded-lg border border-slate-800 bg-slate-950/50 p-3 shadow-inner">
-                {/* Beauty & Wellness */}
-                <div className="mb-4">
-                  <div 
-                    className="flex items-center justify-between group cursor-pointer mb-2"
-                    onClick={() => toggleIndustryCategory(["Coiffeur", "Beauty Salon", "Massage", "Nagelstudio", "Wellness Spa", "Kosmetik", "Waxing"])}
-                  >
-                    <p className="text-[10px] uppercase tracking-wider text-pink-400 font-bold">💅 Beauty & Wellness</p>
-                    <span className="text-[9px] text-slate-600 group-hover:text-pink-400 transition-colors">Alle wählen</span>
+
+              <ScrollArea className="h-[280px] rounded-2xl border border-white/5 bg-black/20 p-6">
+                {[
+                  { name: "Beauty & Wellness", color: "text-pink-400", sub: ["Coiffeur", "Beauty Salon", "Massage", "Nagelstudio", "Wellness Spa", "Kosmetik", "Waxing"] },
+                  { name: "Gesundheit", color: "text-green-400", sub: ["Arzt", "Zahnarzt", "Physiotherapie", "Osteopathie", "Chiropraktik", "Podologie", "Naturheilpraxis"] },
+                  { name: "Handwerk", color: "text-orange-400", sub: ["Schreinerei", "Elektro", "Sanitär", "Gartenbau", "Malerei", "Dachdeckerei", "Schlosserei", "Polsterei", "Glaserei"] },
+                  { name: "Dienstleistungen", color: "text-blue-400", sub: ["Restaurant", "Metzgerei", "Anwalt", "Treuhand", "Architekt", "Fitnessstudio", "Garage"] }
+                ].map((cat) => (
+                  <div key={cat.name} className="mb-8 last:mb-0">
+                    <div 
+                      className="flex items-center justify-between group cursor-pointer mb-3"
+                      onClick={() => toggleIndustryCategory(cat.sub)}
+                    >
+                      <span className={clsx("text-[10px] font-black uppercase tracking-[0.2em]", cat.color)}>{cat.name}</span>
+                      <span className="text-[9px] text-white/20 group-hover:text-white transition-colors">Select Integrated Group</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {cat.sub.map((ind) => {
+                        const isSel = selectedIndustries.includes(ind);
+                        return (
+                          <div 
+                            key={ind}
+                            onClick={() => toggleIndustry(ind)}
+                            className={clsx(
+                              "px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer border transition-all duration-300",
+                              isSel ? "bg-primary text-white border-primary shadow-[0_5px_15px_rgba(155,35,53,0.3)]" : "bg-white/5 text-white/30 border-white/5 hover:border-white/20 hover:text-white"
+                            )}
+                          >
+                            {ind}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { name: "Coiffeur", icon: "✂️" },
-                      { name: "Beauty Salon", icon: "💄" },
-                      { name: "Massage", icon: "💆" },
-                      { name: "Nagelstudio", icon: "💅" },
-                      { name: "Wellness Spa", icon: "🧖" },
-                      { name: "Kosmetik", icon: "✨" },
-                      { name: "Waxing", icon: "🍯" }
-                    ].map((ind) => (
-                      <Badge 
-                        key={ind.name}
-                        variant={selectedIndustries.includes(ind.name) ? "default" : "outline"}
-                        className={`cursor-pointer transition-all text-xs px-2.5 py-1 gap-1.5 ${selectedIndustries.includes(ind.name) ? "bg-pink-600 hover:bg-pink-500 text-white border-pink-500 shadow-lg shadow-pink-500/20" : "border-slate-800 hover:border-pink-500/50 text-slate-400 hover:text-pink-300"}`}
-                        onClick={() => toggleIndustry(ind.name)}
-                      >
-                        <span className="text-sm">{ind.icon}</span>
-                        {ind.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                {/* Gesundheit */}
-                <div className="mb-4">
-                  <div 
-                    className="flex items-center justify-between group cursor-pointer mb-2"
-                    onClick={() => toggleIndustryCategory(["Arzt", "Zahnarzt", "Physiotherapie", "Osteopathie", "Chiropraktik", "Podologie", "Naturheilpraxis"])}
-                  >
-                    <p className="text-[10px] uppercase tracking-wider text-green-400 font-bold">🏥 Gesundheit</p>
-                    <span className="text-[9px] text-slate-600 group-hover:text-green-400 transition-colors">Alle wählen</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { name: "Arzt", icon: "👨‍⚕️" },
-                      { name: "Zahnarzt", icon: "🦷" },
-                      { name: "Physiotherapie", icon: "💪" },
-                      { name: "Osteopathie", icon: "🦴" },
-                      { name: "Chiropraktik", icon: "🧘" },
-                      { name: "Podologie", icon: "🦶" },
-                      { name: "Naturheilpraxis", icon: "🌿" }
-                    ].map((ind) => (
-                      <Badge 
-                        key={ind.name}
-                        variant={selectedIndustries.includes(ind.name) ? "default" : "outline"}
-                        className={`cursor-pointer transition-all text-xs px-2.5 py-1 gap-1.5 ${selectedIndustries.includes(ind.name) ? "bg-green-600 hover:bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20" : "border-slate-800 hover:border-green-500/50 text-slate-400 hover:text-green-300"}`}
-                        onClick={() => toggleIndustry(ind.name)}
-                      >
-                        <span className="text-sm">{ind.icon}</span>
-                        {ind.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                {/* Handwerk */}
-                <div className="mb-4">
-                  <div 
-                    className="flex items-center justify-between group cursor-pointer mb-2"
-                    onClick={() => toggleIndustryCategory(["Schreinerei", "Elektro", "Sanitär", "Gartenbau", "Malerei", "Dachdeckerei", "Schlosserei", "Polsterei", "Glaserei"])}
-                  >
-                    <p className="text-[10px] uppercase tracking-wider text-orange-400 font-bold">🔧 Handwerk</p>
-                    <span className="text-[9px] text-slate-600 group-hover:text-orange-400 transition-colors">Alle wählen</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { name: "Schreinerei", icon: "🪵" },
-                      { name: "Elektro", icon: "⚡" },
-                      { name: "Sanitär", icon: "🚰" },
-                      { name: "Gartenbau", icon: "🌳" },
-                      { name: "Malerei", icon: "🎨" },
-                      { name: "Dachdeckerei", icon: "🏠" },
-                      { name: "Schlosserei", icon: "🔑" },
-                      { name: "Polsterei", icon: "🛋️" },
-                      { name: "Glaserei", icon: "💎" }
-                    ].map((ind) => (
-                      <Badge 
-                        key={ind.name}
-                        variant={selectedIndustries.includes(ind.name) ? "default" : "outline"}
-                        className={`cursor-pointer transition-all text-xs px-2.5 py-1 gap-1.5 ${selectedIndustries.includes(ind.name) ? "bg-orange-600 hover:bg-orange-500 text-white border-orange-500 shadow-lg shadow-orange-500/20" : "border-slate-800 hover:border-orange-500/50 text-slate-400 hover:text-orange-300"}`}
-                        onClick={() => toggleIndustry(ind.name)}
-                      >
-                        <span className="text-sm">{ind.icon}</span>
-                        {ind.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                {/* Dienstleistungen & Sonstige */}
-                <div>
-                  <div 
-                    className="flex items-center justify-between group cursor-pointer mb-2"
-                    onClick={() => toggleIndustryCategory(["Restaurant", "Metzgerei", "Anwalt", "Treuhand", "Architekt", "Fitnessstudio", "Garage"])}
-                  >
-                    <p className="text-[10px] uppercase tracking-wider text-blue-400 font-bold">💼 Dienstleistungen</p>
-                    <span className="text-[9px] text-slate-600 group-hover:text-blue-400 transition-colors">Alle wählen</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      { name: "Restaurant", icon: "🍽️" },
-                      { name: "Metzgerei", icon: "🥩" },
-                      { name: "Anwalt", icon: "⚖️" },
-                      { name: "Treuhand", icon: "📊" },
-                      { name: "Architekt", icon: "📏" },
-                      { name: "Fitnessstudio", icon: "🏋️" },
-                      { name: "Garage", icon: "🚗" }
-                    ].map((ind) => (
-                      <Badge 
-                        key={ind.name}
-                        variant={selectedIndustries.includes(ind.name) ? "default" : "outline"}
-                        className={`cursor-pointer transition-all text-xs px-2.5 py-1 gap-1.5 ${selectedIndustries.includes(ind.name) ? "bg-blue-600 hover:bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/20" : "border-slate-800 hover:border-blue-500/50 text-slate-400 hover:text-blue-300"}`}
-                        onClick={() => toggleIndustry(ind.name)}
-                      >
-                        <span className="text-sm">{ind.icon}</span>
-                        {ind.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </ScrollArea>
-              <div className="pt-2">
-                <Input 
-                   placeholder="Andere Branche..."
-                  className="bg-slate-950 border-slate-800 h-9 text-xs"
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                />
-              </div>
+              
+              <Input 
+                 placeholder="Custom sector override..."
+                 className="bg-white/5 border-white/10 h-14 rounded-xl px-6 text-sm text-white placeholder:text-white/20 focus:ring-primary/50 transition-all font-mono"
+                 value={industry}
+                 onChange={(e) => setIndustry(e.target.value)}
+              />
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2 text-slate-300 font-semibold mb-2">
-                <div className="flex items-center gap-2">
-                  <Map className="w-4 h-4 text-blue-400" />
-                  Schweiz / Kantone
+            {/* Geographical module */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                   <div className="p-2 bg-accent/10 rounded-xl">
+                     <Map className="w-5 h-5 text-accent" />
+                   </div>
+                   <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">Geographical nodes</h3>
                 </div>
-                <div className="flex items-center gap-2">
-                   <span className="text-xs text-blue-400 font-normal">{selectedCantons.length} gewählt</span>
-                  <Button 
-                    type="button"
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-[10px] h-6 px-2 hover:bg-blue-500/10 text-blue-400"
-                    onClick={selectAllCantons}
-                  >
-                    {selectedCantons.length === CANTONS.length ? "Alle abwählen" : "Alle wählen"}
-                  </Button>
-                </div>
+                <button 
+                  onClick={selectAllCantons}
+                  className="text-[10px] font-bold text-accent hover:text-white transition-colors tracking-widest uppercase"
+                >
+                  {selectedCantons.length === CANTONS.length ? "De-cluster all" : "Sync all cantons"}
+                </button>
               </div>
-              <ScrollArea className="h-[220px] rounded-lg border border-slate-800 bg-slate-950/50 p-3 shadow-inner">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                  {CANTONS.map((c) => (
-                    <div 
-                      key={c}
-                      onClick={() => toggleCanton(c)}
-                      className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer border transition-all ${selectedCantons.includes(c) ? "bg-blue-500/20 border-blue-500/40 text-blue-300" : "bg-slate-900/40 border-slate-800 hover:border-slate-700 text-slate-500 hover:text-slate-300"}`}
-                    >
-                      <div className={`w-1.5 h-1.5 rounded-full ${selectedCantons.includes(c) ? "bg-blue-400 animate-pulse" : "bg-slate-800"}`} />
-                      <span className="text-[10px] font-medium">{c}</span>
-                    </div>
-                  ))}
+
+              <ScrollArea className="h-[280px] rounded-2xl border border-white/5 bg-black/20 p-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {CANTONS.map((c) => {
+                    const isSel = selectedCantons.includes(c);
+                    return (
+                      <div 
+                        key={c}
+                        onClick={() => toggleCanton(c)}
+                        className={clsx(
+                          "flex items-center justify-between p-3 rounded-xl cursor-pointer border transition-all duration-300 group",
+                          isSel ? "bg-accent text-accent-foreground border-accent" : "bg-white/5 border-white/5 text-white/30 hover:border-white/20 hover:text-white"
+                        )}
+                      >
+                        <span className="text-[10px] font-bold uppercase">{c}</span>
+                        {isSel ? <Activity className="w-3 h-3" /> : <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                      </div>
+                    );
+                  })}
                 </div>
               </ScrollArea>
-              <div className="pt-2">
-                 <Input 
-                  placeholder="Zusätzliche Orte (z.B. Berlin, Zürich...)"
-                  className="bg-slate-950 border-slate-800 h-9 text-xs"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                />
-              </div>
+
+              <Input 
+                placeholder="Specific location sync (e.g. Zurich, Geneva)..."
+                className="bg-white/5 border-white/10 h-14 rounded-xl px-6 text-sm text-white placeholder:text-white/20 focus:ring-accent/50 transition-all font-mono"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-            <div className="text-xs text-slate-500 flex flex-col gap-1">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className={`w-3 h-3 ${selectedIndustries.length > 0 ? "text-green-500" : "text-slate-700"}`} />
-                <span>{selectedIndustries.length || (industry ? 1 : 0)} Branchen gewählt</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className={`w-3 h-3 ${selectedCantons.length > 0 ? "text-green-500" : "text-slate-700"}`} />
-                <span>{selectedCantons.length || (location ? location.split(",").length : 0)} Orte gewählt</span>
-              </div>
+          <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-white/5 gap-8">
+            <div className="flex flex-wrap gap-8 items-center text-white/40 font-mono text-[9px] uppercase tracking-widest font-bold">
+               <div className="flex items-center gap-3">
+                 <div className={clsx("w-2 h-2 rounded-full", (selectedIndustries.length > 0 || industry) ? "bg-primary animate-pulse shadow-[0_0_10px_rgba(155,35,53,0.8)]" : "bg-white/10")} />
+                 <span>Sector Locked: {(selectedIndustries.length || (industry ? 1 : 0))} node(s)</span>
+               </div>
+               <div className="flex items-center gap-3">
+                 <div className={clsx("w-2 h-2 rounded-full", (selectedCantons.length > 0 || location) ? "bg-accent animate-pulse shadow-[0_0_10px_rgba(180,140,40,0.8)]" : "bg-white/10")} />
+                 <span>Nodes Active: {(selectedCantons.length || (location ? location.split(",").length : 0))} region(s)</span>
+               </div>
             </div>
-            <div className="flex gap-3">
+
+            <div className="flex gap-4 w-full md:w-auto">
               {isLoading && (
                 <Button 
                   variant="outline"
-                  className="h-12 border-red-500/30 text-red-500 hover:bg-red-500/10 font-bold uppercase tracking-widest px-6"
+                  className="h-16 flex-1 md:flex-none border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 font-bold uppercase tracking-[0.2em] px-10 rounded-2xl"
                   onClick={handleStop}
                 >
-                  Stoppen
+                  Terminate
                 </Button>
               )}
               <Button 
                 disabled={isLoading || (selectedIndustries.length === 0 && !industry) || (selectedCantons.length === 0 && !location)}
-                className="h-12 px-10 font-black text-sm uppercase tracking-widest bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20"
+                className="h-16 flex-1 md:flex-none px-12 font-black text-xs uppercase tracking-[0.3em] bg-primary text-white hover:bg-primary/90 rounded-2xl border border-primary/50 shadow-[0_20px_40px_-10px_rgba(155,35,53,0.4)] disabled:shadow-none"
                 onClick={handleScan}
               >
                 {isLoading ? (
                   <div className="flex items-center">
                     <Loader2 className="w-5 h-5 animate-spin mr-3" />
-                    Mission aktiv...
+                    Mission Processing
                   </div>
                 ) : (
                   <>
-                    <Search className="w-5 h-5 mr-3" />
-                    Mission starten
+                    <SearchIcon className="w-5 h-5 mr-3" />
+                    Initiate Scan
                   </>
                 )}
               </Button>
             </div>
           </div>
         </div>
-
-        {isSimulated && (
-          <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex items-center gap-4 text-amber-200 text-sm max-w-4xl">
-            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-            <p>
-              <strong>Demo-Modus aktiv:</strong> In den Einstellungen ist kein SerpApi-Key hinterlegt. Die angezeigten Daten sind simulierte Beispiele zur Veranschaulichung der Analyse-Funktionen.
-            </p>
-          </div>
-        )}
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-          <div className="flex items-center gap-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-              Ergebnisse {results.length > 0 && `(${results.length})`}
+      {/* Results Section */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between border-b border-white/5 pb-4">
+          <div className="flex items-center gap-6">
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">
+              Intelligence Stream {results.length > 0 && `// [LOADED: ${results.length}]`}
             </h3>
             {isLoading && (
-              <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse text-[10px] py-0">
-                Live Update
-              </Badge>
-            )}
-            {!isLoading && results.length > 0 && hasScanned && (
-                <Badge variant="outline" className="text-[10px] py-0 border-slate-700 text-slate-400">
-                    Statisch (Suche beendet)
-                </Badge>
+              <div className="flex items-center gap-3">
+                 <Badge className="bg-primary/10 text-primary border-primary/20 animate-pulse text-[9px] uppercase font-black px-3">
+                    Broadcasting
+                 </Badge>
+              </div>
             )}
           </div>
           {hasScanned && !isLoading && (
-             <Button variant="ghost" size="sm" className="text-slate-500 h-8 text-xs hover:text-white" onClick={() => { setResults([]); setHasScanned(false); }}>
-               <RefreshCcw className="w-3 h-3 mr-2" />
-               Suche zurücksetzen
-             </Button>
+             <button 
+               onClick={() => { setResults([]); setHasScanned(false); }}
+               className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-all"
+             >
+               <RefreshCcw className="w-3 h-3" />
+               Purge Database
+             </button>
           )}
         </div>
 
         {results.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {results.map((result) => (
               <DiscoveryResultCard 
                 key={result.place_id} 
@@ -435,30 +356,37 @@ export default function DiscoveryPage() {
             ))}
           </div>
         ) : hasScanned && !isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-slate-900/30 rounded-2xl border border-dashed border-slate-800">
-            <div className="p-4 bg-slate-800 rounded-full">
-              <FilterX className="w-8 h-8 text-slate-400" />
+          <div className="stagger-item glass-panel flex flex-col items-center justify-center py-24 text-center space-y-6 rounded-[2.5rem]">
+            <div className="p-6 bg-white/5 rounded-full border border-white/5">
+              <FilterX className="w-10 h-10 text-white/20" />
             </div>
             <div>
-              <p className="text-xl font-medium text-slate-300">Keine passenden Leads gefunden</p>
-              <p className="text-slate-500 max-w-xs mx-auto mt-2">Versuche es mit einer anderen Branche oder einem anderen Ort.</p>
+              <p className="text-2xl font-serif text-white">Zero Intelligence Intercepted</p>
+              <p className="text-white/30 max-w-xs mx-auto mt-2 text-sm leading-relaxed">No matching sectors found in selected regional clusters. Adjust node parameters.</p>
             </div>
           </div>
         ) : isLoading ? (
-          <div className="flex flex-col items-center justify-center py-32 text-center space-y-6">
+          <div className="flex flex-col items-center justify-center py-40 text-center space-y-10">
              <div className="relative">
-                <div className="w-20 h-20 rounded-full border-4 border-blue-500/20 border-t-blue-500 animate-spin" />
-                <Search className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-400" />
+                <div className="w-32 h-32 rounded-full border-2 border-primary/20 border-t-primary animate-spin-slow shadow-[0_0_80px_rgba(155,35,53,0.15)]" />
+                <Activity className="w-10 h-10 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary" />
              </div>
-             <div className="space-y-2">
-                <p className="text-xl font-bold text-white uppercase tracking-widest animate-pulse">Suche läuft...</p>
-                <p className="text-slate-500 max-w-sm mx-auto">Der Search Specialist analysiert mehrere Standorte und Suchanfragen. Bleib dran, Ergebnisse erscheinen in Kürze.</p>
+             <div className="space-y-4">
+                <p className="text-3xl font-serif italic text-white leading-tight">Syncing Distributed Market Nodes...</p>
+                <div className="flex items-center justify-center gap-3 font-mono text-[10px] text-white/30 uppercase tracking-[0.2em]">
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  Analyzing swiss regional infrastructure
+                </div>
              </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-32 text-center opacity-40">
-            <Search className="w-12 h-12 mb-4 text-slate-600" />
-            <p className="text-lg">Gib eine Branche und einen Ort ein, um die Suche zu starten.</p>
+          <div className="flex flex-col items-center justify-center py-40 text-center opacity-30 gap-6">
+            <div className="w-px h-24 bg-linear-to-b from-transparent via-white/10 to-transparent" />
+            <div className="flex flex-col items-center gap-2">
+               <SearchIcon className="w-12 h-12 text-white" />
+               <p className="text-sm font-bold uppercase tracking-[0.3em]">Module Online // Ready for Parameters</p>
+            </div>
+            <div className="w-px h-24 bg-linear-to-b from-transparent via-white/10 to-transparent" />
           </div>
         )}
       </div>

@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { 
-  Settings as SettingsIcon, 
   Cloud, 
   Monitor, 
   Key, 
@@ -17,9 +15,16 @@ import {
   ShieldCheck,
   Bot,
   MapPin,
-  Search
+  Search,
+  Cpu,
+  Globe,
+  Database,
+  Lock,
+  Zap,
+  Activity
 } from "lucide-react";
 import { getSettings, updateSettings, Settings } from "@/lib/settings";
+import clsx from "clsx";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -43,249 +48,243 @@ export default function SettingsPage() {
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
-  if (!settings) return <div className="p-8">Lade Einstellungen...</div>;
+  if (!settings) return (
+    <div className="h-full flex items-center justify-center p-8">
+      <Activity className="w-8 h-8 text-primary animate-pulse" />
+    </div>
+  );
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-12">
-      <div className="space-y-1">
-        <h2 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-          <SettingsIcon className="w-8 h-8 text-blue-500" />
-          Einstellungen
-        </h2>
-        <p className="text-slate-400">Konfiguriere deine AI-Provider und API-Schlüssel.</p>
-      </div>
+    <div className="max-w-5xl mx-auto space-y-12 pb-20">
+      {/* Header Section */}
+      <header className="stagger-item space-y-3">
+        <div className="flex items-center space-x-2 text-primary/80 font-medium tracking-widest uppercase text-[10px]">
+          <Database className="w-3 h-3" />
+          <span>CoreInfrastructure // Control Panel</span>
+        </div>
+        <h1 className="text-5xl font-serif text-white leading-tight">
+          System <span className="text-primary italic">Configuration</span>
+        </h1>
+        <p className="text-white/40 max-w-xl text-lg font-light leading-relaxed">
+          Calibrate your neural engines and endpoint protocols for industrial-grade market intelligence.
+        </p>
+      </header>
 
-      <div className="grid gap-6">
-        {/* LLM Provider Card */}
-        <Card className="bg-slate-900 border-slate-800 overflow-hidden">
-          <CardHeader className="border-b border-slate-800 bg-slate-900/50">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <BrainCircuit className="w-5 h-5 text-purple-400" />
-              LLM Provider
-            </CardTitle>
-            <CardDescription>Wähle zwischen Cloud-Inferenz oder lokalem Modell.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <div className="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800">
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${settings.llmProvider === 'cloud' ? 'bg-blue-600/20 text-blue-400' : 'bg-slate-800 text-slate-500'}`}>
-                  <Cloud className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="font-bold">Cloud (OpenAI / Claude)</p>
-                  <p className="text-xs text-slate-500">Schnell, zuverlässig, erfordert API-Key.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Left Column: Primary Settings */}
+        <div className="lg:col-span-12 space-y-10">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {/* LLM Provider Section */}
+            <section className="stagger-item glass-panel p-8 rounded-[2.5rem] space-y-8 bg-white/1 border-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-2xl border border-primary/20">
+                    <Cpu className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-white/80">Neural Engine</h3>
+                    <p className="text-[10px] text-white/30 font-mono italic">Primary Processing Unit</p>
+                  </div>
                 </div>
               </div>
-              <Switch 
-                checked={settings.llmProvider === 'local'} 
-                onCheckedChange={(checked) => setSettings({...settings, llmProvider: checked ? 'local' : 'cloud'})}
-              />
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${settings.llmProvider === 'local' ? 'bg-purple-600/20 text-purple-400' : 'bg-slate-800 text-slate-500'}`}>
-                  <Monitor className="w-6 h-6" />
+
+              <div className="space-y-4">
+                <div className={clsx(
+                  "p-6 rounded-3xl border transition-all duration-700 flex items-center justify-between",
+                  settings.llmProvider === 'cloud' ? "bg-primary/5 border-primary/20" : "bg-white/2 border-white/5 opacity-40 shrink-0"
+                )}>
+                  <div className="flex items-center gap-5">
+                    <Cloud className={clsx("w-8 h-8", settings.llmProvider === 'cloud' ? "text-primary" : "text-white/20")} />
+                    <div>
+                      <p className="font-bold text-white tracking-tight">Cloud Infrastructure</p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest">OpenAI / Anthropic Protocol</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={settings.llmProvider === 'cloud'} 
+                    onCheckedChange={(checked) => setSettings({...settings, llmProvider: checked ? 'cloud' : 'local'})}
+                    className="data-[state=checked]:bg-primary"
+                  />
                 </div>
-                <div className="text-right">
-                  <p className="font-bold">Local (LM Studio)</p>
-                  <p className="text-xs text-slate-500">Privat, kostenlos, erfordert aktive App.</p>
+
+                <div className={clsx(
+                  "p-6 rounded-3xl border transition-all duration-700 flex items-center justify-between",
+                  settings.llmProvider === 'local' ? "bg-accent/5 border-accent/20 shadow-[0_0_30px_rgba(234,179,8,0.05)]" : "bg-white/2 border-white/5 opacity-40 shrink-0"
+                )}>
+                  <div className="flex items-center gap-5">
+                    <Monitor className={clsx("w-8 h-8", settings.llmProvider === 'local' ? "text-accent" : "text-white/20")} />
+                    <div>
+                      <p className="font-bold text-white tracking-tight">On-Premise Inference</p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest">LM Studio / Ollama Endpoint</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={settings.llmProvider === 'local'} 
+                    onCheckedChange={(checked) => setSettings({...settings, llmProvider: checked ? 'local' : 'cloud'})}
+                    className="data-[state=checked]:bg-accent"
+                  />
                 </div>
+              </div>
+
+              {settings.llmProvider === 'local' && (
+                <div className="pt-6 border-t border-white/5 space-y-4 animate-in fade-in slide-in-from-top-4 duration-700">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Local Pipeline Address</Label>
+                    <LinkIcon className="w-3 h-3 text-white/20" />
+                  </div>
+                  <div className="flex gap-4">
+                    <Input 
+                      value={settings.localEndpoint} 
+                      onChange={(e) => setSettings({...settings, localEndpoint: e.target.value})}
+                      placeholder="http://localhost:1234/v1"
+                      className="h-14 bg-white/5 border-white/5 text-white/80 rounded-2xl focus:ring-accent/40 px-6 font-mono text-xs"
+                    />
+                    <Button variant="outline" className="h-14 w-20 border-white/10 text-white/40 hover:text-white rounded-2xl">
+                      Test
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* Discovery Section */}
+            <section className="stagger-item glass-panel p-8 rounded-[2.5rem] space-y-8 bg-white/1 border-white/5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-accent/10 rounded-2xl border border-accent/20">
+                    <Globe className="w-6 h-6 text-accent" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-white/80">Market Scraper</h3>
+                    <p className="text-[10px] text-white/30 font-mono italic">Discovery Engine Logic</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className={clsx(
+                  "p-6 rounded-3xl border transition-all duration-700 flex items-center justify-between",
+                  settings.discoveryProvider === 'serpapi' ? "bg-green-500/5 border-green-500/20" : "bg-white/2 border-white/5 opacity-40 shrink-0"
+                )}>
+                  <div className="flex items-center gap-5">
+                    <MapPin className={clsx("w-8 h-8", settings.discoveryProvider === 'serpapi' ? "text-green-400" : "text-white/20")} />
+                    <div>
+                      <p className="font-bold text-white tracking-tight">Direct SERP Link</p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest">Standard Search Protocol</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={settings.discoveryProvider === 'serpapi'} 
+                    onCheckedChange={(checked) => setSettings({...settings, discoveryProvider: checked ? 'serpapi' : 'apify'})}
+                    className="data-[state=checked]:bg-green-500"
+                  />
+                </div>
+
+                <div className={clsx(
+                  "p-6 rounded-3xl border transition-all duration-700 flex items-center justify-between",
+                  settings.discoveryProvider === 'apify' ? "bg-cyan-500/5 border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.05)]" : "bg-white/2 border-white/5 opacity-40 shrink-0"
+                )}>
+                  <div className="flex items-center gap-5">
+                    <Bot className={clsx("w-8 h-8", settings.discoveryProvider === 'apify' ? "text-cyan-400" : "text-white/20")} />
+                    <div>
+                      <p className="font-bold text-white tracking-tight">Apify Crawler Agent</p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest">Deep Web Extraction</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={settings.discoveryProvider === 'apify'} 
+                    onCheckedChange={(checked) => setSettings({...settings, discoveryProvider: checked ? 'apify' : 'serpapi'})}
+                    className="data-[state=checked]:bg-cyan-500"
+                  />
+                </div>
+              </div>
+
+              {settings.discoveryProvider === 'apify' && !settings.apifyToken && (
+                <div className="p-5 bg-primary/10 border border-primary/20 rounded-2xl text-[10px] font-black uppercase tracking-widest text-primary text-center">
+                  Calibration Required: Apify Token Missing
+                </div>
+              )}
+            </section>
+          </div>
+
+          {/* Encryption & Security Section */}
+          <section className="stagger-item glass-panel p-10 rounded-[3rem] space-y-10 bg-white/1 border-white/5">
+            <div className="flex items-center gap-6">
+              <div className="p-4 bg-white/5 rounded-3xl border border-white/5">
+                <Lock className="w-8 h-8 text-white/60" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-xl font-serif text-white italic">Access Keys</h3>
+                <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em]">Encrypted Storage Modules</p>
               </div>
             </div>
 
-            {settings.llmProvider === 'local' && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                <Label className="text-xs font-bold uppercase text-slate-500">Local Endpoint URL</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    value={settings.localEndpoint} 
-                    onChange={(e) => setSettings({...settings, localEndpoint: e.target.value})}
-                    placeholder="http://localhost:1234/v1"
-                    className="bg-slate-950 border-slate-800"
-                  />
-                  <Button variant="outline" className="border-slate-800 gap-2 shrink-0">
-                    <LinkIcon className="w-4 h-4" />
-                    Test
-                  </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[
+                { label: "OpenAI Protocol", key: "openaiApiKey", icon: Zap, color: "text-blue-400" },
+                { label: "SERP Interface", key: "serpApiKey", icon: MapPin, color: "text-green-400" },
+                { label: "Resend Gateway", key: "resendApiKey", icon: Cloud, color: "text-orange-400" },
+                { label: "Vocal Synthesis", key: "elevenLabsApiKey", icon: Bot, color: "text-purple-400" },
+                { label: "Crawler Token", key: "apifyToken", icon: Search, color: "text-cyan-400" },
+                { label: "Linear Sync", key: "linearApiKey", icon: ShieldCheck, color: "text-white/60" },
+              ].map((item) => (
+                <div key={item.key} className="space-y-3 group">
+                  <div className="flex items-center justify-between px-1">
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/20 group-hover:text-white/40 transition-colors">
+                      {item.label}
+                    </Label>
+                    <item.icon className={clsx("w-3 h-3 opacity-20 group-hover:opacity-100 transition-all", item.color)} />
+                  </div>
+                  <div className="relative overflow-hidden rounded-2xl">
+                    <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+                      <Key className="w-4 h-4 text-white/10" />
+                    </div>
+                    <Input 
+                      type="password"
+                      value={settings[item.key as keyof Settings] || ''} 
+                      onChange={(e) => setSettings({...settings, [item.key]: e.target.value})}
+                      className="h-14 bg-white/3 border-white/5 pl-14 pr-6 text-white/60 placeholder:text-white/5 focus:bg-white/5 focus:border-white/10 transition-all text-xs font-mono rounded-2xl"
+                      placeholder="••••••••••••••••"
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* API Keys Card */}
-        <Card className="bg-slate-900 border-slate-800">
-          <CardHeader className="border-b border-slate-800 bg-slate-900/50">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-green-400" />
-              API Schlüssel
-            </CardTitle>
-            <CardDescription>Diese Schlüssel werden lokal für deine Requests verwendet.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-slate-500">OpenAI API Key</Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
-                  <Input 
-                    type="password"
-                    value={settings.openaiApiKey} 
-                    onChange={(e) => setSettings({...settings, openaiApiKey: e.target.value})}
-                    className="bg-slate-950 border-slate-800 pl-10"
-                    placeholder="sk-..."
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-slate-500">SerpApi (Google Maps)</Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
-                  <Input 
-                    type="password"
-                    value={settings.serpApiKey} 
-                    onChange={(e) => setSettings({...settings, serpApiKey: e.target.value})}
-                    className="bg-slate-950 border-slate-800 pl-10"
-                    placeholder="Key für Maps-Suche..."
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-slate-500">Resend (E-Mail)</Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
-                  <Input 
-                    type="password"
-                    value={settings.resendApiKey} 
-                    onChange={(e) => setSettings({...settings, resendApiKey: e.target.value})}
-                    className="bg-slate-950 border-slate-800 pl-10"
-                    placeholder="re_..."
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-slate-500">ElevenLabs (Voice)</Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
-                  <Input 
-                    type="password"
-                    value={settings.elevenLabsApiKey} 
-                    onChange={(e) => setSettings({...settings, elevenLabsApiKey: e.target.value})}
-                    className="bg-slate-950 border-slate-800 pl-10"
-                    placeholder="Voice-Key..."
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-slate-500">Apify Token</Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
-                  <Input 
-                    type="password"
-                    value={settings.apifyToken} 
-                    onChange={(e) => setSettings({...settings, apifyToken: e.target.value})}
-                    className="bg-slate-950 border-slate-800 pl-10"
-                    placeholder="apify_api_..."
-                  />
-                </div>
-                <p className="text-xs text-slate-500">Get your token at <a href="https://console.apify.com/account#/integrations" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">console.apify.com</a></p>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-slate-500">Linear API Key</Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 w-4 h-4 text-slate-600" />
-                  <Input 
-                    type="password"
-                    value={settings.linearApiKey} 
-                    onChange={(e) => setSettings({...settings, linearApiKey: e.target.value})}
-                    className="bg-slate-950 border-slate-800 pl-10"
-                    placeholder="lin_api_..."
-                  />
-                </div>
-                <p className="text-xs text-slate-500">Get your key at <a href="https://linear.app/settings/api" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">linear.app/settings/api</a></p>
-              </div>
+              ))}
             </div>
-          </CardContent>
-        </Card>
+          </section>
 
-        {/* Discovery Provider Card */}
-        <Card className="bg-slate-900 border-slate-800 overflow-hidden">
-          <CardHeader className="border-b border-slate-800 bg-slate-900/50">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Search className="w-5 h-5 text-cyan-400" />
-              Discovery Provider
-            </CardTitle>
-            <CardDescription>Wähle den Provider für die Lead-Suche auf Google Maps.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <div className="flex items-center justify-between p-4 bg-slate-950 rounded-xl border border-slate-800">
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${settings.discoveryProvider === 'serpapi' ? 'bg-green-600/20 text-green-400' : 'bg-slate-800 text-slate-500'}`}>
-                  <MapPin className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="font-bold">SerpAPI</p>
-                  <p className="text-xs text-slate-500">Standard Google Maps API.</p>
-                </div>
-              </div>
-              <Switch 
-                checked={settings.discoveryProvider === 'apify'} 
-                onCheckedChange={(checked) => setSettings({...settings, discoveryProvider: checked ? 'apify' : 'serpapi'})}
-              />
-              <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-lg ${settings.discoveryProvider === 'apify' ? 'bg-cyan-600/20 text-cyan-400' : 'bg-slate-800 text-slate-500'}`}>
-                  <Bot className="w-6 h-6" />
-                </div>
-                <div className="text-right">
-                  <p className="font-bold">Apify</p>
-                  <p className="text-xs text-slate-500">Erweiterte Scraping-Funktionen.</p>
-                </div>
-              </div>
+          {/* Action Area */}
+          <div className="stagger-item flex flex-col md:flex-row items-center justify-between gap-8 pt-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-px bg-white/5" />
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/10">Architecture Commit v1.4.2</p>
             </div>
             
-            {settings.discoveryProvider === 'apify' && !settings.apifyToken && (
-              <div className="p-3 bg-amber-900/20 border border-amber-800/50 rounded-lg text-amber-400 text-sm">
-                ⚠️ Apify Token nicht konfiguriert. Bitte füge deinen Token oben hinzu.
+            <Button 
+              onClick={handleSave} 
+              disabled={isSaving}
+              className={clsx(
+                "h-16 px-12 rounded-3xl text-sm font-black uppercase tracking-[0.2em] transition-all duration-1000 shadow-2xl overflow-hidden group",
+                savedSuccess 
+                  ? "bg-green-500 text-white shadow-green-500/20" 
+                  : "bg-primary hover:bg-primary/80 text-white shadow-primary/20"
+              )}
+            >
+              <div className="relative z-10 flex items-center">
+                {isSaving ? (
+                  <Activity className="w-5 h-5 mr-3 animate-spin" />
+                ) : savedSuccess ? (
+                  <CheckCircle2 className="w-5 h-5 mr-3" />
+                ) : (
+                  <Save className="w-5 h-5 mr-3 transition-transform group-hover:scale-110" />
+                )}
+                {isSaving ? "Calibrating..." : savedSuccess ? "System Synced" : "Write Configuration"}
               </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end pt-4">
-          <Button 
-            onClick={handleSave} 
-            disabled={isSaving}
-            className={`min-w-[200px] h-12 text-md font-bold transition-all ${savedSuccess ? 'bg-green-600 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-500'}`}
-          >
-            {isSaving ? "Speichere..." : savedSuccess ? (
-              <><CheckCircle2 className="w-5 h-5 mr-2" /> Gespeichert!</>
-            ) : (
-              <><Save className="w-5 h-5 mr-2" /> Einstellungen speichern</>
-            )}
-          </Button>
+              <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
-  );
-}
-
-// Dummy icon for brain circuit as it wasn't imported
-function BrainCircuit({ className }: { className?: string }) {
-  return (
-    <svg 
-      className={className} 
-      xmlns="http://www.w3.org/2000/svg" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    >
-      <path d="M12 4.5a2.5 2.5 0 0 0-4.96-.46 2.5 2.5 0 0 0-1.98 3 2.5 2.5 0 0 0 .94 4.82 2.5 2.5 0 0 0 0 4.28 2.5 2.5 0 0 0-1 4.83 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 0-4.83 2.5 2.5 0 0 0-1-4.28 2.5 2.5 0 0 0 .94-4.82z"/>
-      <path d="M12 4.5V7"/>
-      <path d="M12 17v2.5"/>
-      <path d="m14 11.5 2.5 1.5"/>
-      <path d="M12 7c1.4 0 2.5 1.1 2.5 2.5 0 .2 0 .5-.1.7l1.1 1.1"/>
-      <path d="m14 19-1.5-2.5"/>
-    </svg>
   );
 }

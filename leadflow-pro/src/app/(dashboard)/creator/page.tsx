@@ -9,7 +9,6 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSearchParams } from "next/navigation";
 import { 
@@ -21,9 +20,15 @@ import {
   Copy, 
   AlertCircle, 
   LucideLoader,
-  CheckCircle 
+  CheckCircle,
+  PenTool,
+  Zap,
+  Globe,
+  Layers,
+  Palette
 } from "lucide-react";
 import { getLeads, Lead, generateSiteConfig } from "@/lib/actions/server-actions";
+import clsx from "clsx";
 
 type Viewport = "desktop" | "tablet" | "mobile";
 
@@ -78,7 +83,7 @@ function CreatorContent() {
     const interval = setInterval(async () => {
         const allLeads = await getLeads();
         setLeads(allLeads.filter(l => l.strategy_brief));
-    }, 3000); 
+    }, 5000); 
 
     return () => clearInterval(interval);
   }, [searchParams, handleGenerate]);
@@ -93,13 +98,8 @@ function CreatorContent() {
 
   const copyStitchPrompt = () => {
     if (!selectedLead) return;
-    // Use AI-generated prompt if available, fallback to hardcoded
     const prompt = selectedLead.strategy_brief?.creationToolPrompt 
-      || `Create a high-converting website for ${selectedLead.company_name} in the ${selectedLead.industry} industry. 
-    Tone: ${selectedLead.strategy_brief?.brandTone}. 
-    Key Selling Points: ${selectedLead.strategy_brief?.keySells?.join(', ') || 'N/A'}.
-    Design a modern, professional layout with sections for Hero, Services, Reviews, and Contact. 
-    Location: ${selectedLead.location}.`;
+      || `Create a high-converting website for ${selectedLead.company_name} in the ${selectedLead.industry} industry.`;
     navigator.clipboard.writeText(prompt);
     window.open('https://stitch.withgoogle.com/', '_blank');
   };
@@ -111,48 +111,55 @@ function CreatorContent() {
   };
 
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col gap-6 overflow-hidden">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-bold tracking-tight text-white">Creator Agent V2</h2>
-          <p className="text-slate-400">Generiere hochkonvertierende Landingpages via Template-Injection.</p>
+    <div className="h-[calc(100vh-80px)] flex flex-col gap-10 overflow-hidden max-w-7xl mx-auto">
+      {/* Header with Visual Effects */}
+      <header className="stagger-item flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2 text-accent/80 font-medium tracking-widest uppercase text-[10px]">
+            <Layers className="w-3 h-3" />
+            <span>Generative Interface Forge</span>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-serif text-white leading-[1.1]">
+            Visual <span className="text-primary italic">Forge</span>
+          </h1>
+          <p className="text-white/40 max-w-lg text-lg font-light leading-relaxed">
+            Atmospheric site generation powered by Swiss creative intelligence and structural engineering.
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 bg-slate-900/50 p-2 rounded-xl border border-slate-800">
-          <div className="flex bg-slate-950 rounded-lg p-1 border border-slate-800">
-            <button 
-              onClick={() => setViewport("desktop")}
-              className={`p-2 rounded-md transition-colors ${viewport === "desktop" ? "bg-blue-600 text-white" : "text-slate-500 hover:text-slate-300"}`}
-            >
-              <Monitor className="w-4 h-4" />
-            </button>
-            <button 
-              onClick={() => setViewport("tablet")}
-              className={`p-2 rounded-md transition-colors ${viewport === "tablet" ? "bg-blue-600 text-white" : "text-slate-500 hover:text-slate-300"}`}
-            >
-              <Tablet className="w-4 h-4" />
-            </button>
-            <button 
-              onClick={() => setViewport("mobile")}
-              className={`p-2 rounded-md transition-colors ${viewport === "mobile" ? "bg-blue-600 text-white" : "text-slate-500 hover:text-slate-300"}`}
-            >
-              <Smartphone className="w-4 h-4" />
-            </button>
+        <div className="flex flex-wrap items-center gap-4 glass-panel p-2 rounded-2xl border-white/5 shadow-2xl">
+          <div className="flex bg-white/5 rounded-xl p-1 border border-white/5">
+            {[
+              { id: "desktop", icon: Monitor },
+              { id: "tablet", icon: Tablet },
+              { id: "mobile", icon: Smartphone }
+            ].map(({ id, icon: Icon }) => (
+              <button 
+                key={id}
+                onClick={() => setViewport(id as Viewport)}
+                className={clsx(
+                  "p-2.5 rounded-lg transition-all duration-500",
+                  viewport === id ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-white/30 hover:text-white"
+                )}
+              >
+                <Icon className="w-4 h-4" />
+              </button>
+            ))}
           </div>
 
-          <div className="h-6 w-px bg-slate-800 mx-2" />
+          <div className="h-8 w-px bg-white/5 mx-1" />
 
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm" 
-            className="border-slate-700 bg-slate-900 text-xs font-bold"
+            className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white"
             disabled={!selectedLeadId}
             onClick={copyToClipboard}
           >
-            {isCopied ? "Kopiert!" : (
+            {isCopied ? "Synced" : (
               <>
                 <Copy className="w-3.5 h-3.5 mr-2" />
-                Preview kopieren
+                Copy Intercept
               </>
             )}
           </Button>
@@ -160,151 +167,173 @@ function CreatorContent() {
           <Button 
             onClick={() => handleGenerate()}
             disabled={!selectedLeadId || isLoading}
-            className="bg-blue-600 hover:bg-blue-500 text-xs font-bold shadow-lg shadow-blue-500/20 px-6"
+            className="h-12 bg-primary hover:bg-primary/80 text-[11px] font-black uppercase tracking-widest px-8 rounded-xl shadow-[0_10px_30px_rgba(155,35,53,0.3)] hover:shadow-none transition-all"
           >
             {isLoading ? (
-                <>
-                    <LucideLoader className="w-3.5 h-3.5 mr-2 animate-spin" />
-                    Wird injiziert...
-                </>
+                <div className="flex items-center">
+                    <LucideLoader className="w-4 h-4 mr-3 animate-spin" />
+                    Forging...
+                </div>
             ) : (
-                <>
-                    {selectedLead?.preview_data ? <RefreshCw className="w-3.5 h-3.5 mr-2" /> : <Sparkles className="w-3.5 h-3.5 mr-2" />}
-                    {selectedLead?.preview_data ? "Neu generieren" : "Vorschau generieren"}
-                </>
+                <div className="flex items-center">
+                    {selectedLead?.preview_data ? <RefreshCw className="w-4 h-4 mr-3" /> : <Sparkles className="w-4 h-4 mr-3" />}
+                    {selectedLead?.preview_data ? "Re-Forge Site" : "Initiate Forge"}
+                </div>
             )}
           </Button>
         </div>
-      </div>
+      </header>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-xl flex items-center gap-3 text-red-400">
+        <div className="stagger-item glass-panel border-primary/20 p-5 rounded-2xl flex items-center gap-4 text-primary bg-primary/5">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <p className="text-sm font-medium">{error}</p>
         </div>
       )}
 
-      <div className="flex-1 flex gap-6 overflow-hidden">
-        <aside className="w-80 flex flex-col gap-6">
-          <Card className="bg-slate-900 border-slate-800">
-            <CardContent className="p-6 space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1">
-                  Lead auswählen
-                </label>
-                <Select onValueChange={setSelectedLeadId} value={selectedLeadId}>
-                  <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100">
-                    <SelectValue placeholder="Wähle einen Lead..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-100">
-                    {leads.map((lead) => (
-                      <SelectItem key={lead.id} value={lead.id}>
-                        {lead.company_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      {/* Main Layout */}
+      <div className="flex-1 flex gap-10 overflow-hidden pb-10">
+        <aside className="w-[340px] flex flex-col gap-8 stagger-item" style={{ animationDelay: '300ms' }}>
+          <div className="glass-panel p-8 rounded-[2rem] space-y-8 bg-white/1 border-white/5">
+            <div className="space-y-4">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">
+                Target Intelligence
+              </label>
+              <Select onValueChange={setSelectedLeadId} value={selectedLeadId}>
+                <SelectTrigger className="h-14 bg-white/5 border-white/5 text-white/80 rounded-2xl focus:ring-primary/40 px-6 font-medium">
+                  <SelectValue placeholder="Select target lead..." />
+                </SelectTrigger>
+                <SelectContent className="glass-panel border-white/5 bg-slate-900/95 text-white p-2 rounded-2xl">
+                  {leads.map((lead) => (
+                    <SelectItem key={lead.id} value={lead.id} className="rounded-xl focus:bg-primary/20 focus:text-white h-12">
+                      {lead.company_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="pt-4 border-t border-slate-800 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 ml-1">Alternative: Stitch AI</label>
-                    <span className="text-[10px] bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded-full font-bold">Premium Design</span>
-                  </div>
-                  
-                  <div className="p-4 bg-purple-500/5 border border-purple-500/10 rounded-xl space-y-2">
-                      <p className="text-[10px] text-slate-400 leading-relaxed">
-                          Nutze Google Stitch für extrem hochwertige AI-Vorschauen. Wir generieren dir den perfekten Prompt.
-                      </p>
-                      <Button 
-                        variant="secondary" 
-                        size="sm" 
-                        className="w-full bg-purple-600 hover:bg-purple-500 text-white border-none text-[10px] font-bold"
-                        disabled={!selectedLeadId}
-                        onClick={copyStitchPrompt}
-                      >
-                          Prompt & Stitch öffnen
-                      </Button>
-                  </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {selectedLead && (
-            <Card className="bg-slate-900 border-slate-800 flex-1 overflow-hidden">
-                <CardContent className="p-4 space-y-5 overflow-y-auto h-full text-xs">
-                    <div className="flex items-center justify-between">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Live Agent Intelligence</h4>
-                        <Badge variant="outline" className="text-[9px] border-blue-500/30 text-blue-400 bg-blue-500/5 px-1.5 py-0">
-                            v2.0 Active
-                        </Badge>
-                    </div>
-
-                    <div className="space-y-3 p-3 bg-slate-950 rounded-xl border border-slate-800/50">
-                        <div className="flex items-center gap-2">
-                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-                             <p className="text-[10px] font-bold text-slate-300 uppercase tracking-tight">Tonalität & Branding</p>
-                        </div>
-                        <p className="text-slate-200 font-medium italic text-sm leading-relaxed">&quot;{selectedLead.strategy_brief?.brandTone}&quot;</p>
-                    </div>
-
-                    <div className="space-y-3 p-3 bg-slate-950 rounded-xl border border-slate-800/50">
-                        <div className="flex items-center gap-2">
-                             <div className={`w-1.5 h-1.5 rounded-full ${selectedLead.status === 'PREVIEW_GENERATING' ? 'bg-orange-500' : 'bg-green-500'} shadow-[0_0_8px_rgba(234,179,8,0.4)]`} />
-                             <p className="text-[10px] font-bold text-slate-300 uppercase tracking-tight">Prozess-Status</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {selectedLead.status === 'PREVIEW_GENERATING' ? (
-                                <span className="flex items-center gap-1.5 text-orange-400 font-bold">
-                                    <LucideLoader className="w-3.5 h-3.5 animate-spin" /> Injektion läuft...
-                                </span>
-                            ) : selectedLead.preview_data ? (
-                                <span className="flex items-center gap-1.5 text-green-500 font-bold">
-                                    <CheckCircle className="w-3.5 h-3.5" /> Site-Config Bereit
-                                </span>
-                            ) : (
-                                <span className="text-slate-500 font-bold opacity-50">Warten auf Trigger</span>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="pt-2">
-                        <div className="flex items-center gap-2 mb-3">
-                             <Sparkles className="w-3 h-3 text-purple-400" />
-                             <p className="text-[10px] font-bold text-slate-300 uppercase tracking-tight">Design Engine</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                             <span className="bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded text-[9px] font-medium">Distinctive Typo</span>
-                             <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-[9px] font-medium">Bold Palettes</span>
-                             <span className="bg-slate-800 text-slate-400 px-2 py-0.5 rounded text-[9px] font-medium">Spatial Motion</span>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-          )}
-        </aside>
-
-        <main className="flex-1 bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden relative flex flex-col">
-          <div className="bg-slate-900/80 border-b border-slate-800 p-3 flex items-center justify-center gap-2">
-            <div className="bg-slate-950 border border-slate-800 rounded px-4 py-1 text-[10px] text-slate-500 font-mono w-full max-w-sm text-center truncate">
-                {selectedLeadId ? previewUrl : "https://preview.leadflow-pro.ai/v1/..."}
+            <div className="pt-8 border-t border-white/5 space-y-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Studio Integration</span>
+                  <Badge className="bg-accent/10 text-accent border-accent/20 text-[9px] uppercase font-bold py-0.5">Premium Flow</Badge>
+                </div>
+                
+                <div className="p-6 bg-white/3 border border-white/5 rounded-3xl space-y-4 group hover:border-accent/30 transition-all duration-700">
+                    <p className="text-[11px] text-white/40 leading-relaxed font-light">
+                        Deploy this strategy directly to Google Anthos or Stitch for experimental high-precision renders.
+                    </p>
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-12 border-accent/20 text-accent hover:bg-accent hover:text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl"
+                      disabled={!selectedLeadId}
+                      onClick={copyStitchPrompt}
+                    >
+                        Export via Stitch
+                    </Button>
+                </div>
             </div>
           </div>
 
-          <div className="flex-1 flex items-center justify-center p-8 bg-slate-950 overflow-auto">
+          {selectedLead && (
+            <div className="glass-panel p-8 rounded-[2rem] flex-1 overflow-hidden flex flex-col bg-white/1 border-white/5">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <Palette className="w-5 h-5 text-primary" />
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40">Canvas Parameters</h4>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] border-white/10 text-white/20 font-mono px-2">
+                        V4.2
+                    </Badge>
+                </div>
+
+                <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-4 p-5 bg-white/3 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-2">
+                           <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_15px_rgba(155,35,53,0.6)]" />
+                           <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Atmosphere</p>
+                      </div>
+                      <p className="text-white font-serif italic text-lg leading-relaxed">&quot;{selectedLead.strategy_brief?.brandTone}&quot;</p>
+                  </div>
+
+                  <div className="space-y-4 p-5 bg-white/3 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-2">
+                           <Zap className="w-4 h-4 text-accent" />
+                           <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Injection Status</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                          {selectedLead.status === 'PREVIEW_GENERATING' ? (
+                              <span className="flex items-center gap-3 text-accent font-bold text-xs uppercase tracking-widest">
+                                  <LucideLoader className="w-4 h-4 animate-spin" /> Live Forge
+                              </span>
+                          ) : selectedLead.preview_data ? (
+                              <span className="flex items-center gap-3 text-green-400 font-bold text-xs uppercase tracking-widest">
+                                  <CheckCircle className="w-4 h-4" /> Ready for Live
+                              </span>
+                          ) : (
+                              <span className="text-white/20 font-bold uppercase text-[10px] tracking-widest italic">Idle parameters...</span>
+                          )}
+                      </div>
+                  </div>
+
+                  <div className="pt-4 space-y-5">
+                      <div className="flex items-center gap-2">
+                           <PenTool className="w-4 h-4 text-primary" />
+                           <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Active Design Hooks</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                           <span className="bg-white/5 text-white/40 border border-white/10 px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider">Swiss Minimal</span>
+                           <span className="bg-white/5 text-white/40 border border-white/10 px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider">OKLCH Palette</span>
+                           <span className="bg-white/5 text-white/40 border border-white/10 px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider">Fluid Reveal</span>
+                      </div>
+                  </div>
+                </div>
+            </div>
+          )}
+        </aside>
+
+        {/* Device Laboratory */}
+        <main className="flex-1 glass-panel rounded-[3rem] p-4 bg-white/1 border-white/5 overflow-hidden flex flex-col group relative stagger-item" style={{ animationDelay: '500ms' }}>
+          <div className="absolute inset-0 bg-primary/2 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none rounded-[3rem]" />
+          
+          <div className="bg-white/2 border-b border-white/5 p-4 flex items-center justify-between rounded-t-[2.5rem] px-8">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-primary/20" />
+              <div className="w-3 h-3 rounded-full bg-accent/20" />
+              <div className="w-3 h-3 rounded-full bg-white/10" />
+            </div>
+            <div className="bg-black/40 border border-white/5 rounded-full px-6 py-1.5 text-[10px] text-white/30 font-mono w-full max-w-sm text-center truncate italic">
+                {selectedLeadId ? previewUrl : "https://forge.leadflow.pro/id/..."}
+            </div>
+            <Globe className="w-4 h-4 text-white/20" />
+          </div>
+
+          <div className="flex-1 flex items-center justify-center bg-black/40 relative overflow-hidden p-10">
+            {/* Visual background detail */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 blur-[120px] rounded-full opacity-30 group-hover:opacity-60 transition-opacity duration-1000" />
+            
             {selectedLeadId ? (
-                <div className={`h-full border border-slate-800 shadow-2xl transition-all duration-500 overflow-hidden rounded-md bg-white ${viewportWidths[viewport]}`}>
+                <div className={clsx(
+                  "h-full border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] transition-all duration-700 overflow-hidden relative group/frame",
+                  viewportWidths[viewport],
+                  viewport === 'mobile' ? 'rounded-[3rem] border-8 border-slate-900' : 'rounded-2xl'
+                )}>
                     <iframe 
                       src={previewUrl} 
                       className="w-full h-full border-none"
-                      title="Preview"
+                      title="Forge Preview"
                       key={`${selectedLeadId}-${selectedLead?.preview_data ? 'ready' : 'empty'}`}
                     />
                 </div>
             ) : (
-                <div className="text-center space-y-4 opacity-30">
-                    <Monitor className="w-16 h-16 mx-auto text-slate-700" />
-                    <p className="text-xl font-medium text-white">Wähle einen Lead aus, um die Vorschau zu laden.</p>
+                <div className="text-center space-y-8 max-w-sm px-10 py-20 rounded-[3rem] relative z-10">
+                    <div className="p-8 bg-white/2 border border-white/5 rounded-full inline-block">
+                      <Monitor className="w-16 h-16 mx-auto text-white/10 group-hover:text-primary/20 transition-colors" />
+                    </div>
+                    <div className="space-y-4">
+                      <p className="text-2xl font-serif text-white/20 leading-tight italic">Waiting for Creator <br/> Parameters</p>
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10">Laboratory Connection Optimized</p>
+                    </div>
                 </div>
             )}
           </div>
@@ -318,7 +347,10 @@ export default function CreatorPage() {
   return (
     <Suspense fallback={
         <div className="h-full flex items-center justify-center py-20 text-slate-100">
-            <LucideLoader className="w-8 h-8 animate-spin text-blue-500" />
+            <div className="flex flex-col items-center gap-6">
+               <LucideLoader className="w-10 h-10 animate-spin text-primary" />
+               <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Syncing Creative Engine</p>
+            </div>
         </div>
     }>
       <CreatorContent />

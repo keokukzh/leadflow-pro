@@ -10,20 +10,21 @@ import {
   Mail, 
   Database,
   Settings,
-  Activity
+  Activity,
+  ChevronRight
 } from "lucide-react";
 import clsx from "clsx";
 import { getGlobalAgentStatus, GlobalAgentStatus } from "@/lib/actions/server-actions";
 import { useState, useEffect } from "react";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard, key: "dashboard" as keyof GlobalAgentStatus | "dashboard" | "memory" },
-  { name: "Discovery Agent", href: "/discovery", icon: Search, key: "discovery" as keyof GlobalAgentStatus },
-  { name: "Strategy Agent", href: "/strategy", icon: BrainCircuit, key: "strategy" as keyof GlobalAgentStatus },
-  { name: "Creator Agent", href: "/creator", icon: Palette, key: "creator" as keyof GlobalAgentStatus },
-  { name: "Contact Agent", href: "/contact", icon: Mail, key: "contact" as keyof GlobalAgentStatus },
-  { name: "Memory / CRM", href: "/memory", icon: Database, key: "memory" as keyof GlobalAgentStatus | "dashboard" | "memory" },
-  { name: "System Health", href: "/health", icon: Activity, key: "health" as string },
+  { name: "Executive Suite", href: "/", icon: LayoutDashboard, key: "dashboard" },
+  { name: "Market Discovery", href: "/discovery", icon: Search, key: "discovery" },
+  { name: "Logic Engine", href: "/strategy", icon: BrainCircuit, key: "strategy" },
+  { name: "Creative Studio", href: "/creator", icon: Palette, key: "creator" },
+  { name: "Outreach Hub", href: "/contact", icon: Mail, key: "contact" },
+  { name: "Lead Repository", href: "/memory", icon: Database, key: "memory" },
+  { name: "System Vitals", href: "/health", icon: Activity, key: "health" },
 ];
 
 export function Sidebar() {
@@ -46,58 +47,85 @@ export function Sidebar() {
     };
 
     checkStatus();
-    const interval = setInterval(checkStatus, 3000);
+    const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="flex flex-col h-screen w-64 bg-slate-900 text-white border-r border-slate-800">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold bg-linear-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-          LeadFlow Pro
-        </h1>
-      </div>
+    <div className="flex flex-col h-screen w-72 p-4 z-50">
+      <div className="flex flex-col h-full glass-panel rounded-3xl overflow-hidden border-white/5 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)]">
+        {/* Logo Section */}
+        <div className="p-8 pb-4">
+          <div className="flex items-center space-x-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(155,35,53,0.4)]">
+              <Activity className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xs font-bold tracking-[0.2em] text-accent/60 uppercase">
+              Swiss Intel
+            </span>
+          </div>
+          <h1 className="text-3xl font-serif text-white leading-tight">
+            LeadFlow<span className="text-primary italic">.</span>
+          </h1>
+        </div>
 
-      <nav className="flex-1 px-4 space-y-2">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href;
-          const isAgentActive = item.key in status ? status[item.key as keyof GlobalAgentStatus] : false;
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto custom-scrollbar">
+          <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] px-4 mb-4">
+            Navigation
+          </div>
+          {navigation.map((item, idx) => {
+            const isActive = pathname === item.href;
+            const isAgentActive = item.key in status ? status[item.key as keyof GlobalAgentStatus] : false;
 
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={clsx(
-                "flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors group",
-                isActive
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
-              )}
-            >
-              <div className="flex items-center">
-                <item.icon className="w-5 h-5 mr-3" />
-                {item.name}
-              </div>
-              
-              {isAgentActive && (
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
+            return (
+              <Link
+                key={item.name}
+                href={item.href}
+                className={clsx(
+                  "stagger-item group flex items-center justify-between px-4 py-3.5 text-sm font-medium rounded-2xl transition-all duration-500",
+                  isActive
+                    ? "bg-white/10 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
+                    : "text-white/40 hover:text-white hover:bg-white/5"
+                )}
+                style={{ animationDelay: `${idx * 50}ms` }}
+              >
+                <div className="flex items-center">
+                  <div className={clsx(
+                    "p-2 rounded-xl mr-3 transition-colors duration-500",
+                    isActive ? "bg-primary/20 text-primary" : "bg-white/5 text-white/40 group-hover:text-white group-hover:bg-white/10"
+                  )}>
+                    <item.icon className="w-5 h-5" />
+                  </div>
+                  <span className="tracking-tight">{item.name}</span>
+                </div>
+                
+                {isAgentActive ? (
+                  <div className="agent-active-glow w-2 h-2 rounded-full" />
+                ) : (
+                  <ChevronRight className={clsx(
+                    "w-4 h-4 transition-all duration-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0",
+                    isActive ? "text-primary/50" : "text-white/20"
+                  )} />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
 
-      <div className="p-4 border-t border-slate-800">
-        <Link
-          href="/settings"
-          className="flex items-center px-4 py-3 text-sm font-medium text-slate-400 rounded-lg hover:bg-slate-800 hover:text-white transition-colors"
-        >
-          <Settings className="w-5 h-5 mr-3" />
-          Settings
-        </Link>
+        {/* Footer Settings */}
+        <div className="p-6 mt-auto border-t border-white/5 bg-white/2">
+          <Link
+            href="/settings"
+            className="flex items-center justify-between px-4 py-3 text-sm font-medium text-white/40 rounded-2xl hover:bg-white/5 hover:text-white transition-all duration-300 group"
+          >
+            <div className="flex items-center">
+              <Settings className="w-5 h-5 mr-3 group-hover:rotate-45 transition-transform duration-500" />
+              Settings
+            </div>
+            <div className="w-1.5 h-1.5 rounded-full bg-white/10 group-hover:bg-accent transition-colors" />
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -4,14 +4,23 @@ import { useEffect, useState } from "react";
 import { PipelineColumn } from "./PipelineColumn";
 import { LeadHistoryModal } from "./LeadHistoryModal";
 import { getLeads, deleteLead, Lead } from "@/lib/actions/server-actions";
+import { 
+  Database, 
+  Activity, 
+  Terminal, 
+  Layers, 
+  Cpu, 
+  Network 
+} from "lucide-react";
+import clsx from "clsx";
 
 const COLUMNS = [
-  { id: 'DISCOVERED', title: 'Gefunden' },
-  { id: 'STRATEGY_CREATED', title: 'Strategie erstellt' },
-  { id: 'PREVIEW_READY', title: 'Vorschau fertig' },
-  { id: 'CONTACTED', title: 'Kontaktiert' },
-  { id: 'WON', title: 'Zusage' },
-  { id: 'LOST', title: 'Absage' },
+  { id: 'DISCOVERED', title: 'DISCOVERED', icon: Network, color: 'text-blue-400' },
+  { id: 'STRATEGY_CREATED', title: 'ANALYZED', icon: Cpu, color: 'text-purple-400' },
+  { id: 'PREVIEW_READY', title: 'FORGED', icon: Layers, color: 'text-accent' },
+  { id: 'CONTACTED', title: 'OUTREACH', icon: Activity, color: 'text-orange-400' },
+  { id: 'WON', title: 'ACQUIRED', icon: Database, color: 'text-green-400' },
+  { id: 'LOST', title: 'ARCHIVED', icon: Terminal, color: 'text-white/20' },
 ];
 
 export function PipelineBoard() {
@@ -42,23 +51,27 @@ export function PipelineBoard() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+        <Activity className="w-10 h-10 text-primary animate-pulse" />
+        <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20">Syncing Intelligence Pipeline</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-x-auto pb-4">
-        <div className="inline-flex gap-6 h-full items-start px-2">
-          {COLUMNS.map((col) => (
+    <div className="h-full flex flex-col bg-transparent">
+      <div className="flex-1 overflow-x-auto custom-scrollbar pb-8">
+        <div className="inline-flex gap-8 h-full items-start px-0">
+          {COLUMNS.map((col, idx) => (
             <PipelineColumn
               key={col.id}
               title={col.title}
+              icon={col.icon}
+              color={col.color}
               leads={leads.filter(l => l.status === col.id)}
               onLeadClick={handleLeadClick}
               onDeleteLead={handleDeleteLead}
+              index={idx}
             />
           ))}
         </div>
