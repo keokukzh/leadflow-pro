@@ -2,74 +2,65 @@ import argparse
 import json
 import csv
 import os
+import requests
 from dotenv import load_dotenv
-
-# Try to import googlemaps, handle missing dependency gracefully
-try:
-    import googlemaps
-    HAS_GOOGLE_MAPS = True
-except ImportError:
-    HAS_GOOGLE_MAPS = False
 
 # Load environment variables from .env.local
 load_dotenv(dotenv_path="leadflow-pro/.env.local")
 API_KEY = os.getenv("GOOGLE_PLACES_API_KEY")
 
-def extract_lead_new_api(place, api_key):
-    """Extract lead info from Google Places API (New) format."""
-    try:
-        return {
-            "id": place.get('id'),
-            "name": place.get('displayName', {}).get('text'),
-            "city": place.get('formattedAddress'),
-            "industry": "Local Business",
-            "reviews": place.get('userRatingCount', 0),
-            "rating": place.get('rating', 0),
-            "website": place.get('websiteUri')
-        }
-    except Exception as e:
-        print(f"Error extracting lead: {e}")
-        return None
-
-def find_leads_new_api(city, industry, min_reviews, min_rating=4.0):
-    """Search using NEW Google Places API (2024+)."""
-    if not API_KEY:
+def search_places_new_api(city, industry, api_key):
+    """Search using NEW Google Places API (REST API)."""
+    if not api_key:
         print("ERROR: GOOGLE_PLACES_API_KEY not found in .env.local")
         return []
     
-    if not HAS_GOOGLE_MAPS:
-        print("ERROR: 'googlemaps' library not installed. Run: pip install googlemaps")
-        return []
-
     try:
-        # Use the new Places API via googlemaps client
-        client = googlemaps.Client(key=API_KEY)
+        # Places API (New) - Text Search
+        url = "https://places.googleapis.com/v1/places:searchText"
         
-        # Text Search (New API)
-        query = f"{industry} in {city}"
-        results = client.places(query=query)
+        headers = {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": api_key,
+            "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri"
+        }
+        
+        data = {
+            "textQuery": f"{industry} in {city}",
+            "maxResultCount": 20
+        }
+        
+        response = requests.post(url, headers=headers, json=data, timeout=30)
+        
+        if response.status_code != 200:
+            print(f"API Error: {response.status_code} - {response.text}")
+            return []
+        
+        results = response.json().get('places', [])
         
         leads = []
-        for result in results.get('results', []):
-            lead = {
-                "id": result.get('place_id'),
-                "name": result.get('name'),
-                "city": result.get('vicinity'),
-                "industry": industry,
-                "reviews": result.get('user_ratings_total', 0),
-                "rating": float(result.get('rating', 0)),
-                "website": result.get('website')
-            }
+        for place in results:
+            name = place.get('displayName', {}).get('text', 'Unknown')
+            address = place.get('formattedAddress', city)
+            rating = place.get('rating', 0)
+            reviews = place.get('userRatingCount', 0)
+            website = place.get('websiteUri', None)
             
-            # Apply filters
-            if lead["reviews"] >= min_reviews and lead["rating"] >= min_rating:
-                leads.append(lead)
-                
+            lead = {
+                "id": place.get('id'),
+                "name": name,
+                "city": address,
+                "industry": industry,
+                "reviews": reviews,
+                "rating": rating,
+                "website": website
+            }
+            leads.append(lead)
+        
         return leads
         
     except Exception as e:
-        print(f"API Error: {e}")
-        print("Hinweis: Places API (New) erfordert separaten API Key")
+        print(f"Error: {e}")
         return []
 
 def find_leads_mock(city, industry, min_reviews, min_rating):
@@ -109,31 +100,44 @@ def find_leads_mock(city, industry, min_reviews, min_rating):
         if l["reviews"] >= min_reviews and l["rating"] >= min_rating
     ]
 
+def filter_leads(leads, min_reviews, min_rating):
+    """Filter leads by minimum reviews and rating."""
+    return [
+        l for l in leads
+        if l.get("reviews", 0) >= min_reviews and l.get("rating", 0) >= min_rating
+    ]
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Bottie Lead Finder for Switzerland")
+    parser = argparse.ArgumentParser(description="Bottie Lead Finder for Switzerland - Places API (New)")
     parser.add_argument("--city", required=True, help="City to search in (e.g., Zurich)")
     parser.add_argument("--industry", help="Industry (e.g., restaurant)")
     parser.add_argument("--min-reviews", type=int, default=20, help="Minimum number of reviews")
     parser.add_argument("--min-rating", type=float, default=4.0, help="Minimum rating")
     parser.add_argument("--real", action="store_true", help="Use real Google Places API")
+    parser.add_argument("--mock", action="store_true", help="Use mock data")
     
     args = parser.parse_args()
     
-    # Check if we should use real API
-    use_real = args.real or (API_KEY and not args.real is False)
+    print(f"\n🔍 Searching for {args.industry or 'Local Business'} in {args.city}")
+    print(f"   Min Reviews: {args.min_reviews} | Min Rating: {args.min_rating}")
+    print()
     
-    if use_real:
-        leads = find_leads_new_api(args.city, args.industry, args.min_reviews, args.min_rating)
-        if not leads:
-            print("\n⚠️  API returned no results. Trying with --mock fallback...")
-            leads = find_leads_mock(args.city, args.industry, args.min_reviews, args.min_rating)
+    if args.mock or not API_KEY:
+        leads = find_leads_mock(args.city, args.industry or "Local Business", args.min_reviews, args.min_rating)
     else:
-        leads = find_leads_mock(args.city, args.industry, args.min_reviews, args.min_rating)
+        leads = search_places_new_api(args.city, args.industry or "Local Business", API_KEY)
+        leads = filter_leads(leads, args.min_reviews, args.min_rating)
+        
+        if not leads:
+            print("⚠️  No results from API. Using mock data...")
+            leads = find_leads_mock(args.city, args.industry or "Local Business", args.min_reviews, args.min_rating)
     
     print(f"\n✅ Found {len(leads)} potential leads in {args.city}")
-    print("-" * 50)
-    for lead in leads:
-        print(f"📍 {lead['name']}")
+    print("-" * 60)
+    
+    for i, lead in enumerate(leads, 1):
+        print(f"{i}. {lead['name']}")
+        print(f"   📍 {lead['city']}")
         print(f"   ⭐ {lead['rating']} ({lead['reviews']} reviews)")
         print(f"   🌐 {lead['website'] or 'NO WEBSITE'}")
         print()
@@ -145,3 +149,6 @@ if __name__ == "__main__":
         writer.writerows(leads)
     
     print("💾 Leads saved to leads.csv")
+    print("\n📋 Lead IDs for CRM import:")
+    for lead in leads:
+        print(f"   - {lead['id']}: {lead['name']}")
