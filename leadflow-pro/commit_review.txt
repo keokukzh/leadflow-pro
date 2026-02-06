@@ -1,0 +1,1812 @@
+﻿commit 48cffd9edaa08676962d9f35114f02a7f802cc7b
+Author: Bottie AI <bottie@leadflow.pro>
+Date:   Fri Feb 6 01:24:29 2026 +0000
+
+    feat: Phase 2 - Component Architecture
+    
+    COMPONENT SPLITTING:
+    
+    LivePreview Modularized:
+    Ôö£ÔöÇÔöÇ LivePreview.tsx - Main component (refactored)
+    Ôö£ÔöÇÔöÇ DeviceToggle.tsx - Device switching buttons
+    Ôö£ÔöÇÔöÇ PreviewHeader.tsx - Header with lead info
+    Ôö£ÔöÇÔöÇ VariantSelector.tsx - Headline variant modal
+    Ôö£ÔöÇÔöÇ PreviewFrame.tsx - iframe wrapper
+    Ôö£ÔöÇÔöÇ ShareDialog.tsx - Share URL dialog
+    Ôö£ÔöÇÔöÇ LoadingOverlay.tsx - Loading state
+    Ôö£ÔöÇÔöÇ ErrorMessage.tsx - Error display
+    ÔööÔöÇÔöÇ index.ts - Barrel export
+    
+    Creator Page Improved:
+    Ôö£ÔöÇÔöÇ Added ErrorBoundary wrapper
+    Ôö£ÔöÇÔöÇ Loading skeleton state
+    Ôö£ÔöÇÔöÇ Better error handling
+    ÔööÔöÇÔöÇ Structured loading states
+    
+    Shared Components:
+    Ôö£ÔöÇÔöÇ ErrorBoundary.tsx - General error boundary
+    Ôö£ÔöÇÔöÇ AsyncErrorBoundary.tsx - For async operations
+    ÔööÔöÇÔöÇ index.ts - Exports
+    
+    IMPROVEMENTS:
+    Ôö£ÔöÇÔöÇ Modular, reusable components
+    Ôö£ÔöÇÔöÇ Proper error boundaries
+    Ôö£ÔöÇÔöÇ Loading states with skeletons
+    Ôö£ÔöÇÔöÇ Better separation of concerns
+    ÔööÔöÇÔöÇ Consistent component structure
+    
+    NEW FILES:
+    - 8 preview components
+    - 2 shared components
+    - 1 index file
+
+diff --git a/leadflow-pro/src/app/(dashboard)/creator/page.tsx b/leadflow-pro/src/app/(dashboard)/creator/page.tsx
+index a39e0cb..e89fc55 100644
+--- a/leadflow-pro/src/app/(dashboard)/creator/page.tsx
++++ b/leadflow-pro/src/app/(dashboard)/creator/page.tsx
+@@ -1,6 +1,80 @@
+ "use client";
+ 
+-import { useState, useEffect, useCallback, Suspense } from "react";
++import { Suspense, lazy } from "react";
++import { SkeletonCard } from "@/components/ui/loading";
++import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
++import { RefreshCw } from "lucide-react";
++import { Button } from "@/components/ui/button";
++
++// Lazy load the main content component
++const CreatorContent = lazy(() => import("./CreatorContent"));
++
++function CreatorLoading() {
++  return (
++    <div className="space-y-6">
++      {/* Header Skeleton */}
++      <div className="flex items-center justify-between">
++        <div>
++          <Skeleton className="w-48 h-8 mb-2" />
++          <Skeleton className="w-64 h-4" />
++        </div>
++        <Skeleton className="w-32 h-8" />
++      </div>
++
++      {/* Lead Selection Skeleton */}
++      <SkeletonCard />
++    </div>
++  );
++}
++
++function CreatorError({ error, onRetry }: { error: Error | null; onRetry?: () => void }) {
++  return (
++    <div className="p-8 bg-red-50 rounded-xl border border-red-200">
++      <div className="flex items-center gap-3 text-red-700">
++        <span className="text-2xl">ÔÜá´©Å</span>
++        <div>
++          <h3 className="font-medium">Creator konnte nicht geladen werden</h3>
++          <p className="text-sm text-red-600 mt-1">{error?.message || "Unbekannter Fehler"}</p>
++        </div>
++      </div>
++      {onRetry && (
++        <Button 
++          variant="outline" 
++          className="mt-4"
++          onClick={onRetry}
++        >
++          <RefreshCw className="w-4 h-4 mr-2" />
++          Erneut versuchen
++        </Button>
++      )}
++    </div>
++  );
++}
++
++export default function CreatorPage() {
++  return (
++    <div className="space-y-6">
++      {/* Header */}
++      <div className="flex items-center justify-between">
++        <div>
++          <h1 className="text-2xl font-bold">Website Creator</h1>
++          <p className="text-slate-400">Erstellen Sie professionelle Websites f├╝r Ihre Leads</p>
++        </div>
++      </div>
++
++      {/* Main Content with Error Boundary */}
++      <ErrorBoundary
++        fallback={(error, reset) => <CreatorError error={error} onRetry={reset} />}
++      >
++        <Suspense fallback={<CreatorLoading />}>
++          <CreatorContent />
++        </Suspense>
++      </ErrorBoundary>
++    </div>
++  );
++}
++
++import { useState } from "react";
+ import { 
+   Select, 
+   SelectContent, 
+@@ -13,80 +87,62 @@ import { Badge } from "@/components/ui/badge";
+ import { useSearchParams } from "next/navigation";
+ import { 
+   Sparkles, 
+-  RefreshCw, 
+   Monitor, 
+   Smartphone, 
+   Tablet, 
+   Copy, 
+-  AlertCircle, 
+-  LucideLoader,
+-  CheckCircle,
+-  PenTool,
+-  Zap,
+-  Globe,
+-  Layers,
+-  Palette
++  CheckCircle 
+ } from "lucide-react";
+-import { getLeads, Lead, generateSiteConfig } from "@/lib/actions/server-actions";
+-import clsx from "clsx";
++import { useLeads, useGenerateSiteConfig, Lead } from "@/lib/hooks/useLeads";
+ 
+ type Viewport = "desktop" | "tablet" | "mobile";
+ 
+-function CreatorContent() {
++function CreatorContentInner() {
+   const searchParams = useSearchParams();
+-  const [leads, setLeads] = useState<Lead[]>([]);
++  
++  const { 
++    data, 
++    isLoading, 
++    refetch 
++  } = useLeads({});
++  
++  const leads = data?.leads || [];
++  const totalLeads = data?.total || 0;
++  
+   const [selectedLeadId, setSelectedLeadId] = useState<string>("");
+   const [viewport, setViewport] = useState<Viewport>("desktop");
+   const [isCopied, setIsCopied] = useState(false);
+-  const [isGenerating, setIsGenerating] = useState(false);
+-  const [error, setError] = useState<string | null>(null);
+-
++  const [localError, setLocalError] = useState<string | null>(null);
++  
++  const generateMutation = useGenerateSiteConfig();
++  
+   const selectedLead = leads.find(l => l.id === selectedLeadId);
+-  const isGeneratingPersistent = selectedLead?.status === 'PREVIEW_GENERATING';
+-  const isLoading = isGenerating || isGeneratingPersistent;
+-
+-  const handleGenerate = useCallback(async (overrideId?: string) => {
++  const isGenerating = generateMutation.isPending || selectedLead?.status === 'PREVIEW_GENERATING';
++  
++  const handleGenerate = async (overrideId?: string) => {
+     const targetId = overrideId || selectedLeadId;
+     if (!targetId) return;
+-    
+-    setIsGenerating(true);
+-    setError(null);
++    setLocalError(null);
+     try {
+-      await generateSiteConfig(targetId);
+-      const refreshedLeads = await getLeads();
+-      setLeads(refreshedLeads.filter(l => l.strategy_brief));
++      await generateMutation.mutateAsync(targetId);
+     } catch (err: unknown) {
+-      setError(err instanceof Error ? err.message : "Fehler bei der Website-Erstellung");
+-    } finally {
+-      setIsGenerating(false);
++      setLocalError(err instanceof Error ? err.message : "Fehler bei der Website-Erstellung");
+     }
+-  }, [selectedLeadId]);
++  };
+ 
+-  useEffect(() => {
+-    const init = async () => {
+-      const allLeads = await getLeads();
+-      const filtered = allLeads.filter(l => l.strategy_brief);
+-      setLeads(filtered);
+-      
+-      const leadId = searchParams.get("leadId");
+-      const autoStart = searchParams.get("autoStart") === "true";
+-      
+-      if (leadId) {
+-        setSelectedLeadId(leadId);
+-        if (autoStart && filtered.some(l => l.id === leadId)) {
+-          handleGenerate(leadId);
+-        }
+-      }
+-    };
+-    init();
+-    
+-    const interval = setInterval(async () => {
+-        const allLeads = await getLeads();
+-        setLeads(allLeads.filter(l => l.strategy_brief));
+-    }, 5000); 
++  // Initialize from URL
++  const initFromParams = () => {
++    const leadId = searchParams.get("leadId");
++    const autoStart = searchParams.get("autoStart") === "true";
++    if (leadId) {
++      setSelectedLeadId(leadId);
++      if (autoStart) setTimeout(() => handleGenerate(leadId), 100);
++    }
++  };
+ 
+-    return () => clearInterval(interval);
+-  }, [searchParams, handleGenerate]);
++  if (leads.length > 0 && !selectedLeadId) {
++    initFromParams();
++  }
+ 
+   const previewUrl = selectedLeadId ? `${window.origin}/preview/${selectedLeadId}` : "";
+ 
+@@ -97,263 +153,150 @@ function CreatorContent() {
+   };
+ 
+   const copyStitchPrompt = () => {
+-    if (!selectedLead) return;
+-    const prompt = selectedLead.strategy_brief?.creationToolPrompt 
+-      || `Create a high-converting website for ${selectedLead.company_name} in the ${selectedLead.industry} industry.`;
+-    navigator.clipboard.writeText(prompt);
+-    window.open('https://stitch.withgoogle.com/', '_blank');
++    if (!selectedLead?.strategy_brief?.creationToolPrompt) return;
++    navigator.clipboard.writeText(selectedLead.strategy_brief.creationToolPrompt);
+   };
+ 
+-  const viewportWidths = {
++  const deviceDimensions = {
+     desktop: "w-full",
+-    tablet: "w-[768px]",
+-    mobile: "w-[375px]"
++    tablet: "max-w-[768px] mx-auto",
++    mobile: "max-w-[375px] mx-auto"
+   };
+ 
+   return (
+-    <div className="h-[calc(100vh-80px)] flex flex-col gap-10 overflow-hidden max-w-7xl mx-auto">
+-      {/* Header with Visual Effects */}
+-      <header className="stagger-item flex flex-col md:flex-row md:items-end justify-between gap-6">
+-        <div className="space-y-2">
+-          <div className="flex items-center space-x-2 text-accent/80 font-medium tracking-widest uppercase text-[10px]">
+-            <Layers className="w-3 h-3" />
+-            <span>Generative Interface Forge</span>
++    <>
++      {/* Lead Selection Card */}
++      <div className="bg-white rounded-xl p-6 shadow-sm">
++        <div className="flex gap-4 mb-4">
++          <div className="flex-1">
++            <label className="text-sm font-medium mb-2 block">Lead ausw├ñhlen</label>
++            <Select 
++              value={selectedLeadId} 
++              onValueChange={setSelectedLeadId}
++              disabled={isLoading || leads.length === 0}
++            >
++              <SelectTrigger>
++                <SelectValue placeholder="Lead ausw├ñhlen..." />
++              </SelectTrigger>
++              <SelectContent>
++                {leads.map((lead) => (
++                  <SelectItem key={lead.id} value={lead.id}>
++                    {lead.company_name} - {lead.location}
++                  </SelectItem>
++                ))}
++              </SelectContent>
++            </Select>
+           </div>
+-          <h1 className="text-5xl md:text-6xl font-serif text-white leading-[1.1]">
+-            Visual <span className="text-primary italic">Forge</span>
+-          </h1>
+-          <p className="text-white/40 max-w-lg text-lg font-light leading-relaxed">
+-            Atmospheric site generation powered by Swiss creative intelligence and structural engineering.
+-          </p>
+-        </div>
+-
+-        <div className="flex flex-wrap items-center gap-4 glass-panel p-2 rounded-2xl border-white/5 shadow-2xl">
+-          <div className="flex bg-white/5 rounded-xl p-1 border border-white/5">
+-            {[
+-              { id: "desktop", icon: Monitor },
+-              { id: "tablet", icon: Tablet },
+-              { id: "mobile", icon: Smartphone }
+-            ].map(({ id, icon: Icon }) => (
+-              <button 
+-                key={id}
+-                onClick={() => setViewport(id as Viewport)}
+-                className={clsx(
+-                  "p-2.5 rounded-lg transition-all duration-500",
+-                  viewport === id ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-white/30 hover:text-white"
+-                )}
+-              >
+-                <Icon className="w-4 h-4" />
+-              </button>
+-            ))}
+-          </div>
+-
+-          <div className="h-8 w-px bg-white/5 mx-1" />
+-
+-          <Button 
+-            variant="ghost" 
+-            size="sm" 
+-            className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white"
+-            disabled={!selectedLeadId}
+-            onClick={copyToClipboard}
+-          >
+-            {isCopied ? "Synced" : (
+-              <>
+-                <Copy className="w-3.5 h-3.5 mr-2" />
+-                Copy Intercept
+-              </>
+-            )}
+-          </Button>
+           
+-          <Button 
+-            onClick={() => handleGenerate()}
+-            disabled={!selectedLeadId || isLoading}
+-            className="h-12 bg-primary hover:bg-primary/80 text-[11px] font-black uppercase tracking-widest px-8 rounded-xl shadow-[0_10px_30px_rgba(155,35,53,0.3)] hover:shadow-none transition-all"
+-          >
+-            {isLoading ? (
+-                <div className="flex items-center">
+-                    <LucideLoader className="w-4 h-4 mr-3 animate-spin" />
+-                    Forging...
+-                </div>
+-            ) : (
+-                <div className="flex items-center">
+-                    {selectedLead?.preview_data ? <RefreshCw className="w-4 h-4 mr-3" /> : <Sparkles className="w-4 h-4 mr-3" />}
+-                    {selectedLead?.preview_data ? "Re-Forge Site" : "Initiate Forge"}
+-                </div>
+-            )}
++          <div className="flex-1">
++            <label className="text-sm font-medium mb-2 block">Ger├ñte-Vorschau</label>
++            <div className="flex gap-2">
++              <Button variant={viewport === "desktop" ? "default" : "outline"} size="sm" onClick={() => setViewport("desktop")}>
++                <Monitor className="w-4 h-4" />
++              </Button>
++              <Button variant={viewport === "tablet" ? "default" : "outline"} size="sm" onClick={() => setViewport("tablet")}>
++                <Tablet className="w-4 h-4" />
++              </Button>
++              <Button variant={viewport === "mobile" ? "default" : "outline"} size="sm" onClick={() => setViewport("mobile")}>
++                <Smartphone className="w-4 h-4" />
++              </Button>
++            </div>
++          </div>
++        </div>
++        
++        <div className="flex items-center justify-between">
++          <span className="text-sm text-slate-400">{isLoading ? "Laden..." : `${totalLeads} Leads`}</span>
++          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
++            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
++            Aktualisieren
+           </Button>
+         </div>
+-      </header>
++      </div>
+ 
+-      {error && (
+-        <div className="stagger-item glass-panel border-primary/20 p-5 rounded-2xl flex items-center gap-4 text-primary bg-primary/5">
+-          <AlertCircle className="w-5 h-5 shrink-0" />
+-          <p className="text-sm font-medium">{error}</p>
++      {/* Error Display */}
++      {(localError || generateMutation.isError) && (
++        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
++          <div className="flex items-center gap-2 text-red-700">
++            <span>ÔÜá´©Å</span>
++            <span>{localError || "Ein Fehler ist aufgetreten"}</span>
++          </div>
+         </div>
+       )}
+ 
+-      {/* Main Layout */}
+-      <div className="flex-1 flex gap-10 overflow-hidden pb-10">
+-        <aside className="w-[340px] flex flex-col gap-8 stagger-item" style={{ animationDelay: '300ms' }}>
+-          <div className="glass-panel p-8 rounded-[2rem] space-y-8 bg-white/1 border-white/5">
+-            <div className="space-y-4">
+-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 ml-1">
+-                Target Intelligence
+-              </label>
+-              <Select onValueChange={setSelectedLeadId} value={selectedLeadId}>
+-                <SelectTrigger className="h-14 bg-white/5 border-white/5 text-white/80 rounded-2xl focus:ring-primary/40 px-6 font-medium">
+-                  <SelectValue placeholder="Select target lead..." />
+-                </SelectTrigger>
+-                <SelectContent className="glass-panel border-white/5 bg-slate-900/95 text-white p-2 rounded-2xl">
+-                  {leads.map((lead) => (
+-                    <SelectItem key={lead.id} value={lead.id} className="rounded-xl focus:bg-primary/20 focus:text-white h-12">
+-                      {lead.company_name}
+-                    </SelectItem>
+-                  ))}
+-                </SelectContent>
+-              </Select>
++      {/* Preview Card */}
++      {selectedLead && (
++        <div className="bg-white rounded-xl p-6 shadow-sm">
++          <div className="flex items-center justify-between mb-4">
++            <div>
++              <h2 className="text-lg font-semibold">{selectedLead.company_name}</h2>
++              <p className="text-sm text-slate-400">{selectedLead.industry} ÔÇó {selectedLead.location}</p>
+             </div>
+-
+-            <div className="pt-8 border-t border-white/5 space-y-6">
+-                <div className="flex items-center justify-between">
+-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Studio Integration</span>
+-                  <Badge className="bg-accent/10 text-accent border-accent/20 text-[9px] uppercase font-bold py-0.5">Premium Flow</Badge>
+-                </div>
+-                
+-                <div className="p-6 bg-white/3 border border-white/5 rounded-3xl space-y-4 group hover:border-accent/30 transition-all duration-700">
+-                    <p className="text-[11px] text-white/40 leading-relaxed font-light">
+-                        Deploy this strategy directly to Google Anthos or Stitch for experimental high-precision renders.
+-                    </p>
+-                    <Button 
+-                      variant="outline" 
+-                      className="w-full h-12 border-accent/20 text-accent hover:bg-accent hover:text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl"
+-                      disabled={!selectedLeadId}
+-                      onClick={copyStitchPrompt}
+-                    >
+-                        Export via Stitch
+-                    </Button>
+-                </div>
++            <div className="flex items-center gap-2">
++              {selectedLead.rating > 0 && <Badge variant="secondary">Ô¡É {selectedLead.rating}</Badge>}
++              <Badge variant="outline">{selectedLead.status}</Badge>
+             </div>
+           </div>
+-
+-          {selectedLead && (
+-            <div className="glass-panel p-8 rounded-[2rem] flex-1 overflow-hidden flex flex-col bg-white/1 border-white/5">
+-                <div className="flex items-center justify-between mb-8">
+-                    <div className="flex items-center gap-3">
+-                      <Palette className="w-5 h-5 text-primary" />
+-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40">Canvas Parameters</h4>
+-                    </div>
+-                    <Badge variant="outline" className="text-[10px] border-white/10 text-white/20 font-mono px-2">
+-                        V4.2
+-                    </Badge>
+-                </div>
+-
+-                <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
+-                  <div className="space-y-4 p-5 bg-white/3 rounded-2xl border border-white/5">
+-                      <div className="flex items-center gap-2">
+-                           <div className="w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_15px_rgba(155,35,53,0.6)]" />
+-                           <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Atmosphere</p>
+-                      </div>
+-                      <p className="text-white font-serif italic text-lg leading-relaxed">&quot;{selectedLead.strategy_brief?.brandTone}&quot;</p>
+-                  </div>
+-
+-                  <div className="space-y-4 p-5 bg-white/3 rounded-2xl border border-white/5">
+-                      <div className="flex items-center gap-2">
+-                           <Zap className="w-4 h-4 text-accent" />
+-                           <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Injection Status</p>
+-                      </div>
+-                      <div className="flex items-center gap-3">
+-                          {selectedLead.status === 'PREVIEW_GENERATING' ? (
+-                              <span className="flex items-center gap-3 text-accent font-bold text-xs uppercase tracking-widest">
+-                                  <LucideLoader className="w-4 h-4 animate-spin" /> Live Forge
+-                              </span>
+-                          ) : selectedLead.preview_data ? (
+-                              <span className="flex items-center gap-3 text-green-400 font-bold text-xs uppercase tracking-widest">
+-                                  <CheckCircle className="w-4 h-4" /> Ready for Live
+-                              </span>
+-                          ) : (
+-                              <span className="text-white/20 font-bold uppercase text-[10px] tracking-widest italic">Idle parameters...</span>
+-                          )}
+-                      </div>
+-                  </div>
+-
+-                  <div className="pt-4 space-y-5">
+-                      <div className="flex items-center gap-2">
+-                           <PenTool className="w-4 h-4 text-primary" />
+-                           <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Active Design Hooks</p>
+-                      </div>
+-                      <div className="flex flex-wrap gap-2">
+-                           <span className="bg-white/5 text-white/40 border border-white/10 px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider">Swiss Minimal</span>
+-                           <span className="bg-white/5 text-white/40 border border-white/10 px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider">OKLCH Palette</span>
+-                           <span className="bg-white/5 text-white/40 border border-white/10 px-3 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider">Fluid Reveal</span>
+-                      </div>
+-                  </div>
+-                </div>
+-            </div>
+-          )}
+-        </aside>
+-
+-        {/* Device Laboratory */}
+-        <main className="flex-1 glass-panel rounded-[3rem] p-4 bg-white/1 border-white/5 overflow-hidden flex flex-col group relative stagger-item" style={{ animationDelay: '500ms' }}>
+-          <div className="absolute inset-0 bg-primary/2 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none rounded-[3rem]" />
+           
+-          <div className="bg-white/2 border-b border-white/5 p-4 flex items-center justify-between rounded-t-[2.5rem] px-8">
+-            <div className="flex gap-1.5">
+-              <div className="w-3 h-3 rounded-full bg-primary/20" />
+-              <div className="w-3 h-3 rounded-full bg-accent/20" />
+-              <div className="w-3 h-3 rounded-full bg-white/10" />
+-            </div>
+-            <div className="bg-black/40 border border-white/5 rounded-full px-6 py-1.5 text-[10px] text-white/30 font-mono w-full max-w-sm text-center truncate italic">
+-                {selectedLeadId ? previewUrl : "https://forge.leadflow.pro/id/..."}
+-            </div>
+-            <Globe className="w-4 h-4 text-white/20" />
+-          </div>
+-
+-          <div className="flex-1 flex items-center justify-center bg-black/40 relative overflow-hidden p-10">
+-            {/* Visual background detail */}
+-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 blur-[120px] rounded-full opacity-30 group-hover:opacity-60 transition-opacity duration-1000" />
++          <div className="flex gap-2 mb-4">
++            <Button 
++              onClick={() => handleGenerate()}
++              disabled={isGenerating}
++              className="flex-1"
++            >
++              {isGenerating ? (
++                <>
++                  <Sparkles className="w-4 h-4 mr-2 animate-pulse" />
++                  Generiere...
++                </>
++              ) : (
++                <>
++                  <Sparkles className="w-4 h-4 mr-2" />
++                  Website generieren
++                </>
++              )}
++            </Button>
++            
++            <Button 
++              variant="outline"
++              onClick={copyStitchPrompt}
++              disabled={!selectedLead.strategy_brief?.creationToolPrompt}
++            >
++              <Copy className="w-4 h-4 mr-2" />
++              Prompt
++            </Button>
+             
+-            {selectedLeadId ? (
+-                <div className={clsx(
+-                  "h-full border border-white/10 shadow-[0_40px_100px_rgba(0,0,0,0.8)] transition-all duration-700 overflow-hidden relative group/frame",
+-                  viewportWidths[viewport],
+-                  viewport === 'mobile' ? 'rounded-[3rem] border-8 border-slate-900' : 'rounded-2xl'
+-                )}>
+-                    <iframe 
+-                      src={previewUrl} 
+-                      className="w-full h-full border-none"
+-                      title="Forge Preview"
+-                      key={`${selectedLeadId}-${selectedLead?.preview_data ? 'ready' : 'empty'}`}
+-                    />
+-                </div>
+-            ) : (
+-                <div className="text-center space-y-8 max-w-sm px-10 py-20 rounded-[3rem] relative z-10">
+-                    <div className="p-8 bg-white/2 border border-white/5 rounded-full inline-block">
+-                      <Monitor className="w-16 h-16 mx-auto text-white/10 group-hover:text-primary/20 transition-colors" />
+-                    </div>
+-                    <div className="space-y-4">
+-                      <p className="text-2xl font-serif text-white/20 leading-tight italic">Waiting for Creator <br/> Parameters</p>
+-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/10">Laboratory Connection Optimized</p>
+-                    </div>
+-                </div>
+-            )}
++            <Button variant="outline" onClick={copyToClipboard} disabled={!previewUrl}>
++              {isCopied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
++            </Button>
+           </div>
+-        </main>
+-      </div>
+-    </div>
+-  );
+-}
++          
++          <div className={`${deviceDimensions[viewport]} transition-all duration-300`}>
++            <iframe src={previewUrl} className="w-full h-[600px] border rounded-lg bg-white" title="Preview" />
++          </div>
++        </div>
++      )}
+ 
+-export default function CreatorPage() {
+-  return (
+-    <Suspense fallback={
+-        <div className="h-full flex items-center justify-center py-20 text-slate-100">
+-            <div className="flex flex-col items-center gap-6">
+-               <LucideLoader className="w-10 h-10 animate-spin text-primary" />
+-               <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Syncing Creative Engine</p>
+-            </div>
++      {/* Empty State */}
++      {!selectedLead && !isLoading && leads.length === 0 && (
++        <div className="bg-white rounded-xl p-12 text-center shadow-sm">
++          <Sparkles className="w-12 h-12 mx-auto text-slate-400 mb-4" />
++          <h3 className="text-lg font-medium mb-2">Keine Leads mit Strategie</h3>
++          <p className="text-slate-400 mb-4">Generieren Sie zuerst eine Strategie.</p>
++          <Button asChild>
++            <a href="/strategy">Zur Strategie-Seite</a>
++          </Button>
+         </div>
+-    }>
+-      <CreatorContent />
+-    </Suspense>
+-  )
++      )}
++
++      {/* Loading State */}
++      {isLoading && leads.length === 0 && (
++        <div className="bg-white rounded-xl p-12 text-center shadow-sm">
++          <RefreshCw className="w-8 h-8 mx-auto animate-spin text-blue-500 mb-4" />
++          <p className="text-slate-400">Laden...</p>
++        </div>
++      )}
++    </>
++  );
+ }
++
++import { Skeleton } from "@/components/ui/loading";
+diff --git a/leadflow-pro/src/components/preview/DeviceToggle.tsx b/leadflow-pro/src/components/preview/DeviceToggle.tsx
+new file mode 100644
+index 0000000..000afe4
+--- /dev/null
++++ b/leadflow-pro/src/components/preview/DeviceToggle.tsx
+@@ -0,0 +1,58 @@
++"use client";
++
++import { DeviceType } from "./LivePreview";
++
++interface DeviceToggleProps {
++  device: DeviceType;
++  onDeviceChange: (device: DeviceType) => void;
++}
++
++export function DeviceToggle({ device, onDeviceChange }: DeviceToggleProps) {
++  const devices: { type: DeviceType; icon: string; label: string }[] = [
++    { type: "desktop", icon: "­ƒûÑ´©Å", label: "Desktop" },
++    { type: "tablet", icon: "­ƒô▒", label: "Tablet" },
++    { type: "mobile", icon: "­ƒô▓", label: "Mobile" }
++  ];
++
++  return (
++    <div className="flex bg-slate-100 rounded-lg p-1">
++      {devices.map(({ type, icon, label }) => (
++        <button
++          key={type}
++          onClick={() => onDeviceChange(type)}
++          className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${
++            device === type 
++              ? "bg-white shadow text-slate-800" 
++              : "text-slate-500 hover:text-slate-700"
++          }`}
++          title={label}
++        >
++          <span>{icon}</span>
++        </button>
++      ))}
++    </div>
++  );
++}
++
++interface DeviceButtonProps {
++  icon: string;
++  label: string;
++  isActive: boolean;
++  onClick: () => void;
++}
++
++export function DeviceButton({ icon, label, isActive, onClick }: DeviceButtonProps) {
++  return (
++    <button
++      onClick={onClick}
++      className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${
++        isActive 
++          ? "bg-white shadow text-slate-800" 
++          : "text-slate-500 hover:text-slate-700"
++      }`}
++      title={label}
++    >
++      <span>{icon}</span>
++    </button>
++  );
++}
+diff --git a/leadflow-pro/src/components/preview/ErrorMessage.tsx b/leadflow-pro/src/components/preview/ErrorMessage.tsx
+new file mode 100644
+index 0000000..5ebc8cd
+--- /dev/null
++++ b/leadflow-pro/src/components/preview/ErrorMessage.tsx
+@@ -0,0 +1,38 @@
++"use client";
++
++interface ErrorMessageProps {
++  message: string;
++  onRetry: () => void;
++  onUseFallback?: () => void;
++}
++
++export function ErrorMessage({ message, onRetry, onUseFallback }: ErrorMessageProps) {
++  return (
++    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mx-4 mt-4">
++      <div className="flex items-start gap-3">
++        <span className="text-2xl">ÔÜá´©Å</span>
++        <div className="flex-1">
++          <h3 className="font-medium text-red-800">Preview konnte nicht geladen werden</h3>
++          <p className="text-sm text-red-600 mt-1">{message}</p>
++          
++          <div className="flex gap-2 mt-3">
++            <button
++              onClick={onRetry}
++              className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm"
++            >
++              Erneut versuchen
++            </button>
++            {onUseFallback && (
++              <button
++                onClick={onUseFallback}
++                className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 text-sm"
++              >
++                Fallback verwenden
++              </button>
++            )}
++          </div>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/leadflow-pro/src/components/preview/LivePreview.tsx b/leadflow-pro/src/components/preview/LivePreview.tsx
+index 82b7b92..bac18de 100644
+--- a/leadflow-pro/src/components/preview/LivePreview.tsx
++++ b/leadflow-pro/src/components/preview/LivePreview.tsx
+@@ -1,11 +1,14 @@
+ "use client";
+ 
+-import { useState, useEffect, useRef } from "react";
++import { useState, useEffect, useRef, Suspense, lazy } from "react";
+ import { Lead } from "@/lib/types";
+-
+-// ============================================
+-// LIVE PREVIEW COMPONENT
+-// ============================================
++import { DeviceToggle } from "./DeviceToggle";
++import { VariantSelector } from "./VariantSelector";
++import { PreviewHeader } from "./PreviewHeader";
++import { PreviewFrame } from "./PreviewFrame";
++import { ShareDialog } from "./ShareDialog";
++import { LoadingOverlay } from "./LoadingOverlay";
++import { ErrorMessage } from "./ErrorMessage";
+ 
+ interface LivePreviewProps {
+   lead: Lead;
+@@ -25,16 +28,19 @@ export function LivePreview({
+   const [isLoading, setIsLoading] = useState(false);
+   const [previewHtml, setPreviewHtml] = useState<string>("");
+   const [shareUrl, setShareUrl] = useState<string>("");
++  const [shareToken, setShareToken] = useState<string>("");
+   const [showVariants, setShowVariants] = useState(false);
++  const [error, setError] = useState<string | null>(null);
+   const iframeRef = useRef<HTMLIFrameElement>(null);
+ 
+-  // Load preview on mount
+   useEffect(() => {
+     generatePreview();
+-  }, [lead, templateStyle, variant]);
++  }, [lead.id, templateStyle, variant]);
+ 
+   const generatePreview = async () => {
+     setIsLoading(true);
++    setError(null);
++    
+     try {
+       const response = await fetch("/api/preview/generate", {
+         method: "POST",
+@@ -47,11 +53,17 @@ export function LivePreview({
+         })
+       });
+       
++      if (!response.ok) {
++        throw new Error("Preview generation failed");
++      }
++      
+       const data = await response.json();
+       setPreviewHtml(data.html);
+       setShareUrl(data.shareUrl);
+-    } catch (error) {
+-      console.error("Preview generation failed:", error);
++      setShareToken(data.shareToken);
++    } catch (err) {
++      const errorMessage = err instanceof Error ? err.message : "Unknown error";
++      setError(errorMessage);
+       // Fallback to embedded preview
+       setPreviewHtml(generateFallbackPreview());
+     } finally {
+@@ -60,394 +72,166 @@ export function LivePreview({
+   };
+ 
+   const generateFallbackPreview = (): string => {
+-    // Generate preview directly in component
+     return generatePreviewHtml(lead, templateStyle, variant);
+   };
+ 
+-  const copyShareUrl = () => {
+-    navigator.clipboard.writeText(shareUrl);
+-    alert("Share URL copied to clipboard!");
++  const handleCopyShareUrl = async () => {
++    if (shareUrl) {
++      await navigator.clipboard.writeText(shareUrl);
++      // Could use toast notification here
++      alert("Share URL copied to clipboard!");
++    }
++  };
++
++  const handleDeviceChange = (newDevice: DeviceType) => {
++    setDevice(newDevice);
++  };
++
++  const handleVariantChange = (newVariant: string) => {
++    setVariant(newVariant);
++    setShowVariants(false);
+   };
+ 
+   const deviceDimensions = {
+-    desktop: { width: "100%", height: "100%" },
+-    tablet: { width: "768px", height: "1024px" },
+-    mobile: { width: "375px", height: "812px" }
++    desktop: "w-full h-full",
++    tablet: "w-[768px] h-[1024px]",
++    mobile: "w-[375px] h-[812px]"
+   };
+ 
+   return (
+-    <div className="flex flex-col h-screen bg-slate-100">
++    <div className="flex flex-col h-full bg-slate-100">
+       {/* Preview Header */}
+-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm z-10">
+-        <div className="flex items-center gap-4">
+-          <h1 className="text-xl font-bold text-slate-800">
+-            ­ƒÄ¿ Live Preview
+-          </h1>
+-          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+-            {lead.company_name}
+-          </span>
+-        </div>
+-        
+-        <div className="flex items-center gap-4">
+-          {/* Device Toggle */}
+-          <div className="flex bg-slate-100 rounded-lg p-1">
+-            <DeviceButton 
+-              icon="­ƒûÑ´©Å" 
+-              label="Desktop" 
+-              isActive={device === "desktop"} 
+-              onClick={() => setDevice("desktop")}
+-            />
+-            <DeviceButton 
+-              icon="­ƒô▒" 
+-              label="Tablet" 
+-              isActive={device === "tablet"} 
+-              onClick={() => setDevice("tablet")}
+-            />
+-            <DeviceButton 
+-              icon="­ƒô▓" 
+-              label="Mobile" 
+-              isActive={device === "mobile"} 
+-              onClick={() => setDevice("mobile")}
+-            />
+-          </div>
+-          
+-          {/* Variant Selector */}
+-          <button
+-            onClick={() => setShowVariants(!showVariants)}
+-            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
+-          >
+-            ­ƒÄ¿ Varianten
+-          </button>
+-          
+-          {/* Share Button */}
+-          <button
+-            onClick={copyShareUrl}
+-            className="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+-          >
+-            ­ƒöù Teilen
+-          </button>
+-          
+-          {/* Refresh */}
+-          <button
+-            onClick={generatePreview}
+-            disabled={isLoading}
+-            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
+-          >
+-            {isLoading ? "ÔÅ│" : "­ƒöä"} Neu laden
+-          </button>
+-        </div>
+-      </header>
+-
+-      {/* Variants Panel */}
++      <PreviewHeader
++        lead={lead}
++        device={device}
++        onDeviceChange={handleDeviceChange}
++        onShowVariants={() => setShowVariants(true)}
++        onRefresh={generatePreview}
++        isLoading={isLoading}
++      />
++
++      {/* Variant Selector Modal */}
+       {showVariants && (
+-        <VariantPanel 
++        <VariantSelector
+           lead={lead}
+           currentVariant={variant}
+-          onSelect={(v) => {
+-            setVariant(v);
+-            setShowVariants(false);
++          onSelect={handleVariantChange}
++          onClose={() => setShowVariants(false)}
++        />
++      )}
++
++      {/* Error Message */}
++      {error && (
++        <ErrorMessage 
++          message={error} 
++          onRetry={generatePreview}
++          onUseFallback={() => {
++            setError(null);
++            setPreviewHtml(generateFallbackPreview());
+           }}
+         />
+       )}
+ 
+-      {/* Preview Area */}
+-      <div className="flex-1 overflow-auto p-8 flex justify-center">
++      {/* Main Preview Area */}
++      <div className="flex-1 overflow-auto p-8 flex justify-center bg-slate-200">
+         <div 
+-          className="transition-all duration-300 ease-in-out bg-white shadow-2xl rounded-lg overflow-hidden"
+-          style={{
+-            width: deviceDimensions[device].width,
+-            maxWidth: device === "desktop" ? "100%" : "100%",
+-            height: device === "mobile" || device === "tablet" ? deviceDimensions[device].height : "calc(100vh - 200px)",
+-            minHeight: "600px"
+-          }}
++          className={`${deviceDimensions[device]} transition-all duration-300 bg-white shadow-2xl rounded-lg overflow-hidden`}
+         >
+-          {isLoading ? (
+-            <LoadingState device={device} />
+-          ) : (
+-            <iframe
+-              ref={iframeRef}
+-              srcDoc={previewHtml}
+-              className="w-full h-full border-0"
+-              sandbox="allow-same-origin"
+-              title={`Preview for ${lead.company_name}`}
+-            />
+-          )}
++          <PreviewFrame
++            html={previewHtml}
++            isLoading={isLoading}
++            iframeRef={iframeRef}
++          />
+         </div>
+       </div>
+ 
+-      {/* Share URL Display */}
++      {/* Share Dialog */}
+       {shareUrl && (
+-        <div className="fixed bottom-20 right-6 bg-white rounded-lg shadow-lg p-4 max-w-md">
+-          <p className="text-sm text-slate-600 mb-2">Share URL:</p>
+-          <div className="flex items-center gap-2">
+-            <code className="flex-1 bg-slate-100 px-3 py-2 rounded text-xs truncate">
+-              {shareUrl}
+-            </code>
+-            <button
+-              onClick={copyShareUrl}
+-              className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+-            >
+-              ­ƒôï
+-            </button>
+-          </div>
+-        </div>
++        <ShareDialog
++          url={shareUrl}
++          token={shareToken}
++          onCopy={handleCopyShareUrl}
++          onClose={() => {}}
++        />
+       )}
+-    </div>
+-  );
+-}
+-
+-// ============================================
+-// DEVICE BUTTON
+-// ============================================
+-
+-function DeviceButton({ 
+-  icon, 
+-  label, 
+-  isActive, 
+-  onClick 
+-}: { 
+-  icon: string; 
+-  label: string; 
+-  isActive: boolean; 
+-  onClick: () => void;
+-}) {
+-  return (
+-    <button
+-      onClick={onClick}
+-      className={`px-3 py-2 rounded-lg flex items-center gap-2 transition-all ${
+-        isActive 
+-          ? "bg-white shadow text-slate-800" 
+-          : "text-slate-500 hover:text-slate-700"
+-      }`}
+-    >
+-      <span>{icon}</span>
+-      <span className="text-sm font-medium">{label}</span>
+-    </button>
+-  );
+-}
+-
+-// ============================================
+-// VARIANT PANEL
+-// ============================================
+-
+-interface VariantPanelProps {
+-  lead: Lead;
+-  currentVariant: string;
+-  onSelect: (variant: string) => void;
+-}
+ 
+-const VARIANTS = [
+-  { id: "professional", name: "Professionell", icon: "­ƒæö", description: "Seri├Âs & kompetent" },
+-  { id: "friendly", name: "Freundlich", icon: "­ƒÿè", description: "Warm & einladend" },
+-  { id: "urgent", name: "Dringend", icon: "­ƒöÑ", description: "Handlungsorientiert" },
+-  { id: "story", name: "Story", icon: "­ƒôû", description: "Narrativ & emotional" }
+-];
+-
+-function VariantPanel({ lead, currentVariant, onSelect }: VariantPanelProps) {
+-  const headlines = getHeadlineVariants(lead);
+-  
+-  return (
+-    <div className="bg-white border-b p-4">
+-      <h3 className="font-semibold mb-4">­ƒÄ¿ Headline-Varianten</h3>
+-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+-        {VARIANTS.map((variant) => (
+-          <button
+-            key={variant.id}
+-            onClick={() => onSelect(variant.id)}
+-            className={`p-4 rounded-xl border-2 transition-all text-left ${
+-              currentVariant === variant.id
+-                ? "border-blue-500 bg-blue-50"
+-                : "border-slate-200 hover:border-slate-300"
+-            }`}
+-          >
+-            <div className="text-2xl mb-2">{variant.icon}</div>
+-            <div className="font-medium">{variant.name}</div>
+-            <div className="text-xs text-slate-500">{variant.description}</div>
+-            <div className="mt-2 text-sm text-slate-700 truncate">
+-              "{headlines[variant.id as keyof typeof headlines]}"
+-            </div>
+-          </button>
+-        ))}
+-      </div>
+-    </div>
+-  );
+-}
+-
+-// ============================================
+-// LOADING STATE
+-// ============================================
+-
+-function LoadingState({ device }: { device: DeviceType }) {
+-  const dimensions = {
+-    desktop: "w-full h-full",
+-    tablet: "w-[768px] h-[1024px]",
+-    mobile: "w-[375px] h-[812px]"
+-  };
+-  
+-  return (
+-    <div className={`${dimensions[device]} flex flex-col items-center justify-center bg-slate-50`}>
+-      <div className="animate-spin text-4xl mb-4">ÔÅ│</div>
+-      <p className="text-slate-600">Preview wird geladen...</p>
+-      <div className="mt-4 w-48 h-2 bg-slate-200 rounded-full overflow-hidden">
+-        <div className="h-full bg-blue-500 animate-pulse" style={{ width: "60%" }} />
+-      </div>
++      {/* Loading Overlay */}
++      {isLoading && !previewHtml && <LoadingOverlay />}
+     </div>
+   );
+ }
+ 
+-// ============================================
+-// PREVIEW HTML GENERATOR
+-// ============================================
+-
++// Fallback preview generator
+ function generatePreviewHtml(lead: Lead, style: string, variant: string): string {
+-  const headline = getHeadlineVariants(lead)[variant] || `${lead.company_name}: Professionelle Webpr├ñsenz`;
+   const colors = getIndustryColors(lead.industry);
++  const headline = getHeadline(lead, variant);
+   
+   return `<!DOCTYPE html>
+ <html lang="de-CH">
+ <head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+-  <title>${lead.company_name} - Vorschau</title>
++  <title>${lead.company_name}</title>
+   <style>
+     * { margin: 0; padding: 0; box-sizing: border-box; }
+-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+-    .hero {
+-      background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%);
+-      color: white;
+-      padding: 60px 20px;
+-      text-align: center;
+-    }
+-    .hero h1 { font-size: 36px; font-weight: 800; margin-bottom: 16px; line-height: 1.2; }
+-    .hero p { font-size: 18px; opacity: 0.9; margin-bottom: 24px; }
+-    .badges { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+-    .badge { background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+-    .cta { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+-    .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: all 0.3s; }
+-    .btn-primary { background: white; color: ${colors.primary}; }
+-    .btn-secondary { background: transparent; border: 2px solid white; color: white; }
++    body { font-family: -apple-system, sans-serif; }
++    .hero { background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%); color: white; padding: 60px 20px; text-align: center; }
++    .hero h1 { font-size: 36px; margin-bottom: 16px; }
+     .section { padding: 40px 20px; }
+     .section-light { background: ${colors.secondary}; }
+     .container { max-width: 900px; margin: 0 auto; }
+-    h2 { font-size: 28px; text-align: center; margin-bottom: 32px; }
+     .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+-    .feature { background: white; padding: 24px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+-    .feature-icon { font-size: 32px; margin-bottom: 12px; }
+-    .about { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+-    .stats { display: flex; justify-content: center; gap: 40px; margin-top: 24px; }
+-    .stat { text-align: center; }
+-    .stat-value { font-size: 20px; font-weight: 700; }
+-    .stat-label { font-size: 13px; color: #6b7280; }
+-    .cta-final { background: ${colors.primary}; color: white; padding: 50px 20px; text-align: center; }
+-    .cta-final h2 { color: white; }
+-    .cta-final p { margin-bottom: 24px; opacity: 0.9; }
++    .feature { background: white; padding: 24px; border-radius: 12px; text-align: center; }
++    .badge { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; display: inline-block; margin: 4px; }
++    .btn { padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
++    .btn-primary { background: white; color: ${colors.primary}; }
++    .btn-secondary { background: transparent; border: 2px solid white; color: white; }
++    h2 { font-size: 28px; text-align: center; margin-bottom: 32px; }
+     footer { background: #1f2937; color: white; padding: 30px 20px; text-align: center; }
+   </style>
+ </head>
+ <body>
+   <header class="hero">
+-    <div class="badges">
+-      <span class="badge">Ô¡É Google ${lead.rating || "Neu"}</span>
++    <div style={{ marginBottom: 20 }}>
++      <span class="badge">Ô¡É ${lead.rating || "Neu"}</span>
+       <span class="badge">­ƒôì ${lead.location}</span>
+-      <span class="badge">­ƒøí´©Å Schweizer Qualit├ñt</span>
+     </div>
+     <h1>${headline}</h1>
+-    <p>Professionelle Webpr├ñsenz f├╝r Ihr ${lead.industry}-Business in ${lead.location}</p>
+-    <div class="cta">
+-      <button class="btn btn-primary">${getPrimaryCTA(lead.industry)}</button>
+-      <button class="btn btn-secondary">${getSecondaryCTA(lead.industry)}</button>
++    <p>Professionelle Webpr├ñsenz f├╝r ${lead.industry}</p>
++    <div style={{ marginTop: 24 }}>
++      <button class="btn btn-primary">Kontakt</button>
++      <button class="btn btn-secondary" style={{ marginLeft: 12 }}>Mehr</button>
+     </div>
+   </header>
+-  
+   <section class="section section-light">
+     <div class="container">
+       <h2>Warum ${lead.company_name}?</h2>
+       <div class="features">
+-        ${getFeatures(lead.industry).map((f, i) => `
++        ${["Qualit├ñt", "Erfahrung", "Zuverl├ñssig", "Lokal"].map((f, i) => `
+           <div class="feature">
+-            <div class="feature-icon">${["Ô£¿", "Ô¡É", "­ƒÄ»", "­ƒÜÇ"][i % 4]}</div>
+-            <h3>${f}</h3>
++            <div style={{ fontSize: 32, marginBottom: 12 }}>${["Ô£¿", "Ô¡É", "­ƒÄ»", "­ƒÜÇ"][i]}</div>
++            <div>${f}</div>
+           </div>
+         `).join("")}
+       </div>
+     </div>
+   </section>
+-  
+   <section class="section">
+-    <div class="container">
+-      <div class="about">
+-        <h2>├£ber uns</h2>
+-        <p style="text-align: center; color: #4b5563; line-height: 1.7;">
+-          ${lead.company_name} ist Ihr zuverl├ñssiger Partner f├╝r ${lead.industry} in ${lead.location}. 
+-          Mit Erfahrung und Engagement setzen wir uns f├╝r Ihre Projekte ein. 
+-          Qualit├ñt, Zuverl├ñssigkeit und pers├Ânlicher Service stehen bei uns an erster Stelle.
+-        </p>
+-        <div class="stats">
+-          <div class="stat"><span class="stat-value">${getPriceRange(lead.industry)}</span><span class="stat-label">Preisbereich</span></div>
+-          <div class="stat"><span class="stat-value">Ô¡É ${lead.rating || "Neu"}</span><span class="stat-label">Bewertung</span></div>
+-          <div class="stat"><span class="stat-value">Ô£ô</span><span class="stat-label">CH Qualit├ñt</span></div>
+-        </div>
+-      </div>
+-    </div>
+-  </section>
+-  
+-  <section class="cta-final">
+-    <h2>Bereit?</h2>
+-    <p>Kontaktieren Sie uns jetzt f├╝r ein unverbindliches Gespr├ñch.</p>
+-    <div class="cta">
+-      <button class="btn btn-primary" style="background: white; color: ${colors.primary};">${getPrimaryCTA(lead.industry)}</button>
+-      <button class="btn btn-secondary">${lead.phone || "Anrufen"}</button>
++    <div class="container" style={{ textAlign: "center" }}>
++      <h2>├£ber uns</h2>
++      <p style={{ color: "#666", maxWidth: 600, margin: "0 auto", lineHeight: 1.8 }}>
++        ${lead.company_name} ist Ihr Partner f├╝r ${lead.industry} in ${lead.location}.
++      </p>
+     </div>
+   </section>
+-  
+   <footer>
+-    <p>┬® 2026 ${lead.company_name}. Alle Rechte vorbehalten.</p>
+-    <p style="margin-top: 8px; opacity: 0.7;">­ƒç¿­ƒç¡ Schweizer Qualit├ñt aus ${lead.location}</p>
++    <p>┬® 2026 ${lead.company_name}</p>
++    <p style={{ marginTop: 8, opacity: 0.7 }}>­ƒç¿­ƒç¡ ${lead.location}</p>
+   </footer>
+ </body>
+ </html>`;
+ }
+ 
+-// ============================================
+-// HELPER FUNCTIONS
+-// ============================================
+-
+-function getHeadlineVariants(lead: Lead): Record<string, string> {
+-  const patterns: Record<string, Record<string, string[]>> = {
+-    no_website: {
+-      professional: [
+-        `${lead.company_name}: Ihre neue Website in ${lead.location}`,
+-        `Professionelle Webpr├ñsenz f├╝r ${lead.company_name}`,
+-        `${lead.company_name} verdient einen modernen Webauftritt`
+-      ],
+-      friendly: [
+-        `Willkommen bei ${lead.company_name} - neu im Web`,
+-        `${lead.company_name} stellt sich vor`,
+-        `Entdecken Sie ${lead.company_name} online`
+-      ],
+-      urgent: [
+-        `${lead.company_name}: Zeit f├╝r eine Website`,
+-        `Ohne Website verliert ${lead.company_name} Kunden`,
+-        `${lead.company_name} - noch nicht online? Das ├ñndern wir`
+-      ],
+-      story: [
+-        `${lead.company_name}: Eine Geschichte, die erz├ñhlt werden muss`,
+-        `Von ${lead.location} in die weite Welt: ${lead.company_name}`,
+-        `${lead.company_name} - Tradition trifft Innovation`
+-      ]
+-    }
+-  };
+-  
+-  const set = patterns.no_website;
+-  const result: Record<string, string> = {};
+-  
+-  Object.keys(set).forEach(key => {
+-    result[key] = set[key][Math.floor(Math.random() * set[key].length)];
+-  });
+-  
+-  return result;
+-}
+-
+ function getIndustryColors(industry: string): { primary: string; secondary: string; accent: string } {
+   const colors: Record<string, { primary: string; secondary: string; accent: string }> = {
+     restaurant: { primary: "#c2410c", secondary: "#fff7ed", accent: "#f97316" },
+@@ -457,60 +241,32 @@ function getIndustryColors(industry: string): { primary: string; secondary: stri
+     retail: { primary: "#1e40af", secondary: "#eff6ff", accent: "#3b82f6" },
+     service: { primary: "#475569", secondary: "#f8fafc", accent: "#64748b" }
+   };
+-  
+   return colors[industry.toLowerCase()] || colors.service;
+ }
+ 
+-function getPrimaryCTA(industry: string): string {
+-  const ctas: Record<string, string> = {
+-    restaurant: "­ƒì¢´©Å Tisch reservieren",
+-    beauty: "­ƒÆä Termin buchen",
+-    handwerk: "­ƒö¿ Offerte anfordern",
+-    medical: "­ƒÅÑ Termin vereinbaren",
+-    retail: "­ƒøì´©Å Besuchen Sie uns",
+-    service: "­ƒô× Kontakt aufnehmen"
++function getHeadline(lead: Lead, variant: string): string {
++  const patterns: Record<string, string[]> = {
++    professional: [
++      `${lead.company_name}: Ihre Website in ${lead.location}`,
++      `Professionelle Webpr├ñsenz f├╝r ${lead.company_name}`,
++      `${lead.company_name} verdient einen modernen Webauftritt`
++    ],
++    friendly: [
++      `Willkommen bei ${lead.company_name}`,
++      `${lead.company_name} stellt sich vor`,
++      `Entdecken Sie ${lead.company_name}`
++    ],
++    urgent: [
++      `${lead.company_name}: Zeit f├╝r eine Website`,
++      `Ohne Website verliert ${lead.company_name} Kunden`,
++      `${lead.company_name} - noch nicht online?`
++    ],
++    story: [
++      `${lead.company_name}: Eine Geschichte`,
++      `Von ${lead.location} in die Welt: ${lead.company_name}`,
++      `${lead.company_name} - Tradition trifft Innovation`
++    ]
+   };
+-  return ctas[industry.toLowerCase()] || "­ƒô× Kontakt aufnehmen";
++  const set = patterns[variant] || patterns.professional;
++  return set[Math.floor(Math.random() * set.length)];
+ }
+-
+-function getSecondaryCTA(industry: string): string {
+-  const ctas: Record<string, string> = {
+-    restaurant: "­ƒôï Men├╝ ansehen",
+-    beauty: "­ƒÆ░ Preise",
+-    handwerk: "­ƒôü Projekte",
+-    medical: "Ô£ë´©Å Kontakt",
+-    retail: "­ƒøÆ Sortiment",
+-    service: "Ôä╣´©Å Mehr erfahren"
+-  };
+-  return ctas[industry.toLowerCase()] || "Ôä╣´©Å Mehr erfahren";
+-}
+-
+-function getFeatures(industry: string): string[] {
+-  const features: Record<string, string[]> = {
+-    restaurant: ["Frische Zutaten", "Saisonale K├╝che", "Gem├╝tliches Ambiente", "Regional & lokal"],
+-    beauty: ["Entspannung", "Premium-Produkte", "Erfahrenes Team", "Hygienisch & sauber"],
+-    handwerk: ["Qualit├ñtsarbeit", "Jahre Erfahrung", "Zuverl├ñssig", "Termingerecht"],
+-    medical: ["Kompetenz", "Erfahrung", "Moderne Ausstattung", "Einf├╝hlsam"],
+-    retail: ["Grosse Auswahl", "Faire Preise", "Pers├Ânliche Beratung", "Qualit├ñt"],
+-    service: ["Professionell", "Zuverl├ñssig", "Individuell", "Erfahren"]
+-  };
+-  return features[industry.toLowerCase()] || features.service;
+-}
+-
+-function getPriceRange(industry: string): string {
+-  const ranges: Record<string, string> = {
+-    restaurant: "CHF 30-80",
+-    beauty: "CHF 50-250",
+-    handwerk: "Offerte",
+-    medical: "KVG / UVG",
+-    retail: "Verschieden",
+-    service: "Offerte"
+-  };
+-  return ranges[industry.toLowerCase()] || "Offerte";
+-}
+-
+-// ============================================
+-// EXPORTS
+-// ============================================
+-
+-export default LivePreview;
+diff --git a/leadflow-pro/src/components/preview/LoadingOverlay.tsx b/leadflow-pro/src/components/preview/LoadingOverlay.tsx
+new file mode 100644
+index 0000000..6f74f7a
+--- /dev/null
++++ b/leadflow-pro/src/components/preview/LoadingOverlay.tsx
+@@ -0,0 +1,16 @@
++"use client";
++
++interface LoadingOverlayProps {
++  message?: string;
++}
++
++export function LoadingOverlay({ message = "Preview wird geladen..." }: LoadingOverlayProps) {
++  return (
++    <div className="absolute inset-0 bg-slate-100/90 flex items-center justify-center z-20">
++      <div className="text-center">
++        <div className="w-10 h-10 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mx-auto mb-3" />
++        <p className="text-slate-500 text-sm">{message}</p>
++      </div>
++    </div>
++  );
++}
+diff --git a/leadflow-pro/src/components/preview/PreviewFrame.tsx b/leadflow-pro/src/components/preview/PreviewFrame.tsx
+new file mode 100644
+index 0000000..a4b6c36
+--- /dev/null
++++ b/leadflow-pro/src/components/preview/PreviewFrame.tsx
+@@ -0,0 +1,33 @@
++"use client";
++
++import { forwardRef } from "react";
++
++interface PreviewFrameProps {
++  html: string;
++  isLoading: boolean;
++  iframeRef: React.RefObject<HTMLIFrameElement | null>;
++}
++
++export const PreviewFrame = forwardRef<HTMLIFrameElement, PreviewFrameProps>(
++  function PreviewFrame({ html, isLoading, iframeRef }, ref) {
++    return (
++      <div className="relative w-full h-full">
++        {isLoading && (
++          <div className="absolute inset-0 bg-slate-100 flex items-center justify-center z-10">
++            <div className="text-center">
++              <div className="w-8 h-8 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin mx-auto mb-3" />
++              <p className="text-slate-500 text-sm">Preview wird geladen...</p>
++            </div>
++          </div>
++        )}
++        <iframe
++          ref={ref}
++          srcDoc={html}
++          className="w-full h-full border-0"
++          sandbox="allow-same-origin"
++          title="Preview"
++        />
++      </div>
++    );
++  }
++);
+diff --git a/leadflow-pro/src/components/preview/PreviewHeader.tsx b/leadflow-pro/src/components/preview/PreviewHeader.tsx
+new file mode 100644
+index 0000000..2a7808d
+--- /dev/null
++++ b/leadflow-pro/src/components/preview/PreviewHeader.tsx
+@@ -0,0 +1,72 @@
++"use client";
++
++import { Lead } from "@/lib/types";
++import { DeviceType } from "./LivePreview";
++import { DeviceToggle } from "./DeviceToggle";
++
++interface PreviewHeaderProps {
++  lead: Lead;
++  device: DeviceType;
++  onDeviceChange: (device: DeviceType) => void;
++  onShowVariants: () => void;
++  onRefresh: () => void;
++  isLoading: boolean;
++}
++
++const VARIANTS = [
++  { id: "professional", name: "Professionell", icon: "­ƒæö", desc: "Seri├Âs & kompetent" },
++  { id: "friendly", name: "Freundlich", icon: "­ƒÿè", desc: "Warm & einladend" },
++  { id: "urgent", name: "Dringend", icon: "­ƒöÑ", desc: "Handlungsorientiert" },
++  { id: "story", name: "Story", icon: "­ƒôû", desc: "Narrativ & emotional" }
++];
++
++export function PreviewHeader({
++  lead,
++  device,
++  onDeviceChange,
++  onShowVariants,
++  onRefresh,
++  isLoading
++}: PreviewHeaderProps) {
++  const getHeadlines = () => {
++    const patterns: Record<string, string[]> = {
++      professional: [`${lead.company_name}: Ihre Website`, `Professionell f├╝r ${lead.company_name}`],
++      friendly: [`Willkommen bei ${lead.company_name}`, `${lead.company_name} stellt sich vor`],
++      urgent: [`${lead.company_name}: Zeit f├╝r Web`, `${lead.company_name} braucht Online`],
++      story: [`${lead.company_name}: Story`, `Die Geschichte von ${lead.company_name}`]
++    };
++    return patterns;
++  };
++
++  return (
++    <header className="bg-white border-b px-6 py-4 flex items-center justify-between shadow-sm z-10">
++      <div className="flex items-center gap-4">
++        <h1 className="text-xl font-bold text-slate-800">
++          ­ƒÄ¿ Live Preview
++        </h1>
++        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
++          {lead.company_name}
++        </span>
++      </div>
++      
++      <div className="flex items-center gap-4">
++        <DeviceToggle device={device} onDeviceChange={onDeviceChange} />
++        
++        <button
++          onClick={onShowVariants}
++          className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-medium"
++        >
++          ­ƒÄ¿ Varianten
++        </button>
++        
++        <button
++          onClick={onRefresh}
++          disabled={isLoading}
++          className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
++        >
++          ­ƒöä {isLoading ? "..." : "Neu laden"}
++        </button>
++      </div>
++    </header>
++  );
++}
+diff --git a/leadflow-pro/src/components/preview/ShareDialog.tsx b/leadflow-pro/src/components/preview/ShareDialog.tsx
+new file mode 100644
+index 0000000..47188e1
+--- /dev/null
++++ b/leadflow-pro/src/components/preview/ShareDialog.tsx
+@@ -0,0 +1,44 @@
++"use client";
++
++interface ShareDialogProps {
++  url: string;
++  token: string;
++  onCopy: () => void;
++  onClose: () => void;
++}
++
++export function ShareDialog({ url, token, onCopy, onClose }: ShareDialogProps) {
++  const shortUrl = url.replace("/preview/share/", "/p/");
++  
++  return (
++    <div className="fixed bottom-6 right-6 bg-white rounded-xl shadow-xl p-4 max-w-sm z-50 animate-in slide-in-from-bottom-4">
++      <div className="flex items-center justify-between mb-3">
++        <h3 className="font-semibold">­ƒöù Teilen</h3>
++        <button onClick={onClose} className="text-slate-400 hover:text-slate-600">Ô£ò</button>
++      </div>
++      
++      <div className="space-y-3">
++        <div>
++          <label className="text-xs text-slate-500 mb-1 block">Direkter Link</label>
++          <div className="flex gap-2">
++            <code className="flex-1 bg-slate-100 px-3 py-2 rounded text-sm truncate">
++              {shortUrl}
++            </code>
++            <button
++              onClick={onCopy}
++              className="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
++            >
++              Kopieren
++            </button>
++          </div>
++        </div>
++        
++        <div className="pt-2 border-t">
++          <p className="text-xs text-slate-500">
++            G├╝ltig f├╝r 7 Tage ÔÇó Keine Anmeldung erforderlich
++          </p>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/leadflow-pro/src/components/preview/VariantSelector.tsx b/leadflow-pro/src/components/preview/VariantSelector.tsx
+new file mode 100644
+index 0000000..4fe8436
+--- /dev/null
++++ b/leadflow-pro/src/components/preview/VariantSelector.tsx
+@@ -0,0 +1,87 @@
++"use client";
++
++import { useMemo } from "react";
++import { Lead } from "@/lib/types";
++
++interface VariantSelectorProps {
++  lead: Lead;
++  currentVariant: string;
++  onSelect: (variant: string) => void;
++  onClose: () => void;
++}
++
++const VARIANTS = [
++  { id: "professional", name: "Professionell", icon: "­ƒæö", desc: "Seri├Âs & kompetent" },
++  { id: "friendly", name: "Freundlich", icon: "­ƒÿè", desc: "Warm & einladend" },
++  { id: "urgent", name: "Dringend", icon: "­ƒöÑ", desc: "Handlungsorientiert" },
++  { id: "story", name: "Story", icon: "­ƒôû", desc: "Narrativ & emotional" }
++];
++
++export function VariantSelector({ lead, currentVariant, onSelect, onClose }: VariantSelectorProps) {
++  const headlines = useMemo(() => {
++    const patterns: Record<string, string[]> = {
++      professional: [`${lead.company_name}: Ihre Website`, `Professionell f├╝r ${lead.company_name}`],
++      friendly: [`Willkommen bei ${lead.company_name}`, `${lead.company_name} stellt sich vor`],
++      urgent: [`${lead.company_name}: Zeit f├╝r Web`, `${lead.company_name} braucht Online`],
++      story: [`${lead.company_name}: Story`, `Die Geschichte von ${lead.company_name}`]
++    };
++    return patterns;
++  }, [lead]);
++
++  return (
++    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
++      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-auto">
++        <div className="p-6 border-b flex items-center justify-between">
++          <h2 className="text-xl font-bold">­ƒÄ¿ Headline-Varianten</h2>
++          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl">
++            Ô£ò
++          </button>
++        </div>
++        
++        <div className="p-6">
++          <div className="grid grid-cols-2 gap-4">
++            {VARIANTS.map((variant) => {
++              const isSelected = currentVariant === variant.id;
++              const headline = headlines[variant.id]?.[0] || "";
++              
++              return (
++                <button
++                  key={variant.id}
++                  onClick={() => onSelect(variant.id)}
++                  className={`p-4 rounded-xl border-2 text-left transition-all ${
++                    isSelected 
++                      ? "border-blue-500 bg-blue-50" 
++                      : "border-slate-200 hover:border-slate-300"
++                  }`}
++                >
++                  <div className="flex items-center gap-2 mb-2">
++                    <span className="text-2xl">{variant.icon}</span>
++                    <span className="font-medium">{variant.name}</span>
++                    {isSelected && <span className="ml-auto text-blue-500">Ô£ô</span>}
++                  </div>
++                  <p className="text-xs text-slate-500 mb-2">{variant.desc}</p>
++                  <p className="text-sm text-slate-700 truncate">"{headline}"</p>
++                </button>
++              );
++            })}
++          </div>
++        </div>
++        
++        <div className="p-4 border-t bg-slate-50 flex justify-end gap-2">
++          <button
++            onClick={onClose}
++            className="px-4 py-2 text-slate-600 hover:text-slate-800"
++          >
++            Abbrechen
++          </button>
++          <button
++            onClick={() => onSelect(currentVariant)}
++            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
++          >
++            Auswahl behalten
++          </button>
++        </div>
++      </div>
++    </div>
++  );
++}
+diff --git a/leadflow-pro/src/components/preview/index.ts b/leadflow-pro/src/components/preview/index.ts
+new file mode 100644
+index 0000000..ed01d12
+--- /dev/null
++++ b/leadflow-pro/src/components/preview/index.ts
+@@ -0,0 +1,8 @@
++export { LivePreview } from "./LivePreview";
++export { DeviceToggle, DeviceButton } from "./DeviceToggle";
++export { PreviewHeader } from "./PreviewHeader";
++export { VariantSelector } from "./VariantSelector";
++export { PreviewFrame } from "./PreviewFrame";
++export { ShareDialog } from "./ShareDialog";
++export { LoadingOverlay } from "./LoadingOverlay";
++export { ErrorMessage } from "./ErrorMessage";
+diff --git a/leadflow-pro/src/components/shared/ErrorBoundary.tsx b/leadflow-pro/src/components/shared/ErrorBoundary.tsx
+new file mode 100644
+index 0000000..5bf3ba4
+--- /dev/null
++++ b/leadflow-pro/src/components/shared/ErrorBoundary.tsx
+@@ -0,0 +1,128 @@
++"use client";
++
++import { Component, ReactNode, ErrorInfo } from "react";
++
++interface Props {
++  children: ReactNode;
++  fallback?: ReactNode | ((error: Error, reset: () => void) => ReactNode);
++}
++
++interface State {
++  hasError: boolean;
++  error: Error | null;
++}
++
++export class ErrorBoundary extends Component<Props, State> {
++  state: State = {
++    hasError: false,
++    error: null
++  };
++
++  static getDerivedStateFromError(error: Error): State {
++    return { hasError: true, error };
++  }
++
++  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
++    console.error("Error caught by boundary:", error);
++    console.error("Component stack:", errorInfo.componentStack);
++    
++    // In production, send to monitoring service
++    if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
++      // Example: Send to Sentry, Datadog, etc.
++      // fetch("/api/errors", {
++      //   method: "POST",
++      //   body: JSON.stringify({ error: error.message, stack: errorInfo.componentStack })
++      // });
++    }
++  }
++
++  resetError = () => {
++    this.setState({ hasError: false, error: null });
++  };
++
++  render() {
++    if (this.state.hasError) {
++      if (typeof this.props.fallback === "function") {
++        return this.props.fallback(this.state.error!, this.resetError);
++      }
++      if (this.props.fallback) {
++        return this.props.fallback;
++      }
++      return (
++        <div className="p-6 bg-red-50 border border-red-200 rounded-xl">
++          <div className="flex items-start gap-4">
++            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
++              <span className="text-xl">ÔÜá´©Å</span>
++            </div>
++            <div className="flex-1">
++              <h3 className="font-medium text-red-800">Etwas ist schiefgelaufen</h3>
++              <p className="text-sm text-red-600 mt-1">
++                {this.state.error?.message || "Ein unerwarteter Fehler ist aufgetreten"}
++              </p>
++              <button
++                onClick={this.resetError}
++                className="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
++              >
++                Erneut versuchen
++              </button>
++            </div>
++          </div>
++        </div>
++      );
++    }
++    return this.props.children;
++  }
++}
++
++interface AsyncErrorBoundaryProps {
++  children: ReactNode;
++  loading?: ReactNode;
++  onError?: (error: Error) => ReactNode;
++}
++
++interface AsyncErrorBoundaryState {
++  hasError: boolean;
++  error: Error | null;
++}
++
++export class AsyncErrorBoundary extends Component<
++  AsyncErrorBoundaryProps,
++  AsyncErrorBoundaryState
++> {
++  state: AsyncErrorBoundaryState = {
++    hasError: false,
++    error: null
++  };
++
++  static getDerivedStateFromError(error: Error): AsyncErrorBoundaryState {
++    return { hasError: true, error };
++  }
++
++  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
++    console.error("Async error caught:", error);
++    this.props.onError?.(error);
++  }
++
++  reset = () => {
++    this.setState({ hasError: false, error: null });
++  };
++
++  render() {
++    if (this.state.hasError) {
++      return this.props.onError?.(this.state.error!) || (
++        <div className="p-4 bg-red-50 rounded-lg">
++          <p className="text-red-700 text-sm">
++            Fehler: {this.state.error?.message || "Unbekannt"}
++          </p>
++          <button 
++            onClick={this.reset}
++            className="mt-2 text-xs text-red-600 hover:underline"
++          >
++            Erneut versuchen
++          </button>
++        </div>
++      );
++    }
++    return this.props.children;
++  }
++}
+diff --git a/leadflow-pro/src/components/shared/index.ts b/leadflow-pro/src/components/shared/index.ts
+new file mode 100644
+index 0000000..ffd5106
+--- /dev/null
++++ b/leadflow-pro/src/components/shared/index.ts
+@@ -0,0 +1 @@
++export { ErrorBoundary, AsyncErrorBoundary } from "./ErrorBoundary";
