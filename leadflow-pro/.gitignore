@@ -43,3 +43,6 @@ next-env.d.ts
 # data
 data/leads.json
 data/missions.json
+data/settings.json
+data/interactions.json
+data/voice_calls.json

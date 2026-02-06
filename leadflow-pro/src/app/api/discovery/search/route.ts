@@ -1,15 +1,38 @@
 import { NextResponse } from 'next/server';
 import { getSettings } from '@/lib/settings';
-import { performLeadResearch, generateSearchQueries, updateMission, getMissionById, DiscoveryMission } from '@/lib/actions/server-actions';
 import { searchLeadsWithPerplexity } from '@/lib/perplexity';
+import { apiRateLimit } from '@/lib/rate-limit';
+import { SearchDiscoverySchema, ApiResponse, SearchDiscoveryData } from '@/lib/schemas';
+import { performLeadResearch, generateSearchQueries, updateMission, getMissionById, DiscoveryMission } from '@/lib/actions/server-actions';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: Request) {
+  // 1. Rate Limiting Check
+  const ip = req.headers.get('x-forwarded-for') || 'anonymous';
+  const { success: limitOk } = await apiRateLimit.check(req as unknown as any, 10, ip);
+  if (!limitOk) {
+    logger.warn({ ip }, "Rate limit exceeded for discovery search");
+    return NextResponse.json<ApiResponse>({ success: false, error: "Zu viele Anfragen. Bitte warten Sie eine Minute." }, { status: 429 });
+  }
+
   let missionId: string | undefined;
   try {
-    const body = await req.json();
-    const industry = body.industry;
-    const locations = body.locations;
-    missionId = body.missionId;
+    const jsonBody = await req.json();
+    
+    // 2. Input Validation
+    const validation = SearchDiscoverySchema.safeParse(jsonBody);
+    if (!validation.success) {
+      logger.error({ errors: validation.error.errors }, "Validation failed for discovery search");
+      return NextResponse.json<ApiResponse>({ 
+        success: false, 
+        error: "Validierungsfehler: " + validation.error.errors.map(e => e.message).join(", ") 
+      }, { status: 400 });
+    }
+
+    const { industry, locations, missionId: mId } = validation.data as SearchDiscoveryData;
+    missionId = mId;
+    
+    logger.info({ industry, locations, missionId }, "Starting discovery search mission");
     const settings = await getSettings();
     const targetLocations = Array.isArray(locations) ? locations : [locations];
 
@@ -165,13 +188,13 @@ export async function POST(req: Request) {
       await updateMission(missionId, { results: finalResults as DiscoveryMission['results'], status: 'COMPLETED' });
     }
 
-    return NextResponse.json({ results: finalResults });
+    return NextResponse.json<ApiResponse>({ success: true, data: { results: finalResults } });
 
   } catch (error) {
     console.error("Discovery Search Error:", error);
     if (missionId) {
         await updateMission(missionId, { status: 'FAILED' });
     }
-    return NextResponse.json({ error: "Search failed" }, { status: 500 });
+    return NextResponse.json<ApiResponse>({ success: false, error: "Suche fehlgeschlagen" }, { status: 500 });
   }
 }

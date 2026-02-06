@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import twilio from 'twilio';
 import { readData, writeData } from '@/lib/storage';
+import { apiRateLimit } from '@/lib/rate-limit';
+import { VoiceCallSchema, ApiResponse, VoiceCallData } from '@/lib/schemas';
+import { logger } from '@/lib/logger';
 
 const VOICE_LOGS_FILE = 'voice_calls.json';
 
@@ -23,12 +26,36 @@ interface VoiceCall {
 }
 
 export async function POST(req: NextRequest) {
+  // 1. Rate Limiting Check
+  const ip = req.headers.get('x-forwarded-for') || 'anonymous';
+  const { success: limitOk } = await apiRateLimit.check(req as any, 5, ip); // Stricter limit for voice
+  if (!limitOk) {
+    logger.warn({ ip }, "Rate limit exceeded for voice call");
+    return NextResponse.json<ApiResponse>({ success: false, error: "Zu viele Anfragen. Bitte warten Sie eine Minute." }, { status: 429 });
+  }
+
   try {
-    const { leadId, phoneNumber, script } = await req.json();
+    const jsonBody = await req.json();
+
+    // 2. Input Validation
+    const validation = VoiceCallSchema.safeParse(jsonBody);
+    if (!validation.success) {
+      logger.error({ errors: validation.error.errors }, "Validation failed for voice call");
+      return NextResponse.json<ApiResponse>({ 
+        success: false, 
+        error: "Validierungsfehler: " + validation.error.errors.map(e => e.message).join(", ") 
+      }, { status: 400 });
+    }
+
+    const { lead, prompt: script } = validation.data as VoiceCallData;
+    const phoneNumber = lead.phone;
+    const leadId = lead.id || 'unknown';
 
     if (!phoneNumber) {
-      return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
+      return NextResponse.json<ApiResponse>({ success: false, error: 'Lead hat keine Telefonnummer' }, { status: 400 });
     }
+
+    logger.info({ leadId, phoneNumber }, "Initiating voice call via Twilio");
 
     // Initiate call via Twilio
     const call = await client.calls.create({
@@ -52,10 +79,10 @@ export async function POST(req: NextRequest) {
     logs.push(newCall);
     await writeData(VOICE_LOGS_FILE, logs);
 
-    return NextResponse.json({ success: true, callId: call.sid });
+    return NextResponse.json<ApiResponse>({ success: true, data: { callId: call.sid } });
   } catch (error) {
-    console.error('Twilio Error:', error);
-    return NextResponse.json({ error: 'Failed to initiate call' }, { status: 500 });
+    logger.error({ error: (error as Error).message }, "Twilio Call Initiation Failed");
+    return NextResponse.json<ApiResponse>({ success: false, error: 'Anruf konnte nicht initiiert werden' }, { status: 500 });
   }
 }
 

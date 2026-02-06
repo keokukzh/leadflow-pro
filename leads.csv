@@ -1,18 +1,16 @@
-id,name,city,industry,reviews,rating,website
-ChIJEYCSWgYKkEcRzKCTQmE-Qdo,Rooftop,"Bahnhofstrasse 74, Zürich",Local Business,2191,4.0,http://www.ooo-zh.ch/
-ChIJX7fB6wAKkEcRhpTedk8sztg,Zeughauskeller,"Bahnhofstrasse 28A, Zürich",Local Business,13773,4.4,http://www.zeughauskeller.ch/
-ChIJTfaDxqmgmkcRN_HnS0olahk,Swiss Chuchi Restaurant,"Rosengasse 10, Zürich",Local Business,7491,4.3,https://hotel-adler.ch/swiss-chuchi-restaurant/
-ChIJ9zpt266hmkcRMtrazHLMiGE,Trattoria Sempre Zürich,"Niederdorfstrasse 7, Zürich",Local Business,2453,4.6,https://www.bindella.ch/restaurants/trattoria-sempre-zuerich
-ChIJa0sAlQAKkEcRN0KXUTVHiYc,Heugümper,"Waaggasse 4, Zürich",Local Business,410,4.7,http://www.restaurantheuguemper.ch/
-ChIJlZ_TxAgLkEcREiINkuafAdc,Anna,"Anna-Heer-Strasse 2, Zürich",Local Business,1200,4.9,http://www.restaurant-anna.ch/
-ChIJ-RppE3MKkEcRplBfDTGWmIc,Differente,"Schaffhauserstrasse 1, Zürich",Local Business,626,4.6,http://www.hotel-krone.ch/
-ChIJuUU5wugLkEcR5NhbqJ2qVwY,Restaurant Enja,"Sihlstrasse 9, Zürich",Local Business,466,4.5,http://www.restaurant-enja.ch/
-ChIJ5csO6wYKkEcRGdZYCSVkrVI,Aurora,"Bahnhofstrasse 61, Zürich",Local Business,956,4.4,http://www.aurora-restaurant.ch/
-ChIJb5L6H3ifmkcRAv39RJ3lZKM,Sablier Rooftop Restaurant & Bar,"The Circle 23-Flughafen CH, Zürich",Local Business,934,4.4,https://www.sablier.ch/
-ChIJSetnU64LkEcR8iIrqCbvkkk,Neue Taverne,"Glockengasse 8, Zürich",Local Business,727,4.6,https://neuetaverne.ch/
-ChIJr0M7RwcKkEcR58OcvIT2Gls,Lindenhofkeller Restaurant,"Pfalzgasse 4, Zürich",Local Business,148,4.7,http://www.lindenhofkeller.com/
-ChIJhdmJF6qgmkcRm5seb1JIvRI,Haus zum Rüden,"Limmatquai 42, Zürich",Local Business,768,4.6,https://www.haus-zum-rueden.ch/
-ChIJzxVYF6ugmkcRCDe6d_JS4Gw,terrasse Restaurant,"Limmatquai 3, Zürich",Local Business,2349,4.3,https://www.bindella.ch/restaurants/terrasse-restaurant
-ChIJHeVfVkyhmkcRcNVkgrOiDwU,Der Wilde Kaiser Wienzeile,"Zähringerpl. 17, Zürich",Local Business,572,4.6,http://www.kaiser-wienzeile.ch/
-ChIJ77UiMQcKkEcRxMQJpkFI8bA,Restaurant Lumière,"Widdergasse 5, Zürich",Local Business,453,4.6,https://www.restaurant-lumiere.ch/
-ChIJwe-cNgYKkEcRrz2FbbEQF2Y,Hiltl Dachterrasse,"Bahnhofstrasse 88, Zürich",Local Business,4120,4.5,https://hiltl.ch/standorte/uebersicht/#dachterrasse
+id,name,address,city,industry,reviews,rating,website,priority_score
+ChIJEYCSWgYKkEcRzKCTQmE-Qdo,Rooftop,Bahnhofstrasse 74,Zürich,Restaurant/Rooftop Bar,2191,4.0,http://www.ooo-zh.ch/,7
+ChIJX7fB6wAKkEcRhpTedk8sztg,Zeughauskeller,Bahnhofstrasse 28A,Zürich,Swiss Restaurant,13773,4.4,http://www.zeughauskeller.ch/,8
+ChIJTfaDxqmgmkcRN_HnS0olahk,Swiss Chuchi Restaurant,Rosengasse 10,Zürich,Traditional Swiss,7491,4.3,https://hotel-adler.ch/swiss-chuchi-restaurant/,8
+ChIJ9zpt266hmkcRMtrazHLMiGE,Trattoria Sempre Zürich,Niederdorfstrasse 7,Zürich,Italian Restaurant,2453,4.6,https://www.bindella.ch/restaurants/trattoria-sempre-zuerich,9
+ChIJa0sAlQAKkEcRN0KXUTVHiYc,Heugümper,Waaggasse 4,Zürich,Fine Dining Restaurant,410,4.7,http://www.restaurantheuguemper.ch/,8
+ChIJlZ_TxAgLkEcREiINkuafAdc,Anna,Anna-Heer-Strasse 2,Zürich,Gourmet Restaurant,1200,4.9,http://www.restaurant-anna.ch/,10
+ChIJ-RppE3MKkEcRplBfDTGWmIc,Differente,Schaffhauserstrasse 1,Zürich,Business Hotel/Restaurant,626,4.6,http://www.hotel-krone.ch/,8
+ChIJuUU5wugLkEcR5NhbqJ2qVwY,Restaurant Enja,Sihlstrasse 9,Zürich,Modern Dining,466,4.5,http://www.restaurant-enja.ch/,9
+ChIJ5csO6wYKkEcRGdZYCSVkrVI,Aurora,Bahnhofstrasse 61,Zürich,Lifestyle Restaurant,956,4.4,http://www.aurora-restaurant.ch/,8
+ChIJSetnU64LkEcR8iIrqCbvkkk,Neue Taverne,Glockengasse 8,Zürich,Modern Vegetable Cuisine,727,4.6,https://neuetaverne.ch/,9
+ChIJr0M7RwcKkEcR58OcvIT2Gls,Lindenhofkeller Restaurant,Pfalzgasse 4,Zürich,Historical Restaurant,148,4.7,http://www.lindenhofkeller.com/,8
+ChIJhdmJF6qgmkcRm5seb1JIvRI,Haus zum Rüden,Limmatquai 42,Zürich,Fine Dining,768,4.6,https://www.haus-zum-rueden.ch/,9
+ChIJHeVfVkyhmkcRcNVkgrOiDwU,Der Wilde Kaiser Wienzeile,Zähringerpl. 17,Zürich,Austrian Cuisine,572,4.6,http://www.kaiser-wienzeile.ch/,9
+ChIJ77UiMQcKkEcRxMQJpkFI8bA,Restaurant Lumière,Widdergasse 5,Zürich,French Restaurant,453,4.6,https://www.restaurant-lumiere.ch/,9
+ChIJuUU5wugLkEcR5NhbqJ2qVwY,ZAHNARZTPRAXIS AM WEINBERG,Weinbergstrasse 62,Zürich,Dental Practice,24,4.9,,10

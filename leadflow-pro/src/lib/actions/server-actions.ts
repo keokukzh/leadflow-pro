@@ -5,6 +5,7 @@ import { readData, writeData } from "../storage";
 import { getCompletion } from "../ai-client";
 import { TEMPLATE_DATA_PROMPT, SEARCH_STRATEGY_PROMPT, BOTTIE_SYSTEM_PROMPT } from "../prompts";
 import { calculateLeadScore } from "@/services/leadScoring";
+import { logger } from "@/lib/logger";
 
 // In a real app, you would use Prisma, Drizzle, or raw pg queries
 export interface Interaction {
@@ -138,6 +139,7 @@ export async function runApifyDiscovery(
   });
   
   if (!searchResult.success || !searchResult.results) {
+    logger.error({ error: searchResult.error }, "Apify Google Maps search failed");
     return { success: false, error: searchResult.error };
   }
   
@@ -306,6 +308,7 @@ export async function getMissionById(id: string) {
 }
 
 export async function updateMission(missionId: string, updates: Partial<DiscoveryMission>) {
+  logger.info({ missionId, updates }, "Updating discovery mission");
   const missions = await getMissions();
   const index = missions.findIndex(m => m.id === missionId);
   if (index !== -1) {
@@ -587,10 +590,10 @@ export async function getDashboardStats() {
 }
 
 export async function generateSiteConfig(leadId: string) {
-  console.log("Generating Template Data for Lead:", leadId);
+  logger.info({ leadId }, "Generating Template Data for Lead");
   const lead = await getLeadById(leadId);
   if (!lead || !lead.strategy_brief) {
-    console.error("Lead or strategy missing for:", leadId);
+    logger.error({ leadId }, "Lead or strategy missing");
     throw new Error("Lead oder Strategie nicht gefunden.");
   }
 
@@ -603,7 +606,7 @@ export async function generateSiteConfig(leadId: string) {
   revalidatePath("/creator");
 
   const prompt = TEMPLATE_DATA_PROMPT(lead);
-  console.log("Template Data Prompt prepared.");
+  logger.info({ leadId }, "Template Data Prompt prepared");
   
   try {
     const content = await getCompletion(prompt, BOTTIE_SYSTEM_PROMPT);
@@ -654,6 +657,8 @@ export async function generateStrategyAction(leadId: string) {
     const content = await getCompletion(strategyPrompt, "Du bist ein Elite-Webdesign-Stratege.");
     const strategy = JSON.parse(content || '{}');
     
+    logger.info({ leadId }, "Strategy generated successfully");
+    
     // Save strategy immediately to the lead so it persists in memory
     const finalLeads = await getLeadsSafe();
     const finishedLeads = finalLeads.map(l => 
@@ -669,6 +674,7 @@ export async function generateStrategyAction(leadId: string) {
     
     return { strategy };
   } catch (err) {
+    logger.error({ leadId, error: (err as Error).message }, "Failed to generate strategy");
     const finalLeads = await getLeadsSafe();
     const errorLeads = finalLeads.map(l => 
       l.id === leadId ? { ...l, status: 'DISCOVERED' as const } : l
