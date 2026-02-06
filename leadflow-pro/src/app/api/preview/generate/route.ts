@@ -1,13 +1,96 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
 
 // Initialize Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// In-memory cache for previews
-const previewCache = new Map<string, { html: string; shareUrl: string; expires: Date }>();
+// ============================================
+// VALIDATION SCHEMAS (P0 FIX #1)
+// ============================================
+
+const PreviewRequestSchema = z.object({
+  leadId: z.string().uuid({ message: "Invalid leadId format" }),
+  templateStyle: z
+    .enum(["swiss_neutral", "alpine_fresh", "premium", "modern"])
+    .optional()
+    .default("swiss_neutral"),
+  variant: z
+    .enum(["professional", "friendly", "urgent", "story"])
+    .optional()
+    .default("professional"),
+  device: z
+    .enum(["desktop", "tablet", "mobile"])
+    .optional()
+    .default("desktop"),
+});
+
+// ============================================
+// CACHE WITH SIZE LIMIT (P0 FIX #3)
+// ============================================
+
+interface CacheEntry {
+  html: string;
+  shareUrl: string;
+  expires: Date;
+}
+
+const MAX_CACHE_SIZE = 1000;
+const previewCache = new Map<string, CacheEntry>();
+
+function setCache(key: string, entry: CacheEntry): void {
+  // Evict oldest if at capacity
+  if (previewCache.size >= MAX_CACHE_SIZE) {
+    const firstKey = previewCache.keys().next().value;
+    if (firstKey) {
+      previewCache.delete(firstKey);
+    }
+  }
+  previewCache.set(key, entry);
+}
+
+function getCache(key: string): CacheEntry | undefined {
+  const entry = previewCache.get(key);
+  if (entry && entry.expires > new Date()) {
+    return entry;
+  }
+  if (entry) {
+    previewCache.delete(key);
+  }
+  return undefined;
+}
+
+// ============================================
+// XSS ESCAPING UTILITY (P0 FIX #2)
+// ============================================
+
+/**
+ * Escape HTML special characters to prevent XSS attacks
+ */
+function escapeHtml(text: string | number | boolean | null | undefined): string {
+  if (text === null || text === undefined) {
+    return "";
+  }
+  const str = String(text);
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;")
+    .replace(/`/g, "&#x60;")
+    .replace(/=/g, "&#x3D;");
+}
+
+/**
+ * Safely interpolate user data into HTML
+ */
+function safeInterpolate(value: string | number | null | undefined): string {
+  return escapeHtml(value);
+}
 
 // ============================================
 // PREVIEW GENERATION API
@@ -16,11 +99,21 @@ const previewCache = new Map<string, { html: string; shareUrl: string; expires: 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { leadId, templateStyle = "swiss_neutral", variant = "professional", device = "desktop" } = body;
     
-    if (!leadId) {
-      return NextResponse.json({ error: "leadId is required" }, { status: 400 });
+    // P0 FIX #1: Validate input with Zod
+    const validationResult = PreviewRequestSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { 
+          error: "Validation failed", 
+          details: validationResult.error.errors 
+        }, 
+        { status: 400 }
+      );
     }
+    
+    const { leadId, templateStyle, variant, device } = validationResult.data;
     
     // Fetch lead data
     const { data: lead, error } = await supabase
@@ -33,12 +126,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Lead not found" }, { status: 404 });
     }
     
-    // Generate cache key
-    const cacheKey = `${leadId}:${templateStyle}:${variant}:${device}`;
-    
     // Check cache
-    const cached = previewCache.get(cacheKey);
-    if (cached && cached.expires > new Date()) {
+    const cacheKey = `${leadId}:${templateStyle}:${variant}:${device}`;
+    const cached = getCache(cacheKey);
+    
+    if (cached) {
       return NextResponse.json({
         html: cached.html,
         shareUrl: cached.shareUrl,
@@ -46,22 +138,23 @@ export async function POST(request: NextRequest) {
       });
     }
     
-    // Generate preview HTML
+    // Generate preview HTML with XSS protection
     const html = generatePreviewHtml(lead, templateStyle, variant);
     
-    // Generate share token
+    // Use environment variable for domain (P0 FIX #3)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://leadflow.pro";
     const shareToken = generateShareToken();
-    const shareUrl = `https://leadflow.pro/preview/share/${shareToken}`;
+    const shareUrl = `${appUrl}/preview/share/${shareToken}`;
     
     // Store share mapping
-    previewCache.set(`share:${shareToken}`, {
+    setCache(`share:${shareToken}`, {
       html,
       shareUrl,
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
     });
     
     // Cache preview
-    previewCache.set(cacheKey, {
+    setCache(cacheKey, {
       html,
       shareUrl,
       expires: new Date(Date.now() + 60 * 60 * 1000) // 1 hour
@@ -92,12 +185,14 @@ export async function GET(request: NextRequest) {
     
     // Check by share token
     if (token) {
-      const cached = previewCache.get(`share:${token}`);
+      const cached = getCache(`share:${token}`);
       if (cached) {
         return new NextResponse(cached.html, {
           headers: {
             "Content-Type": "text/html",
-            "Cache-Control": "public, max-age=3600"
+            "Cache-Control": "public, max-age=3600",
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY"
           }
         });
       }
@@ -105,12 +200,13 @@ export async function GET(request: NextRequest) {
     
     // Check by lead ID
     if (shareId) {
-      const cached = previewCache.get(`${shareId}:swiss_neutral:professional:desktop`);
+      const cached = getCache(`${shareId}:swiss_neutral:professional:desktop`);
       if (cached) {
         return new NextResponse(cached.html, {
           headers: {
             "Content-Type": "text/html",
-            "Cache-Control": "public, max-age=3600"
+            "Cache-Control": "public, max-age=3600",
+            "X-Content-Type-Options": "nosniff"
           }
         });
       }
@@ -141,24 +237,36 @@ function generatePreviewHtml(lead: any, style: string, variant: string): string 
   const headline = generateHeadline(lead, variant);
   const colors = getIndustryColors(lead.industry);
   
+  // P0 FIX #2: Use safeInterpolate for all user data
+  const safeLead = {
+    company_name: safeInterpolate(lead.company_name),
+    industry: safeInterpolate(lead.industry),
+    location: safeInterpolate(lead.location),
+    rating: safeInterpolate(lead.rating || "Neu"),
+    phone: safeInterpolate(lead.phone || ""),
+    review_count: safeInterpolate(lead.review_count || 0),
+  };
+  
   return `<!DOCTYPE html>
 <html lang="de-CH">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${lead.company_name} - Website Vorschau</title>
-  <meta name="description" content="${headline}">
-  <meta property="og:title" content="${lead.company_name}">
-  <meta property="og:description" content="${headline}">
+  <title>${safeLead.company_name} - Website Vorschau</title>
+  <meta name="description" content="${safeInterpolate(headline)}">
+  <meta property="og:title" content="${safeLead.company_name}">
+  <meta property="og:description" content="${safeInterpolate(headline)}">
   <meta property="og:type" content="website">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="robots" content="noindex, nofollow">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "${lead.company_name}",
-    "address": { "@type": "PostalAddress", "addressLocality": "${lead.location}" },
-    "telephone": "${lead.phone || ""}",
-    "priceRange": "${getPriceRange(lead.industry)}",
+    "name": "${safeLead.company_name}",
+    "address": { "@type": "PostalAddress", "addressLocality": "${safeLead.location}" },
+    "telephone": "${safeLead.phone}",
+    "priceRange": "${safeInterpolate(getPriceRange(lead.industry))}",
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": ${lead.rating || 0},
@@ -170,7 +278,7 @@ function generatePreviewHtml(lead: any, style: string, variant: string): string 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; }
     .hero {
-      background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 100%);
+      background: linear-gradient(135deg, ${escapeHtml(colors.primary)} 0%, ${escapeHtml(colors.accent)} 100%);
       color: white;
       padding: 60px 20px;
       text-align: center;
@@ -181,30 +289,28 @@ function generatePreviewHtml(lead: any, style: string, variant: string): string 
     .badge { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; }
     .cta { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 24px; }
     .btn { padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; transition: all 0.3s; }
-    .btn-primary { background: white; color: ${colors.primary}; }
+    .btn-primary { background: white; color: ${escapeHtml(colors.primary)}; }
     .btn-secondary { background: transparent; border: 2px solid white; color: white; }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
     .section { padding: 50px 20px; }
-    .section-light { background: ${colors.secondary}; }
+    .section-light { background: ${escapeHtml(colors.secondary)}; }
     .container { max-width: 1000px; margin: 0 auto; }
     h2 { font-size: 28px; text-align: center; margin-bottom: 32px; color: #1f2937; }
     .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-    .feature { background: white; padding: 28px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s; }
-    .feature:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .feature { background: white; padding: 28px; border-radius: 12px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .feature-icon { font-size: 36px; margin-bottom: 12px; }
-    .feature h3 { color: #1f2937; font-size: 16px; }
     .about { background: white; padding: 44px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .about p { color: #4b5563; line-height: 1.8; text-align: center; max-width: 700px; margin: 0 auto; }
     .stats { display: flex; justify-content: center; gap: 48px; margin-top: 32px; flex-wrap: wrap; }
     .stat { text-align: center; }
-    .stat-value { display: block; font-size: 22px; font-weight: 700; color: ${colors.primary}; }
-    .stat-label { font-size: 13px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
-    .cta-final { background: ${colors.primary}; color: white; padding: 60px 20px; text-align: center; }
+    .stat-value { display: block; font-size: 22px; font-weight: 700; color: ${escapeHtml(colors.primary)}; }
+    .stat-label { font-size: 13px; color: #6b7280; text-transform: uppercase; }
+    .cta-final { background: ${escapeHtml(colors.primary)}; color: white; padding: 60px 20px; text-align: center; }
     .cta-final h2 { color: white; }
     .cta-final p { margin-bottom: 28px; opacity: 0.9; font-size: 18px; }
     .services { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
     .service { background: white; padding: 20px; border-radius: 10px; text-align: center; }
-    .service-icon { width: 100%; height: 100px; background: ${colors.secondary}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 12px; }
+    .service-icon { width: 100%; height: 100px; background: ${escapeHtml(colors.secondary)}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
     .service h4 { color: #1f2937; font-size: 14px; }
     footer { background: #1f2937; color: white; padding: 36px 20px; text-align: center; }
     footer p { opacity: 0.8; }
@@ -218,26 +324,26 @@ function generatePreviewHtml(lead: any, style: string, variant: string): string 
 <body>
   <header class="hero">
     <div class="badges">
-      <span class="badge">⭐ Google ${lead.rating || "Neu"}</span>
-      <span class="badge">📍 ${lead.location}</span>
+      <span class="badge">⭐ Google ${safeLead.rating}</span>
+      <span class="badge">📍 ${safeLead.location}</span>
       <span class="badge">🛡️ Schweizer Qualität</span>
     </div>
-    <h1>${headline}</h1>
-    <p>Professionelle Webpräsenz für Ihr ${lead.industry}-Business in ${lead.location}</p>
+    <h1>${safeInterpolate(headline)}</h1>
+    <p>Professionelle Webpräsenz für Ihr ${safeLead.industry}-Business in ${safeLead.location}</p>
     <div class="cta">
-      <button class="btn btn-primary">${getPrimaryCTA(lead.industry)}</button>
-      <button class="btn btn-secondary">${getSecondaryCTA(lead.industry)}</button>
+      <button class="btn btn-primary">${escapeHtml(getPrimaryCTA(lead.industry))}</button>
+      <button class="btn btn-secondary">${escapeHtml(getSecondaryCTA(lead.industry))}</button>
     </div>
   </header>
   
   <section class="section section-light">
     <div class="container">
-      <h2>Warum ${lead.company_name}?</h2>
+      <h2>Warum ${safeLead.company_name}?</h2>
       <div class="features">
         ${getFeatures(lead.industry).map((f: string, i: number) => `
           <div class="feature">
             <div class="feature-icon">${["✨", "⭐", "🎯", "🚀"][i % 4]}</div>
-            <h3>${f}</h3>
+            <h3>${escapeHtml(f)}</h3>
           </div>
         `).join("")}
       </div>
@@ -249,13 +355,13 @@ function generatePreviewHtml(lead: any, style: string, variant: string): string 
       <div class="about">
         <h2>Über uns</h2>
         <p>
-          ${lead.company_name} ist Ihr zuverlässiger Partner für ${lead.industry} in ${lead.location}. 
+          ${safeLead.company_name} ist Ihr zuverlässiger Partner für ${safeLead.industry} in ${safeLead.location}. 
           Mit Erfahrung und Engagement setzen wir uns für Ihre Projekte ein. 
           Qualität, Zuverlässigkeit und persönlicher Service stehen bei uns an erster Stelle.
         </p>
         <div class="stats">
-          <div class="stat"><span class="stat-value">${getPriceRange(lead.industry)}</span><span class="stat-label">Preisbereich</span></div>
-          <div class="stat"><span class="stat-value">⭐ ${lead.rating || "Neu"}</span><span class="stat-label">Bewertung</span></div>
+          <div class="stat"><span class="stat-value">${escapeHtml(getPriceRange(lead.industry))}</span><span class="stat-label">Preisbereich</span></div>
+          <div class="stat"><span class="stat-value">⭐ ${safeLead.rating}</span><span class="stat-label">Bewertung</span></div>
           <div class="stat"><span class="stat-value">✓</span><span class="stat-label">CH Qualität</span></div>
         </div>
       </div>
@@ -269,7 +375,7 @@ function generatePreviewHtml(lead: any, style: string, variant: string): string 
         ${getServices(lead.industry).map((s: string) => `
           <div class="service">
             <div class="service-icon">🖼️</div>
-            <h4>${s}</h4>
+            <h4>${escapeHtml(s)}</h4>
           </div>
         `).join("")}
       </div>
@@ -281,15 +387,15 @@ function generatePreviewHtml(lead: any, style: string, variant: string): string 
       <h2>Bereit?</h2>
       <p>Kontaktieren Sie uns jetzt für ein unverbindliches Gespräch.</p>
       <div class="cta">
-        <button class="btn btn-primary" style="background: white; color: ${colors.primary};">${getPrimaryCTA(lead.industry)}</button>
-        <button class="btn btn-secondary">${lead.phone || "Anrufen"}</button>
+        <button class="btn btn-primary" style="background: white; color: ${escapeHtml(colors.primary)};">${escapeHtml(getPrimaryCTA(lead.industry))}</button>
+        <button class="btn btn-secondary">${safeLead.phone || "Anrufen"}</button>
       </div>
     </div>
   </section>
   
   <footer>
-    <p>© 2026 ${lead.company_name}. Alle Rechte vorbehalten.</p>
-    <p style="margin-top: 8px;">🇨🇭 Schweizer Qualität aus ${lead.location}</p>
+    <p>© 2026 ${safeLead.company_name}. Alle Rechte vorbehalten.</p>
+    <p style="margin-top: 8px;">🇨🇭 Schweizer Qualität aus ${safeLead.location}</p>
   </footer>
 </body>
 </html>`;
