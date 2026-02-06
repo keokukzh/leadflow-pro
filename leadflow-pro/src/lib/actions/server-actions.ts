@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { readData, writeData } from "../storage";
 import { getCompletion } from "../ai-client";
-import { TEMPLATE_DATA_PROMPT, SEARCH_STRATEGY_PROMPT } from "../prompts";
+import { TEMPLATE_DATA_PROMPT, SEARCH_STRATEGY_PROMPT, BOTTIE_SYSTEM_PROMPT } from "../prompts";
+import { calculateLeadScore } from "@/services/leadScoring";
 
 // In a real app, you would use Prisma, Drizzle, or raw pg queries
 export interface Interaction {
@@ -13,6 +14,19 @@ export interface Interaction {
   content: string;
   status: string;
   created_at: string;
+}
+
+export interface DiscoveryResultItem {
+  place_id: string;
+  name: string;
+  rating: number;
+  user_ratings_total: number;
+  vicinity: string;
+  website?: string | null;
+  phone?: string | null;
+  source_url?: string;
+  industry: string;
+  analysis?: NonNullable<Lead['analysis']>;
 }
 
 export interface TemplateData {
@@ -111,7 +125,7 @@ export async function runApifyDiscovery(
   industry: string, 
   location: string, 
   options: { maxResults?: number } = {}
-): Promise<{ success: boolean; results?: ReturnType<typeof transformToLeadFormat>[]; error?: string }> {
+): Promise<{ success: boolean; results?: DiscoveryResultItem[]; error?: string }> {
   const settings = await getSettings();
   
   if (!settings.apifyToken) {
@@ -132,7 +146,29 @@ export async function runApifyDiscovery(
     requireNoWebsite: true,
   });
   
-  const leads = candidates.map(c => transformToLeadFormat(c, industry));
+  const leads = candidates.map(c => {
+    const data = transformToLeadFormat(c, industry);
+    // Initial scoring
+    const scoring = calculateLeadScore(
+      data.user_ratings_total,
+      data.rating,
+      data.website ? 'MODERN' : 'KEINE', // Basic assumption for now
+      data.industry
+    );
+    
+    return {
+      ...data,
+      analysis: {
+        priorityScore: scoring.score,
+        mainSentiment: 'Analysiere...',
+        painPoints: [],
+        targetDecisionMaker: 'Inhaber',
+        valueProposition: '',
+        outreachStrategy: `Priorität: ${scoring.label}`,
+        conversationStarters: []
+      }
+    } as DiscoveryResultItem;
+  });
   
   return { success: true, results: leads };
 }
@@ -213,7 +249,7 @@ export async function enrichLeadWithApify(leadId: string): Promise<{
 
 export async function performLeadResearch(lead: LeadContext, reviewsText: string) {
   const prompt = LEAD_RESEARCH_PROMPT(lead, reviewsText);
-  const content = await getCompletion(prompt, "Du bist ein erfahrener Lead-Research-Assistant und Search Specialist.");
+  const content = await getCompletion(prompt, BOTTIE_SYSTEM_PROMPT);
   try {
     return JSON.parse(content || '{}');
   } catch {
@@ -297,6 +333,13 @@ export async function saveLeadToCRM(leadData: {
 }) {
   const leads = await readData<Lead[]>(LEADS_FILE, []);
   
+  const scoring = calculateLeadScore(
+    leadData.user_ratings_total,
+    leadData.rating,
+    leadData.website ? 'MODERN' : 'KEINE',
+    leadData.industry || 'Sonstige'
+  );
+
   const newLead: Lead = {
     id: Math.random().toString(36).substring(2, 9),
     company_name: leadData.name,
@@ -306,6 +349,15 @@ export async function saveLeadToCRM(leadData: {
     rating: leadData.rating,
     review_count: leadData.user_ratings_total,
     status: 'DISCOVERED',
+    analysis: {
+      priorityScore: scoring.score,
+      mainSentiment: 'Aktiviert',
+      painPoints: [],
+      targetDecisionMaker: 'Inhaber',
+      valueProposition: 'Potenzial für Lead-Steigerung durch Swiss Design Website.',
+      outreachStrategy: `Kategorie: ${scoring.label}`,
+      conversationStarters: []
+    },
     created_at: new Date().toISOString()
   };
   
@@ -552,7 +604,7 @@ export async function generateSiteConfig(leadId: string) {
   console.log("Template Data Prompt prepared.");
   
   try {
-    const content = await getCompletion(prompt, "Du bist ein erfahrener Web-Designer und Copywriter.");
+    const content = await getCompletion(prompt, BOTTIE_SYSTEM_PROMPT);
     console.log("AI Response received for Template Data.");
     
     if (!content || content === '{}') {
