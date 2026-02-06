@@ -205,19 +205,23 @@ class DynamicHeadlineGenerator:
     
     def __init__(self):
         self._cache = {}
+        self._lock = threading.Lock()
     
     def generate(self, lead: Lead, style: str = "professional") -> str:
         """Generate headline for lead."""
         cache_key = f"{lead.id}:{style}"
-        if cache_key in self._cache:
-            return self._cache[cache_key]
+        with self._lock:
+            if cache_key in self._cache:
+                return self._cache[cache_key]
         
         status_key = self._get_status_key(lead.website_status)
         pattern_set = self.HEADLINE_PATTERNS.get(status_key, self.HEADLINE_PATTERNS["no_website"])
         patterns = pattern_set.get(style, pattern_set["professional"])
         pattern = random.choice(patterns)
         headline = pattern.format(name=lead.company_name, city=lead.location, industry=lead.industry)
-        self._cache[cache_key] = headline
+        
+        with self._lock:
+            self._cache[cache_key] = headline
         return headline
     
     def generate_variants(self, lead: Lead, count: int = 4) -> Dict[str, str]:
@@ -335,16 +339,20 @@ class IndustryTemplateEngine:
     
     def __init__(self):
         self._cache = {}
+        self._lock = threading.Lock()
     
     def get_template(self, industry: str) -> IndustryTemplate:
         """Get template for industry."""
         key = industry.lower()
-        if key in self._cache:
-            return self._cache[key]
+        with self._lock:
+            if key in self._cache:
+                return self._cache[key]
         
         template_data = self.TEMPLATES.get(key, self.TEMPLATES["service"])
         template = IndustryTemplate(**template_data)
-        self._cache[key] = template
+        
+        with self._lock:
+            self._cache[key] = template
         return template
     
     def generate_css(self, template: IndustryTemplate) -> str:
@@ -379,11 +387,16 @@ class LivePreviewServer:
         config = config or PreviewConfig()
         cache_key = f"{lead.id}:{config.template_style}:{config.device}:{config.variant_id}"
         
-        if cache_key in self._cache:
-            cached = self._cache.get(cache_key)
-            if cached and datetime.now() < cached.generated_at + timedelta(hours=1):
-                return cached
+        cached = self._cache.get(cache_key)
+        if cached and datetime.now() < cached.generated_at + timedelta(hours=1):
+            return cached
         
+        preview = self._core_generate(lead, config)
+        self._cache.set(cache_key, preview, ttl=3600)
+        return preview
+
+    def _core_generate(self, lead: Lead, config: PreviewConfig) -> PreviewPage:
+        """Internal core generation logic shared between sync and async methods."""
         template = self._templates.get_template(lead.industry)
         headline = self._headlines.generate(lead, "professional")
         headline_variants = self._headlines.generate_variants(lead)
@@ -393,20 +406,26 @@ class LivePreviewServer:
         structured_data = self._generate_structured_data(lead, template)
         share_token = self._generate_share_token(lead.id)
         
-        preview = PreviewPage(
+        return PreviewPage(
             id=hashlib.md5(f"{time.time()}".encode()).hexdigest()[:8],
             lead_id=lead.id,
             html=html,
             meta_tags=meta_tags,
             social_card=social_card,
             structured_data=structured_data,
-            variant_config={"template": template.name, "style": config.template_style, "device": config.device, "headlines": headline_variants},
+            variant_config={
+                "template": template.name, 
+                "style": config.template_style, 
+                "device": config.device, 
+                "headlines": headline_variants
+            },
             generated_at=datetime.now(),
             share_token=share_token
         )
-        
-        self._cache.set(cache_key, preview, ttl=3600)
-        return preview
+    
+    def _sync_generate_preview(self, lead: Lead) -> PreviewPage:
+        """Synchronous preview generation for testing using core logic."""
+        return self._core_generate(lead, PreviewConfig())
     
     def _build_html(self, lead: Lead, template: IndustryTemplate, headline: str, config: PreviewConfig) -> str:
         """Build complete HTML page."""
@@ -565,30 +584,6 @@ class LivePreviewServer:
         self._share_tokens[token] = {"lead_id": lead_id, "created": datetime.now(), "expires": datetime.now() + timedelta(days=7)}
         return token
     
-    def _sync_generate_preview(self, lead: Lead) -> PreviewPage:
-        """Synchronous preview generation for testing."""
-        config = PreviewConfig()
-        cache_key = f"{lead.id}:{config.template_style}:{config.device}:{config.variant_id}"
-        template = self._templates.get_template(lead.industry)
-        headline = self._headlines.generate(lead, "professional")
-        headline_variants = self._headlines.generate_variants(lead)
-        html = self._build_html(lead, template, headline, config)
-        meta_tags = self._generate_meta_tags(lead, headline)
-        social_card = self._generate_social_card(lead, headline)
-        structured_data = self._generate_structured_data(lead, template)
-        share_token = self._generate_share_token(lead.id)
-        
-        return PreviewPage(
-            id=hashlib.md5(f"{time.time()}".encode()).hexdigest()[:8],
-            lead_id=lead.id,
-            html=html,
-            meta_tags=meta_tags,
-            social_card=social_card,
-            structured_data=structured_data,
-            variant_config={"template": template.name, "style": config.template_style, "device": config.device, "headlines": headline_variants},
-            generated_at=datetime.now(),
-            share_token=share_token
-        )
 
 
 class LRUCache:
@@ -674,28 +669,7 @@ if __name__ == "__main__":
     
     class SyncServer(LivePreviewServer):
         def _sync_generate_preview(self, lead):
-            config = PreviewConfig()
-            cache_key = f"{lead.id}:{config.template_style}:{config.device}:{config.variant_id}"
-            template = self._templates.get_template(lead.industry)
-            headline = self._headlines.generate(lead, "professional")
-            headline_variants = self._headlines.generate_variants(lead)
-            html = self._build_html(lead, template, headline, config)
-            meta_tags = self._generate_meta_tags(lead, headline)
-            social_card = self._generate_social_card(lead, headline)
-            structured_data = self._generate_structured_data(lead, template)
-            share_token = self._generate_share_token(lead.id)
-            
-            return PreviewPage(
-                id=hashlib.md5(f"{time.time()}".encode()).hexdigest()[:8],
-                lead_id=lead.id,
-                html=html,
-                meta_tags=meta_tags,
-                social_card=social_card,
-                structured_data=structured_data,
-                variant_config={"template": template.name, "style": config.template_style, "device": config.device, "headlines": headline_variants},
-                generated_at=datetime.now(),
-                share_token=share_token
-            )
+            return self._core_generate(lead, PreviewConfig())
     
     server = SyncServer()
     main()
