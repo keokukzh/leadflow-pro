@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSettings } from '@/lib/settings';
-import { performLeadResearch, generateSearchQueries, updateMission, getMissionById } from '@/lib/actions/server-actions';
+import { performLeadResearch, generateSearchQueries, updateMission, getMissionById, DiscoveryMission } from '@/lib/actions/server-actions';
 import { searchLeadsWithPerplexity } from '@/lib/perplexity';
 
 export async function POST(req: Request) {
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
           allPerplexityResults.push(...results);
           
           if (missionId) {
-            await updateMission(missionId, { results: allPerplexityResults as any[] });
+            await updateMission(missionId, { results: allPerplexityResults as DiscoveryMission['results'] });
           }
         } catch (err) {
           console.error(`Perplexity search failed for ${location}:`, err);
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
       }
 
       if (missionId) {
-        await updateMission(missionId, { results: allPerplexityResults as any[], status: 'COMPLETED' });
+        await updateMission(missionId, { results: allPerplexityResults as DiscoveryMission['results'], status: 'COMPLETED' });
       }
 
       return NextResponse.json({ results: allPerplexityResults });
@@ -89,7 +89,10 @@ export async function POST(req: Request) {
           const currentMission = await getMissionById(missionId);
           if (currentMission?.status !== 'IN_PROGRESS') {
             console.log(`[SearchSpecialist] Mission ${missionId} stopped or changed status. Breaking loop.`);
-            return NextResponse.json({ results: Array.from(allResultsMap.values()).map(({ reviews_short: _, ...rest }) => rest) });
+            return NextResponse.json({ results: Array.from(allResultsMap.values()).map((res) => {
+              const { reviews_short: _r, ...rest } = res;
+              return rest;
+            }) });
           }
         }
 
@@ -128,8 +131,11 @@ export async function POST(req: Request) {
       
       // Update intermediate results for persistence if user navigates away
       if (missionId) {
-        const currentResults = Array.from(allResultsMap.values()).map(({ reviews_short, ...rest }: any) => rest);
-        await updateMission(missionId, { results: currentResults as any });
+        const currentResults = Array.from(allResultsMap.values()).map((res) => {
+          const { reviews_short: _r, ...rest } = res;
+          return rest;
+        });
+        await updateMission(missionId, { results: currentResults as DiscoveryMission['results'] });
       }
     }
 
@@ -150,10 +156,13 @@ export async function POST(req: Request) {
       }
     }
 
-    const finalResults = resultsArray.map(({ reviews_short: _, ...rest }) => rest);
+    const finalResults = resultsArray.map((res) => {
+      const { reviews_short: _r, ...rest } = res;
+      return rest;
+    });
 
     if (missionId) {
-      await updateMission(missionId, { results: finalResults as any, status: 'COMPLETED' });
+      await updateMission(missionId, { results: finalResults as DiscoveryMission['results'], status: 'COMPLETED' });
     }
 
     return NextResponse.json({ results: finalResults });

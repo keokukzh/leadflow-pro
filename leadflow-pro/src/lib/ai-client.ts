@@ -29,10 +29,11 @@ export async function getCompletion(prompt: string, systemPrompt: string = "You 
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt },
       ],
-      response_format: { type: "json_object" },
+      // Only use response_format for OpenAI/OpenRouter, not Perplexity
+      response_format: isPerplexity ? undefined : ({ type: "json_object" } as any),
     });
 
-    const content = response.choices[0].message.content || "";
+    const content = (response as any).choices?.[0]?.message?.content || "";
     return extractJson(content);
   } else {
     // Local LM Studio / OpenAI-compatible endpoint

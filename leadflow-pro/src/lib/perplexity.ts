@@ -1,6 +1,7 @@
 import { getSettings } from "./settings";
 
 export interface PerplexityLead {
+  place_id: string;
   name: string;
   vicinity: string;
   website: string | null;
@@ -59,8 +60,7 @@ WICHTIG: Antworte NUR mit dem validen JSON-Array.`;
       messages: [
         { role: "system", content: "Du bist ein spezialisierter B2B Business Research Bot. Gib nur valides JSON zurück." },
         { role: "user", content: prompt }
-      ],
-      response_format: { type: "json_object" }
+      ]
     }),
   });
 
@@ -73,10 +73,41 @@ WICHTIG: Antworte NUR mit dem validen JSON-Array.`;
   const content = data.choices[0].message.content;
   
   try {
-    const results = JSON.parse(content);
-    return Array.isArray(results) ? results : (results.leads || []);
+    const jsonStr = extractJsonFromText(content);
+    const results = JSON.parse(jsonStr);
+    const finalLeads = Array.isArray(results) ? results : (results.leads || results.results || []);
+    
+    // Ensure each lead has a place_id and industry
+    return finalLeads.map((l: { name: string; vicinity: string; industry?: string; rating?: number; user_ratings_total?: number; analysis: any }) => ({
+      ...l,
+      place_id: `pplx-${l.name.replace(/\s+/g, '-').toLowerCase()}-${l.vicinity.split(',')[0].trim().toLowerCase()}`,
+      industry: l.industry || industry
+    })) as PerplexityLead[];
   } catch (e) {
     console.error("Fehler beim Parsen der Perplexity-Antwort:", e);
+    console.log("Raw content was:", content);
     return [];
   }
+}
+
+function extractJsonFromText(text: string): string {
+  if (!text) return "[]";
+  
+  // Try to find JSON block if it exists
+  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const content = jsonMatch ? jsonMatch[1].trim() : text.trim();
+  
+  // Find first '[' and last ']' or first '{' and last '}'
+  const firstBracket = content.indexOf('[');
+  const lastBracket = content.lastIndexOf(']');
+  const firstBrace = content.indexOf('{');
+  const lastBrace = content.lastIndexOf('}');
+  
+  if (firstBracket !== -1 && lastBracket !== -1 && (firstBracket < firstBrace || firstBrace === -1)) {
+    return content.substring(firstBracket, lastBracket + 1);
+  } else if (firstBrace !== -1 && lastBrace !== -1) {
+    return content.substring(firstBrace, lastBrace + 1);
+  }
+  
+  return content;
 }
