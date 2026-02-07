@@ -1,9 +1,6 @@
+// Moved from outer src to inner leadflow-pro/src/services/voice/voiceAgent.ts
 // Voice Agent Service - Twilio + ElevenLabs Integration
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+import { supabase } from '@/lib/supabase';
 
 export interface VoiceConfig {
   twilio: {
@@ -101,17 +98,49 @@ export async function generateSpeech(text: string, voiceId: string): Promise<Buf
   return Buffer.from(arrayBuffer);
 }
 
-// Build TwiML from script
-export function buildTwiML(script: keyof typeof VOICE_SCRIPTS): string {
+// Help prevent TwiML injection
+function escapeXml(unsafe: string): string {
+  if (!unsafe) return '';
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+      default: return c;
+    }
+  });
+}
+
+// Mask sensitive phone numbers for privacy
+function maskPhone(phone: string): string {
+  if (!phone) return 'unknown';
+  const clean = phone.replace(/\s+/g, '');
+  if (clean.length < 4) return '****';
+  return clean.slice(0, -4).replace(/\d/g, '*') + clean.slice(-4);
+}
+
+/**
+ * Build TwiML from script with strict XSS protection
+ */
+export function buildTwiML(script: keyof typeof VOICE_SCRIPTS, templateData?: Record<string, any>): string {
   const content = VOICE_SCRIPTS[script];
-  const fullText = `${content.intro} ${content.hook} ${content.value} ${content.cta}`;
+  
+  // Apply escaping to all dynamic content and fallback to standard text if missing
+  const intro = escapeXml(templateData?.company_name ? `Grüezi, hie isch dr Bottie vo LeadFlow Pro für ${templateData.company_name}.` : content.intro);
+  const hook = escapeXml(content.hook);
+  const value = escapeXml(content.value);
+  const cta = escapeXml(content.cta);
+  
+  const fullText = `${intro} ${hook} ${value} ${cta}`;
   
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="alice" language="de-CH" style="calm">
+  <Say voice="alice" language="de-CH">
     ${fullText}
   </Say>
-  <Gather numDigits="1" action="/api/voice/response" method="POST">
+  <Gather numDigits="1" action="/api/voice/twilio/response" method="POST">
     <Say voice="alice" language="de-CH">
       Drücke 1 für Terminvereinbarung.
       Drücke 2 für mehr Infos.
@@ -136,24 +165,16 @@ export async function createCall(request: CallRequest): Promise<CallResult> {
   }
 
   try {
-    const twiml = buildTwiML(request.script);
+    buildTwiML(request.script, request.templateData);
     
-    // In production, use actual Twilio SDK:
-    // const client = require('twilio')(twilioConfig.accountSid, twilioConfig.authToken);
-    // const call = await client.calls.create({
-    //   twiml,
-    //   to: request.phoneNumber,
-    //   from: twilioConfig.phoneNumber
-    // });
-
     // For now, return mock response
     const callSid = `CA${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
     
-    // Log call to database
+    // Log call to database with masked phone
     await logCall({
       leadId: request.leadId,
       callSid,
-      phoneNumber: request.phoneNumber,
+      phoneNumber: maskPhone(request.phoneNumber),
       script: request.script,
       status: 'queued',
       timestamp: new Date().toISOString()
@@ -193,29 +214,52 @@ export function getElevenLabsConfig(): VoiceConfig['elevenlabs'] {
 }
 
 // Log call to database
-async function logCall(callData: any): Promise<void> {
-  // In production, save to Supabase:
-  // await supabase.from('voice_calls').insert(callData);
+async function logCall(callData: { 
+  leadId: string; 
+  callSid: string; 
+  phoneNumber: string; 
+  script: string; 
+  status: string; 
+  timestamp: string; 
+}): Promise<void> {
+  try {
+    const { error } = await supabase.from('voice_calls').insert(callData);
+    if (error) console.error('Supabase voice log error:', error.message);
+  } catch (err) {
+    console.error('Voice log sync failed:', err);
+  }
   
   console.log('📞 Call logged:', callData);
 }
 
 // Get call history for a lead
 export async function getCallHistory(leadId: string): Promise<any[]> {
-  // In production, fetch from Supabase:
-  // const { data } = await supabase.from('voice_calls').select('*').eq('lead_id', leadId);
-  // return data || [];
-  
-  return [];
+  try {
+    const { data, error } = await supabase
+      .from('voice_calls')
+      .select('*')
+      .eq('leadId', leadId);
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Failed to fetch call history:', err);
+    return [];
+  }
 }
 
 // Get all calls
 export async function getAllCalls(): Promise<any[]> {
-  // In production, fetch from Supabase:
-  // const { data } = await supabase.from('voice_calls').select('*').order('timestamp', { ascending: false });
-  // return data || [];
-  
-  return [];
+  try {
+    const { data, error } = await supabase
+      .from('voice_calls')
+      .select('*')
+      .order('timestamp', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Failed to fetch all calls:', err);
+    return [];
+  }
 }
 
 // Handle Twilio webhook response
@@ -226,7 +270,7 @@ export function handleVoiceResponse(digits: string): string {
     '3': 'Auflegen'
   };
   
-  const action = digitActions[digits] || 'Unbekannt';
+  const action = escapeXml(digitActions[digits] || 'Unbekannt');
   
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>

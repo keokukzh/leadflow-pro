@@ -6,6 +6,7 @@ import { getCompletion } from "../ai-client";
 import { TEMPLATE_DATA_PROMPT, SEARCH_STRATEGY_PROMPT, BOTTIE_SYSTEM_PROMPT } from "../prompts";
 import { calculateLeadScore } from "@/services/leadScoring";
 import { logger } from "@/lib/logger";
+import { supabase } from "@/lib/supabase";
 
 // In a real app, you would use Prisma, Drizzle, or raw pg queries
 export interface Interaction {
@@ -369,6 +370,24 @@ export async function saveLeadToCRM(leadData: {
   leads.push(newLead);
   await writeData(LEADS_FILE, leads);
   
+  // Sync to Supabase
+  try {
+    const { error } = await supabase.from('leads').insert({
+      id: newLead.id,
+      company_name: newLead.company_name,
+      industry: newLead.industry,
+      location: newLead.location,
+      rating: newLead.rating,
+      review_count: newLead.review_count,
+      status: newLead.status,
+      analysis: newLead.analysis,
+      created_at: newLead.created_at
+    });
+    if (error) logger.error({ error: error.message, leadId: newLead.id }, "Failed to sync lead to Supabase");
+  } catch (err) {
+    logger.error({ error: (err as Error).message }, "Supabase sync exception");
+  }
+  
   revalidatePath("/memory");
   revalidatePath("/discovery");
   
@@ -528,6 +547,20 @@ export async function updateLeadStrategy(leadId: string, strategy: { brandTone: 
       lead.strategy_brief = strategy;
       lead.status = 'STRATEGY_CREATED';
       await writeData(LEADS_FILE, leads);
+
+      // Sync to Supabase
+      try {
+        const { error } = await supabase
+          .from('leads')
+          .update({ 
+            strategy_brief: strategy, 
+            status: 'STRATEGY_CREATED' 
+          })
+          .eq('id', leadId);
+        if (error) logger.error({ error: error.message, leadId }, "Failed to sync strategy to Supabase");
+      } catch (err) {
+        logger.error({ error: (err as Error).message }, "Supabase strategy sync exception");
+      }
   }
   
   revalidatePath("/memory");
@@ -542,6 +575,17 @@ export async function updateLeadStatus(leadId: string, status: Lead['status']) {
   if (lead) {
       lead.status = status;
       await writeData(LEADS_FILE, leads);
+
+      // Sync to Supabase
+      try {
+        const { error } = await supabase
+          .from('leads')
+          .update({ status })
+          .eq('id', leadId);
+        if (error) logger.error({ error: error.message, leadId }, "Failed to sync status to Supabase");
+      } catch (err) {
+        logger.error({ error: (err as Error).message }, "Supabase status sync exception");
+      }
   }
   revalidatePath("/memory");
   return { success: true };
@@ -625,6 +669,20 @@ export async function generateSiteConfig(leadId: string) {
       l.id === leadId ? { ...l, preview_data: previewData, status: 'PREVIEW_READY' as const } : l
     );
     await writeData(LEADS_FILE, updatedLeads);
+
+    // Sync to Supabase
+    try {
+      const { error } = await supabase
+        .from('leads')
+        .update({ 
+          preview_data: previewData, 
+          status: 'PREVIEW_READY' 
+        })
+        .eq('id', leadId);
+      if (error) logger.error({ error: error.message, leadId }, "Failed to sync preview data to Supabase");
+    } catch (err) {
+      logger.error({ error: (err as Error).message }, "Supabase preview sync exception");
+    }
     
     console.log("Preview Data saved successfully for lead:", leadId);
     revalidatePath("/creator");
@@ -682,6 +740,32 @@ export async function generateStrategyAction(leadId: string) {
     await writeData(LEADS_FILE, errorLeads);
     throw err;
   }
+}
+
+/**
+ * Optimizes the logic engine output specifically for Stitch preview generation
+ * bypassing heavy site configuration if requested.
+ */
+export async function generateStitchPreviewOnly(leadId: string) {
+  logger.info({ leadId }, "Generating Stitch Preview Prompt Only (Optimized)");
+  const lead = await getLeadById(leadId);
+  if (!lead) throw new Error("Lead nicht gefunden.");
+
+  // This already utilizes the optimized STRATEGY_PROMPT which contains the 
+  // "optimal skill with stitch preview generation" instructions.
+  const result = await generateStrategyAction(leadId);
+  
+  if (result.strategy && result.strategy.creationToolPrompt) {
+    // Force status to a specific 'PREVIEW_READY' equivalent if we want to skip heavy gen
+    // But maybe a new status 'STITCH_READY' is better. For now, let's keep it simple.
+    return { 
+      success: true, 
+      prompt: result.strategy.creationToolPrompt,
+      brandTone: result.strategy.brandTone
+    };
+  }
+  
+  return { success: false, error: "Stitch prompt could not be generated." };
 }
 
 export interface GlobalAgentStatus {

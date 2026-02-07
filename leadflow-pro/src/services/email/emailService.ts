@@ -1,11 +1,9 @@
+// Moved from outer src to inner leadflow-pro/src/services/email/emailService.ts
 // Resend Email Service for LeadFlow Pro
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
-// Initialize Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
-export interface EmailConfig {
+// Email Templates
+interface EmailConfig {
   apiKey: string;
   fromEmail: string;
   fromName: string;
@@ -13,8 +11,8 @@ export interface EmailConfig {
 
 export interface EmailRequest {
   to: string;
-  subject: string;
-  html: string;
+  subject?: string;
+  html?: string;
   leadId?: string;
   template?: 'lead_intro' | 'demo_sent' | 'follow_up' | 'newsletter';
 }
@@ -179,6 +177,42 @@ export const EMAIL_TEMPLATES = {
 </body>
 </html>
     `
+  },
+
+  newsletter: {
+    subject: "🗞️ LeadFlow Pro News: Monatliches Update",
+    template: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #1a1a1a; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #1f2937; color: white; padding: 30px; text-align: center; border-radius: 12px 12px 0 0; }
+    .content { background: #ffffff; padding: 30px; border: 1px solid #e5e5e5; }
+    .footer { background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 12px 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🗞️ Newsletter</h1>
+      <p>LeadFlow Pro Updates</p>
+    </div>
+    <div class="content">
+      <p>Grüezi {{contact_name}},</p>
+      <p>hier sind die neuesten Updates von LeadFlow Pro für Ihr Unternehmen <strong>{{company_name}}</strong>.</p>
+      <p>{{message_body}}</p>
+      <p>Freundliche Grüße,<br>Ihr LeadFlow Pro Team</p>
+    </div>
+    <div class="footer">
+      LeadFlow Pro – Schweiz
+    </div>
+  </div>
+</body>
+</html>
+    `
   }
 };
 
@@ -214,8 +248,8 @@ export async function sendEmail(request: EmailRequest): Promise<EmailResult> {
       body: JSON.stringify({
         from: 'LeadFlow Pro <info@leadflow.pro>',
         to: request.to,
-        subject: request.subject,
-        html: html,
+        subject: request.subject || template.subject || 'LeadFlow Pro Notification',
+        html: html || 'No content provided',
       }),
     });
 
@@ -267,24 +301,36 @@ export async function sendTemplatedEmail(
 
 // Get email history for a lead
 export async function getEmailHistory(leadId: string): Promise<any[]> {
-  // In production, fetch from Supabase:
-  // const { data } = await supabase.from('email_logs').select('*').eq('lead_id', leadId);
-  // return data || [];
-  return [];
+  try {
+    const { data, error } = await supabase.from('email_logs').select('*').eq('leadId', leadId);
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Failed to fetch email history:', err);
+    return [];
+  }
 }
 
 // Get all email logs
 export async function getAllEmails(): Promise<any[]> {
-  // In production, fetch from Supabase:
-  // const { data } = await supabase.from('email_logs').select('*').order('created_at', { ascending: false });
-  // return data || [];
-  return [];
+  try {
+    const { data, error } = await supabase.from('email_logs').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Failed to fetch all emails:', err);
+    return [];
+  }
 }
 
 // Log email to database
 async function logEmail(data: any): Promise<void> {
-  // In production, save to Supabase:
-  // await supabase.from('email_logs').insert(data);
+  try {
+    const { error } = await supabase.from('email_logs').insert(data);
+    if (error) console.error('Supabase email log error:', error.message);
+  } catch (err) {
+    console.error('Email log sync failed:', err);
+  }
   console.log('📧 Email logged:', data);
 }
 
@@ -295,9 +341,6 @@ export async function getEmailStats(): Promise<{
   opened: number;
   clicked: number;
 }> {
-  // In production, fetch from Resend API:
-  // const response = await fetch('https://api.resend.com/emails', { headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}` }});
-  
   return {
     sent: 0,
     delivered: 0,

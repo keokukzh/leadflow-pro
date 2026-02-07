@@ -2,38 +2,69 @@ import argparse
 import json
 import csv
 import os
+import re
+import logging
 import requests
+import time
+from typing import List, Dict, Optional
 from dotenv import load_dotenv
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-# Load environment variables from .env.local
-load_dotenv(dotenv_path="leadflow-pro/.env.local")
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("SwissLeadFinder")
+
+# Load environment variables
+load_dotenv(dotenv_path=".env.local")
 API_KEY = os.getenv("GOOGLE_PLACES_API_KEY")
 
-def search_places_new_api(city, industry, api_key):
-    """Search using NEW Google Places API (REST API)."""
+def sanitize_input(text: str) -> str:
+    """Remove potentially dangerous characters from search queries."""
+    if not text: return ""
+    return re.sub(r'[;\"\'\\]', '', text)
+
+def get_session_with_retries() -> requests.Session:
+    """Create a session with exponential backoff retry logic."""
+    session = requests.Session()
+    retry = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["POST"]
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+    return session
+
+def search_places_new_api(city: str, industry: str, api_key: str) -> List[Dict]:
+    """Search using NEW Google Places API (REST API) with resilience."""
     if not api_key:
-        print("ERROR: GOOGLE_PLACES_API_KEY not found in .env.local")
+        logger.error("GOOGLE_PLACES_API_KEY not found")
         return []
     
+    url = "https://places.googleapis.com/v1/places:searchText"
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": api_key,
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri"
+    }
+    
+    data = {
+        "textQuery": f"{sanitize_input(industry)} in {sanitize_input(city)}",
+        "maxResultCount": 20
+    }
+    
+    session = get_session_with_retries()
+    
     try:
-        # Places API (New) - Text Search
-        url = "https://places.googleapis.com/v1/places:searchText"
-        
-        headers = {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": api_key,
-            "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri"
-        }
-        
-        data = {
-            "textQuery": f"{industry} in {city}",
-            "maxResultCount": 20
-        }
-        
-        response = requests.post(url, headers=headers, json=data, timeout=30)
+        response = session.post(url, headers=headers, json=data, timeout=30)
         
         if response.status_code != 200:
-            print(f"API Error: {response.status_code} - {response.text}")
+            logger.error(f"API Error: {response.status_code} - {response.text}")
             return []
         
         results = response.json().get('places', [])
@@ -46,7 +77,7 @@ def search_places_new_api(city, industry, api_key):
             reviews = place.get('userRatingCount', 0)
             website = place.get('websiteUri', None)
             
-            lead = {
+            leads.append({
                 "id": place.get('id'),
                 "name": name,
                 "city": address,
@@ -54,93 +85,47 @@ def search_places_new_api(city, industry, api_key):
                 "reviews": reviews,
                 "rating": rating,
                 "website": website
-            }
-            leads.append(lead)
+            })
         
         return leads
         
     except Exception as e:
-        print(f"Error: {e}")
+        logger.exception(f"Unexpected error during API call: {e}")
         return []
 
-def find_leads_mock(city, industry, min_reviews, min_rating):
-    print(f"DEBUG: Using MOCK data for {industry} in {city}...")
+def find_leads_mock(city: str, industry: str, min_reviews: int, min_rating: float) -> List[Dict]:
+    """Provide realistic mock data for testing."""
+    logger.debug(f"Generating mock data for {industry} in {city}")
     mock_leads = [
-        {
-            "id": "lead_zh_001",
-            "name": "Restaurant Limmat",
-            "city": city,
-            "industry": industry or "Restaurant",
-            "reviews": 45,
-            "rating": 4.5,
-            "website": None
-        },
-        {
-            "id": "lead_zh_002",
-            "name": "Schreinerei Meier",
-            "city": city,
-            "industry": industry or "Handwerk",
-            "reviews": 22,
-            "rating": 4.2,
-            "website": "http://veraltet-meier.ch"
-        },
-        {
-            "id": "lead_zh_003",
-            "name": "Coiffeur Schönheit",
-            "city": city,
-            "industry": industry or "Beauty",
-            "reviews": 67,
-            "rating": 4.8,
-            "website": None
-        }
+        {"id": "zh_001", "name": "Restaurant Limmat", "city": city, "industry": industry, "reviews": 45, "rating": 4.5, "website": None},
+        {"id": "zh_002", "name": "Schreinerei Meier", "city": city, "industry": industry, "reviews": 22, "rating": 4.2, "website": "http://meier.ch"},
+        {"id": "zh_003", "name": "Coiffeur Schönheit", "city": city, "industry": industry, "reviews": 67, "rating": 4.8, "website": None}
     ]
-    
-    return [
-        l for l in mock_leads 
-        if l["reviews"] >= min_reviews and l["rating"] >= min_rating
-    ]
+    return [l for l in mock_leads if l["reviews"] >= min_reviews and l["rating"] >= min_rating]
 
-def filter_leads(leads, min_reviews, min_rating):
-    """Filter leads by minimum reviews and rating."""
-    return [
-        l for l in leads
-        if l.get("reviews", 0) >= min_reviews and l.get("rating", 0) >= min_rating
-    ]
+def filter_leads(leads: List[Dict], min_reviews: int, min_rating: float) -> List[Dict]:
+    """Filter leads based on strictness criteria."""
+    return [l for l in leads if l.get("reviews", 0) >= min_reviews and l.get("rating", 0) >= min_rating]
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Bottie Lead Finder for Switzerland - Places API (New)")
-    parser.add_argument("--city", required=True, help="City to search in (e.g., Zurich)")
-    parser.add_argument("--industry", help="Industry (e.g., restaurant)")
-    parser.add_argument("--min-reviews", type=int, default=20, help="Minimum number of reviews")
-    parser.add_argument("--min-rating", type=float, default=4.0, help="Minimum rating")
-    parser.add_argument("--real", action="store_true", help="Use real Google Places API")
-    parser.add_argument("--mock", action="store_true", help="Use mock data")
+    parser = argparse.ArgumentParser(description="Resilient Lead Finder for LeadFlow Pro")
+    parser.add_argument("--city", required=True)
+    parser.add_argument("--industry", default="Local Business")
+    parser.add_argument("--min-reviews", type=int, default=20)
+    parser.add_argument("--min-rating", type=float, default=4.0)
+    parser.add_argument("--real", action="store_true")
     
     args = parser.parse_args()
+    logger.info(f"Starting search: {args.industry} in {args.city}")
     
-    print(f"\n🔍 Searching for {args.industry or 'Local Business'} in {args.city}")
-    print(f"   Min Reviews: {args.min_reviews} | Min Rating: {args.min_rating}")
-    print()
-    
-    if args.mock or not API_KEY:
-        leads = find_leads_mock(args.city, args.industry or "Local Business", args.min_reviews, args.min_rating)
-    else:
-        leads = search_places_new_api(args.city, args.industry or "Local Business", API_KEY)
+    leads = []
+    if args.real and API_KEY:
+        leads = search_places_new_api(args.city, args.industry, API_KEY)
         leads = filter_leads(leads, args.min_reviews, args.min_rating)
-        
-        if not leads:
-            print("⚠️  No results from API. Using mock data...")
-            leads = find_leads_mock(args.city, args.industry or "Local Business", args.min_reviews, args.min_rating)
     
-    print(f"\n✅ Found {len(leads)} potential leads in {args.city}")
-    print("-" * 60)
-    
-    for i, lead in enumerate(leads, 1):
-        print(f"{i}. {lead['name']}")
-        print(f"   📍 {lead['city']}")
-        print(f"   ⭐ {lead['rating']} ({lead['reviews']} reviews)")
-        print(f"   🌐 {lead['website'] or 'NO WEBSITE'}")
-        print()
+    if not leads:
+        logger.warning("No real leads found or mock mode enabled. Using mock data.")
+        leads = find_leads_mock(args.city, args.industry, args.min_reviews, args.min_rating)
     
     # Save to CSV
     with open("leads.csv", "w", newline="", encoding="utf-8") as f:
@@ -148,7 +133,6 @@ if __name__ == "__main__":
         writer.writeheader()
         writer.writerows(leads)
     
-    print("💾 Leads saved to leads.csv")
-    print("\n📋 Lead IDs for CRM import:")
+    logger.info(f"Search complete. {len(leads)} leads saved to leads.csv")
     for lead in leads:
-        print(f"   - {lead['id']}: {lead['name']}")
+        logger.info(f"- {lead['id']}: {lead['name']} ({lead['rating']} stars)")

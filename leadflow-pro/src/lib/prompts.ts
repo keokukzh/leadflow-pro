@@ -56,6 +56,8 @@ export const STRATEGY_PROMPT = (lead: Lead) => `
 
   CREATION TOOL PROMPT INSTRUCTIONS:
   Generate a comprehensive, visually descriptive English prompt for AI design tools (Google Stitch, Midjourney).
+  Optimize the logic engine output to fit optimal skill with stitch preview generation specific on customer generated data.
+  You MUST weave in specific details from the company context, the sentiment analysis, and the unique pain points identified in the DEEP RESEARCH section provided above. The goal is a preview that feels bespoke to ${lead.company_name}.
   The prompt MUST include:
   - Industry context and business type (e.g., "professional plumbing company website")
   - Color palette with specific hex codes from colorPalette
