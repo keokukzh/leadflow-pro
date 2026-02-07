@@ -37,11 +37,11 @@ export default function CreatorContent() {
     const leadId = searchParams.get("leadId");
     if (leadId && leads.length > 0) {
       const exists = leads.find(l => l.id === leadId);
-      if (exists) {
-          setSelectedLeadId(leadId);
+      if (exists && exists.id !== selectedLeadId) {
+          setSelectedLeadId(exists.id);
       }
     }
-  }, [searchParams, leads]);
+  }, [searchParams, leads, selectedLeadId]);
 
   const handleGenerate = async () => {
     if (!selectedLeadId) return;
@@ -68,12 +68,13 @@ export default function CreatorContent() {
     mobile: "w-[375px] h-[667px] border border-white/5 shadow-[0_48px_100px_rgba(0,0,0,0.6)] rounded-[3rem] my-12"
   };
 
+
   return (
     <div className="flex h-full bg-slate-950 overflow-hidden luxury-gradient relative">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(155,35,53,0.05),transparent)] pointer-events-none" />
       
       {/* Sidebar - Integrated Glass */}
-      <div className="w-80 flex-shrink-0 h-full relative z-20">
+      <div className="w-80 shrink-0 h-full relative z-20">
          <LeadSidebar 
             leads={leads}
             selectedLeadId={selectedLeadId}
@@ -98,19 +99,18 @@ export default function CreatorContent() {
               onOpenPreview={() => window.open(previewUrl, "_blank")}
             />
             
-            <div className="flex-1 overflow-auto flex justify-center p-8 relative custom-scrollbar">
+            <div className="flex-1 overflow-y-auto flex justify-center p-8 relative custom-scrollbar">
                <div 
                  className={clsx(
                    "bg-white transition-all duration-700 origin-top shadow-[0_0_80px_rgba(0,0,0,0.4)]",
                    deviceDimensions[viewport],
                    viewport !== 'desktop' && 'transform scale-[0.85] mt-4'
                  )}
-                 style={viewport === 'desktop' ? { width: '100%', height: '100%' } : {}}
+                 style={viewport === 'desktop' ? { width: '100%', minHeight: '100%' } : {}}
                >
                  <iframe 
                    src={previewUrl} 
-                   className="w-full h-full"
-                   style={{ border: 'none' }}
+                   className="w-full h-full border-none"
                    title="Swiss Core Preview"
                  />
                </div>
@@ -132,7 +132,7 @@ export default function CreatorContent() {
             </div>
             
             <div className="relative group hover:scale-105 transition-transform duration-700">
-                <div className="w-32 h-32 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex items-center justify-center mb-10 shadow-2xl ring-1 ring-white/10 group-hover:ring-accent/20 transition-all duration-700">
+                <div className="w-32 h-32 bg-white/2 border border-white/5 rounded-[2.5rem] flex items-center justify-center mb-10 shadow-2xl ring-1 ring-white/10 group-hover:ring-accent/20 transition-all duration-700">
                   <Fingerprint className="w-12 h-12 text-white/10 group-hover:text-accent/40 transition-colors duration-700" />
                 </div>
             </div>
