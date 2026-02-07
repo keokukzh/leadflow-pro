@@ -1,6 +1,32 @@
 {
+  "name": "leadflow-pro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github_pat_REDACTED@github.com/keokukzh/leadflow-pro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/keokukzh/leadflow-pro/issues"
+  },
+  "homepage": "https://github.com/keokukzh/leadflow-pro#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3"
+  },
   "dependencies": {
-    "@tailwindcss/postcss": "^4.1.18",
-    "tailwindcss": "^4.1.18"
+    "zod": "^4.3.6"
   }
 }

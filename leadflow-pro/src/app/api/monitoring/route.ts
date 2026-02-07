@@ -3,10 +3,40 @@
 // ============================================
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+
+// ============================================================================
+// PRODUCTION NOTES:
+// - Replace in-memory storage with Redis (Upstash/Redis) or PostgreSQL
+// - Add authentication middleware (NextAuth.js or Clerk)
+// - Add rate limiting (@upstash/ratelimit)
+// ============================================================================
 
 // In-memory store for demo (use database in production)
 const executions: Map<string, ExecutionRecord> = new Map();
 const metrics: Map<string, MetricPoint> = new Map();
+
+// Validation Schemas
+const StartExecutionSchema = z.object({
+  workflowId: z.string().min(1, 'Workflow ID required'),
+  workflowName: z.string().min(1, 'Workflow name required'),
+});
+
+const EventSchema = z.object({
+  executionId: z.string().min(1, 'Execution ID required'),
+  stepId: z.string().optional(),
+  stepName: z.string().optional(),
+  type: z.enum(['started', 'progress', 'completed', 'failed']),
+  message: z.string().optional(),
+  progress: z.number().min(0).max(100),
+});
+
+const CompleteSchema = z.object({
+  executionId: z.string().min(1, 'Execution ID required'),
+  status: z.enum(['completed', 'failed']),
+  output: z.record(z.unknown()).optional(),
+  error: z.string().optional(),
+});
 
 interface ExecutionRecord {
   id: string;
@@ -25,6 +55,8 @@ interface StepRecord {
   startTime: Date;
   endTime?: Date;
   duration?: number;
+  retryCount?: number;
+  error?: string;
 }
 
 interface MetricPoint {
@@ -35,10 +67,18 @@ interface MetricPoint {
   avgDuration: number;
 }
 
+// Constants
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 100;
+
 // GET /api/monitoring
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type') || 'executions';
+
+  // Add authentication check here in production
+  // const session = await auth();
+  // if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   switch (type) {
     case 'metrics':
@@ -57,6 +97,10 @@ export async function GET(request: NextRequest) {
 
 // POST /api/monitoring
 export async function POST(request: NextRequest) {
+  // Add authentication check here in production
+  // const session = await auth();
+  // if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
 
@@ -115,7 +159,8 @@ function handleGetMetrics() {
 }
 
 function handleGetExecutions(params: URLSearchParams) {
-  const limit = parseInt(params.get('limit') || '20');
+  const limitRaw = parseInt(params.get('limit') || String(DEFAULT_LIMIT));
+  const limit = Math.min(Math.max(limitRaw, 1), MAX_LIMIT);
   const workflowId = params.get('workflowId');
   const status = params.get('status');
 
@@ -182,16 +227,24 @@ function handleGetExecution(id: string | null) {
   });
 }
 
-async function handleStartExecution(data: {
-  workflowId: string;
-  workflowName: string;
-}) {
+async function handleStartExecution(data: unknown) {
+  // Validate input
+  const validated = StartExecutionSchema.safeParse(data);
+  
+  if (!validated.success) {
+    return NextResponse.json(
+      { error: 'Invalid request data', details: validated.error.errors },
+      { status: 400 }
+    );
+  }
+
+  const { workflowId, workflowName } = validated.data;
   const id = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
   const execution: ExecutionRecord = {
     id,
-    workflowId: data.workflowId,
-    workflowName: data.workflowName,
+    workflowId,
+    workflowName,
     status: 'running',
     startTime: new Date(),
     steps: [],
@@ -215,22 +268,27 @@ async function handleStartExecution(data: {
     success: true,
     execution: {
       id,
-      workflowId: data.workflowId,
+      workflowId,
       status: 'running',
       startTime: execution.startTime.toISOString(),
     },
   });
 }
 
-async function handleEvent(data: {
-  executionId: string;
-  stepId?: string;
-  stepName?: string;
-  type: 'started' | 'progress' | 'completed' | 'failed';
-  message?: string;
-  progress: number;
-}) {
-  const execution = executions.get(data.executionId);
+async function handleEvent(data: unknown) {
+  // Validate input
+  const validated = EventSchema.safeParse(data);
+  
+  if (!validated.success) {
+    return NextResponse.json(
+      { error: 'Invalid event data', details: validated.error.errors },
+      { status: 400 }
+    );
+  }
+
+  const { executionId, stepId, stepName, type, message, progress } = validated.data;
+  
+  const execution = executions.get(executionId);
   
   if (!execution) {
     return NextResponse.json(
@@ -239,13 +297,13 @@ async function handleEvent(data: {
     );
   }
 
-  if (data.stepId) {
-    let step = execution.steps.find(s => s.id === data.stepId);
+  if (stepId) {
+    let step = execution.steps.find(s => s.id === stepId);
     
     if (!step) {
       step = {
-        id: data.stepId,
-        name: data.stepName || 'Unknown',
+        id: stepId,
+        name: stepName || 'Unknown',
         status: 'running',
         startTime: new Date(),
         retryCount: 0,
@@ -253,35 +311,42 @@ async function handleEvent(data: {
       execution.steps.push(step);
     }
 
-    if (data.type === 'started') {
+    if (type === 'started') {
       step.status = 'running';
       step.startTime = new Date();
-    } else if (data.type === 'completed') {
+    } else if (type === 'completed') {
       step.status = 'completed';
       step.endTime = new Date();
       step.duration = Math.round(
         (step.endTime.getTime() - step.startTime.getTime()) / 1000
       );
-    } else if (data.type === 'failed') {
+    } else if (type === 'failed') {
       step.status = 'failed';
       step.endTime = new Date();
-      step.error = data.message;
+      step.error = message;
     }
   }
 
   return NextResponse.json({
     success: true,
-    event: data,
+    event: { executionId, stepId, type, progress },
   });
 }
 
-async function handleComplete(data: {
-  executionId: string;
-  status: 'completed' | 'failed';
-  output?: Record<string, unknown>;
-  error?: string;
-}) {
-  const execution = executions.get(data.executionId);
+async function handleComplete(data: unknown) {
+  // Validate input
+  const validated = CompleteSchema.safeParse(data);
+  
+  if (!validated.success) {
+    return NextResponse.json(
+      { error: 'Invalid complete data', details: validated.error.errors },
+      { status: 400 }
+    );
+  }
+
+  const { executionId, status, output, error } = validated.data;
+  
+  const execution = executions.get(executionId);
   
   if (!execution) {
     return NextResponse.json(
@@ -290,27 +355,32 @@ async function handleComplete(data: {
     );
   }
 
-  execution.status = data.status;
+  execution.status = status;
   execution.endTime = new Date();
   execution.duration = Math.round(
     (execution.endTime.getTime() - execution.startTime.getTime()) / 1000
   );
 
-  // Update metrics
+  // Update metrics with null check
   const today = new Date().toDateString();
-  const metric = metrics.get(today)!;
+  const metric = metrics.get(today);
   
-  if (data.status === 'completed') {
-    metric.success++;
-    
-    // Update average duration
-    const durations = Array.from(executions.values())
-      .filter(e => e.endTime && e.status === 'completed')
-      .map(e => (e.endTime!.getTime() - e.startTime.getTime()) / 1000);
-    
-    metric.avgDuration = durations.reduce((a, b) => a + b, 0) / durations.length;
-  } else {
-    metric.failed++;
+  if (metric) {
+    if (status === 'completed') {
+      metric.success++;
+      
+      // Update average duration
+      const durations = Array.from(executions.values())
+        .filter(e => e.endTime && e.status === 'completed')
+        .map(e => (e.endTime!.getTime() - e.startTime.getTime()) / 1000);
+      
+      metric.avgDuration = durations.length > 0
+        ? durations.reduce((a, b) => a + b, 0) / durations.length
+        : 0;
+    } else {
+      metric.failed++;
+    }
+    metrics.set(today, metric);
   }
 
   return NextResponse.json({

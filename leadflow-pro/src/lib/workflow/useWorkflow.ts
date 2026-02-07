@@ -45,14 +45,14 @@ export function useWorkflow(options: UseWorkflowOptions = {}): UseWorkflowReturn
   const [isExecuting, setIsExecuting] = useState(false);
 
   // Load initial data
-  const loadData = useCallback(async (signal?: AbortSignal) => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
+    const controller = new AbortController();
     try {
-      const fetchOpts = signal ? { signal } : {};
       const [workflowsRes, templatesRes, executionsRes] = await Promise.all([
-        fetch('/api/workflow', fetchOpts),
-        fetch('/api/workflow/templates', fetchOpts),
-        fetch('/api/monitoring/executions', fetchOpts),
+        fetch('/api/workflow', { signal: controller.signal }),
+        fetch('/api/workflow/templates', { signal: controller.signal }),
+        fetch('/api/monitoring/executions', { signal: controller.signal }),
       ]);
 
       const workflowsData = await workflowsRes.json();
@@ -62,27 +62,25 @@ export function useWorkflow(options: UseWorkflowOptions = {}): UseWorkflowReturn
       setWorkflows(workflowsData.workflows || []);
       setTemplates(templatesData.templates || []);
       setExecutions(executionsData.executions || []);
-    } catch (error: any) {
-      if (error.name === 'AbortError') return;
-      console.error('Failed to load workflow data:', error);
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Failed to load workflow data:', error);
+      }
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Auto refresh
+  // Auto refresh with proper cleanup
   useEffect(() => {
-    const controller = new AbortController();
-    loadData(controller.signal);
-    
-    if (autoRefresh) {
-      const interval = setInterval(() => loadData(controller.signal), refreshInterval);
-      return () => {
-        clearInterval(interval);
-        controller.abort();
-      };
-    }
-    return () => controller.abort();
+    if (!autoRefresh) return;
+
+    const interval = setInterval(loadData, refreshInterval);
+
+    // Cleanup on unmount or when dependencies change
+    return () => {
+      clearInterval(interval);
+    };
   }, [autoRefresh, refreshInterval, loadData]);
 
   // Create workflow
@@ -187,8 +185,6 @@ export function useWorkflow(options: UseWorkflowOptions = {}): UseWorkflowReturn
       trigger: 'manual',
       enabled: false,
       config: {},
-      executionCount: 0,
-      successRate: 0,
     });
   }, [templates, createWorkflow]);
 
