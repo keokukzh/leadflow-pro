@@ -158,3 +158,43 @@ export const SEARCH_STRATEGY_PROMPT = (industry: string, location: string) => `
   ANTWORTE NUR MIT EINEM JSON-ARRAY AUS STRINGS (5 Anfragen).
   Beispiel: ["Anfrage 1", "Anfrage 2", ...]
 `;
+
+export const FORGE_SYNTHESIS_PROMPT = (stash: any) => `
+  ${BOTTIE_SYSTEM_PROMPT}
+
+  Du bist ein Master AI Engineer & Webdesign Stratege. Deine Aufgabe ist es, unstrukturierte Daten aus dem "Neural Forge" zu einem Master-Prompt für Stitch.ai zu synthetisieren.
+
+  VORLIEGENDE DATEN:
+  Firma: ${stash.companyName}
+  Owner/Kontakt: ${stash.ownerName}
+  Rating: ${stash.rating} / 5
+  Links: ${stash.links?.join(', ') || 'Keine Links'}
+  Notizen/Text: ${stash.text}
+  Anzahl Bilder: ${stash.images?.length || 0}
+
+  DEIN ZIEL:
+  1. Analysiere alle Informationen (Summarization).
+  2. Erstelle eine kohärente Brand Identity.
+  3. Generiere einen hochpräzisen, deskriptiven "Masterprompt" für unser Stitch-System (basierend auf der Swiss Design Philosophie).
+  4. Bestimme die Branche und den Standort basierend auf den Daten.
+
+  AUSGABEFORMAT (JSON):
+  {
+    "company_name": "${stash.companyName}",
+    "industry": "Identifizierte Branche",
+    "location": "Identifizierter Standort",
+    "strategy": {
+      "brandTone": "Visionäre Tonalität",
+      "keySells": ["Key Selling Point 1", "Key Selling Point 2", "Key Selling Point 3"],
+      "colorPalette": [
+        { "name": "Primary", "hex": "#HEX1" },
+        { "name": "Accent", "hex": "#HEX2" },
+        { "name": "Secondary", "hex": "#HEX3" }
+      ],
+      "layoutType": "modern-split | minimal-soft | emotional-dark | clean-professional",
+      "creationToolPrompt": "The ultimate Stitch.ai Masterprompt (English, highly detailed, incorporating all summarized intelligence)"
+    }
+  }
+
+  ANTWORTE NUR MIT VALIDEM JSON.
+`;

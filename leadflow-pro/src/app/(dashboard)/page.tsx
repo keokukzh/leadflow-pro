@@ -7,7 +7,6 @@ import {
   TrendingUp,
   ArrowUpRight,
   ShieldCheck,
-  Globe,
   Briefcase
 } from "lucide-react";
 
@@ -15,6 +14,7 @@ import { useState, useEffect } from "react";
 import { getDashboardStats } from "@/lib/actions/server-actions";
 import clsx from "clsx";
 import Link from "next/link";
+import { NeuralForge } from "@/components/analytics/NeuralForge";
 
 interface DashboardStats {
   totalLeads: { value: number; growth: number };
@@ -142,28 +142,8 @@ export default function Home() {
 
       {/* Main Grid: Data Visualization */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 stagger-item glass-panel rounded-[2.5rem] p-10 h-[500px] relative overflow-hidden" style={{ animationDelay: '500ms' }}>
-          <div className="flex items-center justify-between mb-12">
-            <div>
-              <h3 className="text-2xl font-serif text-white">Pipeline Velocity</h3>
-              <p className="text-white/30 text-sm mt-1">Growth progression of high-value targets</p>
-            </div>
-            <div className="flex gap-2">
-              {['24H', '7D', '30D'].map((t) => (
-                <button key={t} className="px-4 py-2 rounded-xl text-[10px] font-bold text-white/20 hover:text-white hover:bg-white/5 transition-all">
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <div className="absolute inset-x-10 bottom-10 top-32 border border-white/5 rounded-3xl bg-white/1 flex items-center justify-center group overflow-hidden">
-             <div className="absolute inset-0 bg-linear-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-             <div className="text-white/20 font-bold tracking-widest text-xs uppercase flex items-center space-x-2">
-               <Globe className="w-4 h-4 animate-spin-slow" />
-               <span>Generating Real-time Map Visuals</span>
-             </div>
-          </div>
+        <div className="lg:col-span-2 stagger-item glass-panel rounded-[2.5rem] p-10 h-[650px] relative overflow-hidden flex flex-col" style={{ animationDelay: '500ms' }}>
+          <NeuralForge />
         </div>
 
         <div className="stagger-item glass-panel rounded-[2.5rem] p-10 h-[500px] flex flex-col" style={{ animationDelay: '600ms' }}>

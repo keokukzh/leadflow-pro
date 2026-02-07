@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { readData, writeData } from "../storage";
 import { getCompletion } from "../ai-client";
-import { TEMPLATE_DATA_PROMPT, SEARCH_STRATEGY_PROMPT, BOTTIE_SYSTEM_PROMPT } from "../prompts";
+import { TEMPLATE_DATA_PROMPT, SEARCH_STRATEGY_PROMPT, BOTTIE_SYSTEM_PROMPT, FORGE_SYNTHESIS_PROMPT } from "../prompts";
 import { calculateLeadScore } from "@/services/leadScoring";
 import { logger } from "@/lib/logger";
 import { supabase } from "@/lib/supabase";
@@ -16,6 +16,8 @@ export interface Interaction {
   content: string;
   status: string;
   created_at: string;
+  reaction?: string;
+  method?: string;
 }
 
 export interface DiscoveryResultItem {
@@ -105,6 +107,15 @@ export interface DiscoveryMission {
     };
   }[];
   created_at: string;
+}
+
+export interface ForgeStash {
+  companyName: string;
+  ownerName: string;
+  links: string[];
+  images: string[];
+  text: string;
+  rating: number;
 }
 
 const LEADS_FILE = 'leads.json';
@@ -543,6 +554,51 @@ export async function getLeadInteractions(leadId: string) {
     return interactions.filter(i => i.lead_id === leadId);
 }
 
+export async function getCombinedInteractions(leadId: string): Promise<Interaction[]> {
+  const [localInteractions, voiceCalls] = await Promise.all([
+    getLeadInteractions(leadId),
+    supabase.from('voice_calls').select('*').eq('leadId', leadId)
+  ]);
+
+  const unifiedVoice: Interaction[] = (voiceCalls.data || []).map(vc => ({
+    id: vc.callSid || vc.id,
+    lead_id: vc.leadId,
+    interaction_type: 'CALL',
+    content: `Skript: ${vc.script}`,
+    status: vc.status,
+    created_at: vc.timestamp || vc.created_at,
+    reaction: vc.reaction,
+    method: 'Twilio Voice'
+  }));
+
+  const unifiedLocal: Interaction[] = localInteractions.map(li => ({
+    ...li,
+    method: li.interaction_type === 'EMAIL' ? 'Resend' : 'Manual'
+  }));
+
+  return [...unifiedLocal, ...unifiedVoice].sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+}
+
+export async function getOutreachSummary(leadId: string) {
+  const interactions = await getCombinedInteractions(leadId);
+  if (interactions.length === 0) return null;
+
+  const firstContact = interactions[interactions.length - 1]; // Sorted desc, so last is first
+  const lastContact = interactions[0];
+  const reactions = interactions.filter(i => i.reaction).map(i => i.reaction);
+
+  return {
+    firstContactAt: firstContact.created_at,
+    firstContactMethod: firstContact.interaction_type,
+    totalAttempts: interactions.length,
+    lastStatus: lastContact.status,
+    latestReaction: lastContact.reaction || (reactions.length > 0 ? reactions[0] : 'No reaction yet'),
+    allReactions: reactions
+  };
+}
+
 export async function updateLeadStrategy(leadId: string, strategy: { brandTone: string; keySells: string[]; colorPalette: { name: string; hex: string }[]; creationToolPrompt?: string }) {
   const leads = await getLeadsSafe();
   const lead = leads.find(l => l.id === leadId);
@@ -823,4 +879,56 @@ export async function getGlobalAgentStatus(): Promise<GlobalAgentStatus> {
     creator: isCreatorRunning,
     contact: isContactRunning
   };
+}
+
+export async function synthesizeForgeLead(stash: ForgeStash) {
+  const prompt = FORGE_SYNTHESIS_PROMPT(stash);
+  const content = await getCompletion(prompt, "Du bist ein Master AI Engineer.");
+  
+  try {
+    const rawData = JSON.parse(content || '{}');
+    const leads = await getLeadsSafe();
+    
+    const newLead: Lead = {
+      id: crypto.randomUUID(),
+      company_name: rawData.company_name || stash.companyName,
+      industry: rawData.industry || "Unbekannt",
+      location: rawData.location || "Unbekannt",
+      website: stash.links[0] || null,
+      rating: stash.rating,
+      review_count: 0,
+      status: 'STRATEGY_CREATED',
+      strategy_brief: rawData.strategy,
+      created_at: new Date().toISOString(),
+      status_updated_at: new Date().toISOString()
+    };
+    
+    await writeData(LEADS_FILE, [...leads, newLead]);
+    
+    // Sync to Supabase
+    try {
+      await supabase.from('leads').insert({
+        id: newLead.id,
+        company_name: newLead.company_name,
+        industry: newLead.industry,
+        location: newLead.location,
+        rating: newLead.rating,
+        review_count: newLead.review_count,
+        status: newLead.status,
+        strategy_brief: newLead.strategy_brief,
+        created_at: newLead.created_at
+      });
+    } catch (e) {
+      logger.error({ error: e }, "Supabase sync failed for forged lead");
+    }
+    
+    revalidatePath("/");
+    revalidatePath("/memory");
+    revalidatePath("/strategy");
+    
+    return { success: true, leadId: newLead.id };
+  } catch (err) {
+    logger.error({ err }, "Forge synthesis failed");
+    return { success: false, error: "Synthesis failed" };
+  }
 }

@@ -20,7 +20,6 @@ import {
   Mic2, 
   Search, 
   History, 
-  CheckCircle2, 
   Loader2, 
   Play, 
   Copy, 
@@ -31,7 +30,7 @@ import {
   Zap,
   Monitor
 } from "lucide-react";
-import { getLeads, getLeadInteractions, Lead, Interaction } from "@/lib/actions/server-actions";
+import { getLeads, getCombinedInteractions, getOutreachSummary, Lead, Interaction } from "@/lib/actions/server-actions";
 import { format } from "date-fns";
 import clsx from "clsx";
 
@@ -39,8 +38,10 @@ export default function ContactPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string>("");
   const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const [outreachSummary, setOutreachSummary] = useState<any>(null);
   const [isSending, setIsSending] = useState(false);
   const [isGeneratingVoice, setIsGeneratingVoice] = useState(false);
+  const [isCalling, setIsCalling] = useState(false);
   
   // Email State
   const [emailSubject, setEmailSubject] = useState("");
@@ -62,11 +63,15 @@ export default function ContactPage() {
 
   useEffect(() => {
     if (selectedLeadId && selectedLead) {
-      const fetchInteractions = async () => {
-        const data = await getLeadInteractions(selectedLeadId);
-        setInteractions(data);
+      const fetchData = async () => {
+        const [combined, summary] = await Promise.all([
+          getCombinedInteractions(selectedLeadId),
+          getOutreachSummary(selectedLeadId)
+        ]);
+        setInteractions(combined);
+        setOutreachSummary(summary);
       };
-      fetchInteractions();
+      fetchData();
       
       setEmailSubject(`Strategic Proposal for ${selectedLead.company_name} // Alpha Logic`);
       setEmailBody(`
@@ -86,6 +91,16 @@ LeadFlow Pro // Intelligence Unit
     }
   }, [selectedLeadId, selectedLead]);
 
+  const refreshData = async () => {
+    if (!selectedLeadId) return;
+    const [combined, summary] = await Promise.all([
+      getCombinedInteractions(selectedLeadId),
+      getOutreachSummary(selectedLeadId)
+    ]);
+    setInteractions(combined);
+    setOutreachSummary(summary);
+  };
+
   const handleSendEmail = async () => {
     if (!selectedLead) return;
     setIsSending(true);
@@ -97,8 +112,7 @@ LeadFlow Pro // Intelligence Unit
       });
       
       if (res.ok) {
-        const updated = await getLeadInteractions(selectedLeadId);
-        setInteractions(updated);
+        await refreshData();
       }
     } catch (error) {
       console.error("Email failed:", error);
@@ -120,12 +134,30 @@ LeadFlow Pro // Intelligence Unit
       setVoiceScript(data.script);
       setAudioUrl(data.audioUrl);
       
-      const updated = await getLeadInteractions(selectedLeadId);
-      setInteractions(updated);
+      await refreshData();
     } catch (error) {
       console.error("Voice failed:", error);
     } finally {
       setIsGeneratingVoice(false);
+    }
+  };
+
+  const handleInitiateCall = async () => {
+    if (!selectedLead) return;
+    setIsCalling(true);
+    try {
+      const res = await fetch("/api/voice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lead: selectedLead, prompt: 'cold_call' })
+      });
+      if (res.ok) {
+        await refreshData();
+      }
+    } catch (error) {
+      console.error("Call failed:", error);
+    } finally {
+      setIsCalling(false);
     }
   };
 
@@ -182,37 +214,68 @@ LeadFlow Pro // Intelligence Unit
             {/* Left Telemetry Pane */}
             <div className="lg:col-span-4 space-y-8">
                 {/* Node Stats */}
-                <Card className="glass-panel bg-white/1 border-white/5 rounded-[3rem] p-8 space-y-8 overflow-hidden relative">
-                   <div className="absolute -top-12 -right-12 w-24 h-24 bg-primary/10 blur-3xl rounded-full" />
-                   <div className="space-y-6 relative z-10">
-                      <div className="flex items-center gap-3">
-                         <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
-                            <Monitor className="w-4 h-4 text-primary" />
-                         </div>
-                         <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 font-mono">Node Telemetry</h3>
-                      </div>
-                      
-                      <div className="space-y-6">
-                         <div className="flex flex-col gap-1">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Entity // Label</span>
-                            <span className="text-2xl font-serif text-white">{selectedLead?.company_name}</span>
-                         </div>
-                         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-                            <div className="flex flex-col gap-1">
-                               <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Index</span>
-                               <span className="text-xs font-mono text-white/60">{selectedLead?.rating} SF</span>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                               <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Status</span>
-                               <span className="text-xs font-mono text-accent">{selectedLead?.status}</span>
-                            </div>
-                         </div>
-                      </div>
-                   </div>
-                </Card>
+                <div className="space-y-8">
+                  <Card className="glass-panel bg-white/1 border-white/5 rounded-[3rem] p-8 space-y-8 overflow-hidden relative">
+                     <div className="absolute -top-12 -right-12 w-24 h-24 bg-primary/10 blur-3xl rounded-full" />
+                     <div className="space-y-6 relative z-10">
+                        <div className="flex items-center gap-3">
+                           <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
+                              <Monitor className="w-4 h-4 text-primary" />
+                           </div>
+                           <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 font-mono">Node Telemetry</h3>
+                        </div>
+                        
+                        <div className="space-y-6">
+                           <div className="flex flex-col gap-1">
+                              <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Entity // Label</span>
+                              <span className="text-2xl font-serif text-white">{selectedLead?.company_name}</span>
+                           </div>
+                           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                              <div className="flex flex-col gap-1">
+                                 <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Index</span>
+                                 <span className="text-xs font-mono text-white/60">{selectedLead?.rating} SF</span>
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                 <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Status</span>
+                                 <span className="text-xs font-mono text-accent">{selectedLead?.status}</span>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </Card>
+
+                  {/* Outreach Mainboard Summary */}
+                  {outreachSummary && (
+                    <Card className="glass-panel bg-primary/5 border-primary/10 rounded-[3rem] p-8 space-y-6 border-l-4 border-l-primary animate-in fade-in slide-in-from-left-4 duration-700">
+                       <div className="flex items-center gap-3">
+                          <Zap className="w-4 h-4 text-primary animate-pulse" />
+                          <h3 className="text-[10px] font-black uppercase tracking-widest text-white/60 font-mono">Transmission Summary</h3>
+                       </div>
+                       
+                       <div className="grid grid-cols-1 gap-6">
+                          <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                             <span className="text-[9px] font-black uppercase tracking-widest text-white/20">First Transmission</span>
+                             <span className="text-[10px] font-mono text-white/60">{format(new Date(outreachSummary.firstContactAt), "MMM d, yyyy")} {' // '} {outreachSummary.firstContactMethod}</span>
+                          </div>
+                          <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                             <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Total Protocols</span>
+                             <span className="text-[10px] font-mono text-primary font-black">{outreachSummary.totalAttempts} UNITS</span>
+                          </div>
+                          <div className="space-y-2">
+                             <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Current Reaction</span>
+                             <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                                <span className="text-xs font-serif italic text-accent leading-relaxed">
+                                   &quot;{outreachSummary.latestReaction}&quot;
+                                </span>
+                             </div>
+                          </div>
+                       </div>
+                    </Card>
+                  )}
+                </div>
 
                 {/* Interaction Log */}
-                <Card className="glass-panel bg-white/1 border-white/5 rounded-[3rem] flex flex-col h-[600px]">
+                <Card className="glass-panel bg-white/1 border-white/5 rounded-[3rem] flex flex-col h-[500px]">
                     <div className="p-8 border-b border-white/5 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                            <History className="w-4 h-4 text-white/20" />
@@ -225,19 +288,27 @@ LeadFlow Pro // Intelligence Unit
                             {interactions.length > 0 ? interactions.map((item) => (
                                 <div key={item.id} className="p-6 space-y-4 hover:bg-white/2 transition-all duration-700 group">
                                     <div className="flex items-center justify-between">
-                                        <div className={clsx(
-                                          "px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest uppercase border",
-                                          item.interaction_type === 'EMAIL' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                                        )}>
-                                            {item.interaction_type}
+                                        <div className="flex items-center gap-2">
+                                          <div className={clsx(
+                                            "px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest uppercase border",
+                                            item.interaction_type === 'EMAIL' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                                          )}>
+                                              {item.interaction_type}
+                                          </div>
+                                          <span className="text-[8px] font-mono text-white/20 uppercase tracking-tighter">{item.method}</span>
                                         </div>
                                         <span className="text-[9px] text-white/10 font-mono font-bold">{format(new Date(item.created_at), "HH:mm, MMM d")}</span>
                                     </div>
                                     <p className="text-xs text-white/40 leading-relaxed font-light group-hover:text-white/60 transition-colors line-clamp-3 italic">
                                       &quot;{item.content}&quot;
                                     </p>
+                                    {item.reaction && (
+                                      <div className="text-[9px] text-accent/60 font-serif italic border-l-2 border-accent/20 pl-3">
+                                        Reaction: {item.reaction}
+                                      </div>
+                                    )}
                                     <div className="flex items-center gap-1.5 text-[9px] text-green-500/40 font-black uppercase tracking-widest">
-                                        <CheckCircle2 className="w-3 h-3" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-500/40 animate-pulse" />
                                         Commit // {item.status}
                                     </div>
                                 </div>
@@ -374,6 +445,23 @@ LeadFlow Pro // Intelligence Unit
                                             <div className="p-4 bg-white/5 rounded-2xl border border-white/5 min-w-[100px] text-center">
                                                <span className="text-xs font-mono text-white/60">0:42 SEC</span>
                                             </div>
+                                        </div>
+
+                                        <div className="flex gap-4 stagger-item">
+                                          <Button 
+                                              className="flex-1 bg-accent hover:bg-accent/80 text-white rounded-[2rem] h-16 shadow-lg shadow-accent/20 group"
+                                              onClick={handleInitiateCall}
+                                              disabled={isCalling || !audioUrl}
+                                          >
+                                              <div className="flex items-center gap-3">
+                                                 {isCalling ? (
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                 ) : (
+                                                    <Zap className="w-5 h-5 group-hover:animate-pulse" />
+                                                 )}
+                                                 <span className="text-xs font-black uppercase tracking-[0.2em]">Initiate Pulse</span>
+                                              </div>
+                                          </Button>
                                         </div>
                                     </div>
                                 ) : (

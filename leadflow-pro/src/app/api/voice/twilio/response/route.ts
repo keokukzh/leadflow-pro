@@ -33,13 +33,20 @@ export async function POST(request: NextRequest) {
     // 2. Generate response based on digits
     const twiml = handleVoiceResponse(digits);
     
-    // 3. Log interaction (masked version of phone if needed, but 'from' is already in params)
-    await logVoiceInteraction({
-      callSid,
-      from,
-      digits,
-      timestamp: new Date().toISOString()
-    });
+    // 3. Log interaction and update call reaction
+    const reaction = digits === '1' ? 'Appointment Requested' : 
+                     digits === '2' ? 'More Info Requested' : 
+                     digits === '3' ? 'Opt-out/Hanging up' : 'Unknown';
+
+    await Promise.all([
+      logVoiceInteraction({
+        callSid,
+        from,
+        digits,
+        timestamp: new Date().toISOString()
+      }),
+      updateCallReaction(callSid, reaction)
+    ]);
     
     return new NextResponse(twiml, {
       headers: { "Content-Type": "text/xml" }
@@ -57,6 +64,18 @@ export async function POST(request: NextRequest) {
     return new NextResponse(errorTwiml, {
       headers: { "Content-Type": "text/xml" }
     });
+  }
+}
+
+async function updateCallReaction(callSid: string, reaction: string) {
+  try {
+    const { error } = await supabase
+      .from('voice_calls')
+      .update({ reaction })
+      .eq('callSid', callSid);
+    if (error) logger.error({ error: error.message, callSid }, "Failed to update call reaction");
+  } catch (err) {
+    logger.error({ error: (err as Error).message }, "Supabase update reaction exception");
   }
 }
 
