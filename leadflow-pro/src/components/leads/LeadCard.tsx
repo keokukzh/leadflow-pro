@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Building2, MapPin, Star, Calendar } from "lucide-react";
+import { Building2, MapPin, Star, Calendar, Sparkles } from "lucide-react";
 
 // ============================================
 // MEMOIZED LEAD CARD
@@ -86,6 +86,13 @@ export const LeadCard = memo(function LeadCard({ lead, onClick, isSelected }: Le
               <span className="flex items-center gap-1 text-xs text-yellow-500">
                 <Star className="w-3 h-3 fill-current" />
                 {lead.rating}
+              </span>
+            )}
+
+            {lead.status === 'STRATEGY_CREATED' && (
+              <span className="flex items-center gap-1 text-[10px] text-purple-400 font-bold uppercase tracking-wider bg-purple-500/10 px-2 py-0.5 rounded-sm">
+                <Sparkles className="w-2.5 h-2.5" />
+                Stitch Ready
               </span>
             )}
             

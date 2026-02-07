@@ -86,29 +86,49 @@ export function StrategyCard({ strategy, companyName }: StrategyCardProps) {
 
         {/* Creation Tool Prompt */}
         {strategy.creationToolPrompt && (
-          <div className="space-y-3">
+          <div className="space-y-4 pt-4 border-t border-slate-800">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-400 uppercase tracking-wider">
-                <Sparkles className="w-4 h-4 text-purple-400" />
-                Stitch / AI Design Prompt
+              <div className="flex items-center gap-2 text-sm font-black text-purple-400 uppercase tracking-[0.2em] font-mono">
+                <Sparkles className="w-4 h-4 animate-pulse" />
+                Stitch.ai Masterprompt
               </div>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(strategy.creationToolPrompt || "");
-                  const btn = document.activeElement as HTMLButtonElement;
-                  const original = btn.textContent;
-                  btn.textContent = "Kopiert!";
-                  setTimeout(() => { btn.textContent = original; }, 1500);
-                }}
-                className="text-[10px] font-bold bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg transition-colors"
-              >
-                Kopieren
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(strategy.creationToolPrompt || "");
+                    const btn = document.activeElement as HTMLButtonElement;
+                    const original = btn.innerHTML;
+                    btn.innerHTML = "Copied!";
+                    setTimeout(() => { btn.innerHTML = original; }, 1500);
+                  }}
+                  className="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl transition-all border border-slate-700"
+                >
+                  Raw Copy
+                </button>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(strategy.creationToolPrompt || "");
+                    window.open("https://stitch.ai/portal", "_blank");
+                  }}
+                  className="text-[10px] font-black bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-purple-500/20 active:scale-95 flex items-center gap-2"
+                >
+                  Execute Stitch Protocol
+                </button>
+              </div>
             </div>
-            <div className="bg-purple-500/5 border border-purple-500/10 p-4 rounded-xl">
-              <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
+            <div className="bg-[#0A0A0F] border border-purple-500/20 p-6 rounded-2xl relative group overflow-hidden">
+              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-30 transition-opacity">
+                <Sparkles className="w-12 h-12 text-purple-500" />
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-mono whitespace-pre-wrap relative z-10 italic">
                 {strategy.creationToolPrompt}
               </p>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/5 rounded-lg border border-purple-500/10">
+              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping" />
+              <span className="text-[9px] text-purple-400/60 font-bold uppercase tracking-widest font-mono">
+                MCP Logic Engine Standby // Ready for direct ingestion
+              </span>
             </div>
           </div>
         )}
