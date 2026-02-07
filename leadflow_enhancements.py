@@ -10,8 +10,30 @@ Expert-level improvements:
 5. GDPR Compliance Tools (Data Export, Anonymization)
 """
 
+import os
 import json
 import time
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from dotenv import load_dotenv
+
+# Use relative path for environment variables
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+dotenv_path = os.path.join(BASE_DIR, "leadflow-pro", ".env.local")
+load_dotenv(dotenv_path=dotenv_path)
+
+# Configure retry strategy
+retry_strategy = Retry(
+    total=3,
+    status_forcelist=[429, 500, 502, 503, 504],
+    backoff_factor=1
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+http = requests.Session()
+http.mount("https://", adapter)
+http.mount("http://", adapter)
+
 import hashlib
 import asyncio
 import logging

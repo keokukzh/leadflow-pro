@@ -22,8 +22,9 @@ def enrich_leads(input_file):
         print(f"❌ Error: {input_file} not found.")
         return
 
-    # Save enriched leads
-    output_file = "leads_enriched.csv"
+    # Save enriched leads - use relative pathing
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    output_file = os.path.join(BASE_DIR, "leads_enriched.csv")
     if enriched_leads:
         with open(output_file, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=enriched_leads[0].keys())
