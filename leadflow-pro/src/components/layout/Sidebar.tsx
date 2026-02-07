@@ -102,7 +102,7 @@ export function Sidebar() {
                 </div>
                 
                 {isAgentActive ? (
-                  <div className="agent-active-glow w-2 h-2 rounded-full" />
+                  <div className="agent-active-glow w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_#9b2335]" />
                 ) : (
                   <ChevronRight className={clsx(
                     "w-4 h-4 transition-all duration-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0",

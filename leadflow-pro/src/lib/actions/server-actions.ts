@@ -77,6 +77,7 @@ export interface Lead {
   } | null;
   preview_data?: TemplateData | null;
   created_at: string;
+  status_updated_at?: string;
 }
 
 export interface DiscoveryMission {
@@ -364,7 +365,8 @@ export async function saveLeadToCRM(leadData: {
       outreachStrategy: `Kategorie: ${scoring.label}`,
       conversationStarters: []
     },
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
+    status_updated_at: new Date().toISOString()
   };
   
   leads.push(newLead);
@@ -498,7 +500,8 @@ export async function createLead(companyName: string, industry: string, location
       rating: 0,
       review_count: 0,
       status: 'DISCOVERED',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      status_updated_at: new Date().toISOString()
     };
     
     await writeData(LEADS_FILE, [...leads, newLead]);
@@ -546,6 +549,7 @@ export async function updateLeadStrategy(leadId: string, strategy: { brandTone: 
   if (lead) {
       lead.strategy_brief = strategy;
       lead.status = 'STRATEGY_CREATED';
+      lead.status_updated_at = new Date().toISOString();
       await writeData(LEADS_FILE, leads);
 
       // Sync to Supabase
@@ -574,6 +578,7 @@ export async function updateLeadStatus(leadId: string, status: Lead['status']) {
   const lead = leads.find(l => l.id === leadId);
   if (lead) {
       lead.status = status;
+      lead.status_updated_at = new Date().toISOString();
       await writeData(LEADS_FILE, leads);
 
       // Sync to Supabase
@@ -644,7 +649,7 @@ export async function generateSiteConfig(leadId: string) {
   // Update status to GENERATING immediately
   const leads = await getLeadsSafe();
   const generatingLeads = leads.map(l => 
-    l.id === leadId ? { ...l, status: 'PREVIEW_GENERATING' as const } : l
+    l.id === leadId ? { ...l, status: 'PREVIEW_GENERATING' as const, status_updated_at: new Date().toISOString() } : l
   );
   await writeData(LEADS_FILE, generatingLeads);
   revalidatePath("/creator");
@@ -666,7 +671,7 @@ export async function generateSiteConfig(leadId: string) {
     // Save to database/file
     const leads = await getLeadsSafe();
     const updatedLeads = leads.map(l => 
-      l.id === leadId ? { ...l, preview_data: previewData, status: 'PREVIEW_READY' as const } : l
+      l.id === leadId ? { ...l, preview_data: previewData, status: 'PREVIEW_READY' as const, status_updated_at: new Date().toISOString() } : l
     );
     await writeData(LEADS_FILE, updatedLeads);
 
@@ -702,7 +707,7 @@ export async function generateStrategyAction(leadId: string) {
   // Update status to STRATEGY_GENERATING
   const leads = await getLeadsSafe();
   const updatedLeads = leads.map(l => 
-    l.id === leadId ? { ...l, status: 'STRATEGY_GENERATING' as const } : l
+    l.id === leadId ? { ...l, status: 'STRATEGY_GENERATING' as const, status_updated_at: new Date().toISOString() } : l
   );
   await writeData(LEADS_FILE, updatedLeads);
   revalidatePath("/strategy");
@@ -723,7 +728,8 @@ export async function generateStrategyAction(leadId: string) {
       l.id === leadId ? { 
         ...l, 
         strategy_brief: strategy,
-        status: 'STRATEGY_CREATED' as const 
+        status: 'STRATEGY_CREATED' as const,
+        status_updated_at: new Date().toISOString()
       } : l
     );
     await writeData(LEADS_FILE, finishedLeads);
@@ -735,7 +741,7 @@ export async function generateStrategyAction(leadId: string) {
     logger.error({ leadId, error: (err as Error).message }, "Failed to generate strategy");
     const finalLeads = await getLeadsSafe();
     const errorLeads = finalLeads.map(l => 
-      l.id === leadId ? { ...l, status: 'DISCOVERED' as const } : l
+      l.id === leadId ? { ...l, status: 'DISCOVERED' as const, status_updated_at: new Date().toISOString() } : l
     );
     await writeData(LEADS_FILE, errorLeads);
     throw err;
@@ -776,21 +782,40 @@ export interface GlobalAgentStatus {
 }
 
 export async function getGlobalAgentStatus(): Promise<GlobalAgentStatus> {
-  const [leadsResult, missions] = await Promise.all([
+  const [leadsResult, missions, calls] = await Promise.all([
     getLeads(),
-    getMissions()
+    getMissions(),
+    supabase.from('voice_calls').select('*').neq('status', 'completed').order('timestamp', { ascending: false }).limit(5)
   ]);
 
-  const isDiscoveryRunning = missions.some(m => m.status === 'IN_PROGRESS');
+  const now = new Date();
+  const timeoutMs = 5 * 60 * 1000; // 5 minutes
+
+  const isDiscoveryRunning = missions.some(m => {
+    if (m.status !== 'IN_PROGRESS') return false;
+    // Check if mission is too old
+    const missionStart = new Date(m.created_at);
+    return (now.getTime() - missionStart.getTime()) < timeoutMs;
+  });
   
-  // Handle both array and paginated response for backward compatibility
   const leadsArray = Array.isArray(leadsResult) ? leadsResult : leadsResult.leads || [];
   
-  const isStrategyRunning = leadsArray.some(l => l.status === 'STRATEGY_GENERATING');
-  const isCreatorRunning = leadsArray.some(l => l.status === 'PREVIEW_GENERATING');
+  const isStrategyRunning = leadsArray.some(l => {
+    if (l.status !== 'STRATEGY_GENERATING') return false;
+    const updatedAt = new Date(l.status_updated_at || l.created_at);
+    return (now.getTime() - updatedAt.getTime()) < timeoutMs;
+  });
+
+  const isCreatorRunning = leadsArray.some(l => {
+    if (l.status !== 'PREVIEW_GENERATING') return false;
+    const updatedAt = new Date(l.status_updated_at || l.created_at);
+    return (now.getTime() - updatedAt.getTime()) < timeoutMs;
+  });
   
-  // Basic check for contact activity (could be enhanced with a recent activity window)
-  const isContactRunning = false; 
+  const isContactRunning = calls.data ? calls.data.some(c => {
+    const callTime = new Date(c.timestamp);
+    return (now.getTime() - callTime.getTime()) < timeoutMs;
+  }) : false; 
 
   return {
     discovery: isDiscoveryRunning,

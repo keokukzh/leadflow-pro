@@ -16,9 +16,11 @@ import { BrainCircuit, Loader2, Save, Sparkles, AlertCircle, Info, CheckCircle2,
 import { getLeads, updateLeadStrategy, generateStrategyAction, Lead } from "@/lib/actions/server-actions";
 import { Badge } from "@/components/ui/badge";
 import { StrategyCard, StrategyBrief } from "@/components/strategy/StrategyCard";
+import { useSearchParams } from "next/navigation";
 
 export default function StrategyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -31,11 +33,24 @@ export default function StrategyPage() {
     const fetchLeads = async () => {
       const data = await getLeads();
       setLeads(data.leads);
+      
+      const leadId = searchParams.get("leadId");
+      if (leadId) setSelectedLeadId(leadId);
     };
     fetchLeads();
-  }, []);
+  }, [searchParams]);
 
   const selectedLead = leads.find(l => l.id === selectedLeadId);
+
+  useEffect(() => {
+    if (selectedLead?.strategy_brief) {
+      setGeneratedStrategy(selectedLead.strategy_brief as StrategyBrief);
+      setIsSaved(true);
+    } else {
+      setGeneratedStrategy(null);
+      setIsSaved(false);
+    }
+  }, [selectedLead]);
 
   const handleGenerate = async () => {
     if (!selectedLead) return;
