@@ -8,40 +8,35 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { 
-  Mail, 
-  Phone, 
-  Send, 
-  Mic2, 
-  Search, 
-  History, 
-  Loader2, 
-  Play, 
-  Copy, 
-  Sparkles,
-  ExternalLink,
-  Terminal,
-  Activity,
-  Zap,
-  Monitor
+  Activity, 
+  Terminal as TerminalIcon, 
+  Search,
+  Loader2
 } from "lucide-react";
-import { getLeads, getCombinedInteractions, getOutreachSummary, Lead, Interaction } from "@/lib/actions/server-actions";
-import { format } from "date-fns";
-import clsx from "clsx";
+import { 
+  getLeads, 
+  getCombinedInteractions, 
+  getOutreachSummary, 
+  Lead, 
+  Interaction,
+  OutreachSummary
+} from "@/lib/actions/server-actions";
+import { ContactList } from "@/components/contact/ContactList";
+import { ContactTelemetry } from "@/components/contact/ContactTelemetry";
+import { ContactTransmission } from "@/components/contact/ContactTransmission";
+import { ProtocolLog } from "@/components/contact/ProtocolLog";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 
 export default function ContactPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string>("");
   const [interactions, setInteractions] = useState<Interaction[]>([]);
-  const [outreachSummary, setOutreachSummary] = useState<any>(null);
+  const [outreachSummary, setOutreachSummary] = useState<OutreachSummary | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isGeneratingVoice, setIsGeneratingVoice] = useState(false);
   const [isCalling, setIsCalling] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Email State
   const [emailSubject, setEmailSubject] = useState("");
@@ -64,12 +59,17 @@ export default function ContactPage() {
   useEffect(() => {
     if (selectedLeadId && selectedLead) {
       const fetchData = async () => {
-        const [combined, summary] = await Promise.all([
-          getCombinedInteractions(selectedLeadId),
-          getOutreachSummary(selectedLeadId)
-        ]);
-        setInteractions(combined);
-        setOutreachSummary(summary);
+        setIsLoading(true);
+        try {
+          const [combined, summary] = await Promise.all([
+            getCombinedInteractions(selectedLeadId),
+            getOutreachSummary(selectedLeadId)
+          ]);
+          setInteractions(combined);
+          setOutreachSummary(summary);
+        } finally {
+          setIsLoading(false);
+        }
       };
       fetchData();
       
@@ -93,12 +93,17 @@ LeadFlow Pro // Intelligence Unit
 
   const refreshData = async () => {
     if (!selectedLeadId) return;
-    const [combined, summary] = await Promise.all([
-      getCombinedInteractions(selectedLeadId),
-      getOutreachSummary(selectedLeadId)
-    ]);
-    setInteractions(combined);
-    setOutreachSummary(summary);
+    setIsLoading(true);
+    try {
+      const [combined, summary] = await Promise.all([
+        getCombinedInteractions(selectedLeadId),
+        getOutreachSummary(selectedLeadId)
+      ]);
+      setInteractions(combined);
+      setOutreachSummary(summary);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSendEmail = async () => {
@@ -184,7 +189,7 @@ LeadFlow Pro // Intelligence Unit
               <Select onValueChange={setSelectedLeadId} value={selectedLeadId}>
                 <SelectTrigger className="bg-transparent border-none focus:ring-0 text-white font-mono text-xs font-black uppercase tracking-widest h-12 px-6 hover:bg-white/5 transition-colors rounded-[1.8rem]">
                   <div className="flex items-center gap-3">
-                    <Terminal className="w-4 h-4 text-primary" />
+                    <TerminalIcon className="w-4 h-4 text-primary" />
                     <SelectValue placeholder="SELECT TARGET NODE..." />
                   </div>
                 </SelectTrigger>
@@ -215,109 +220,22 @@ LeadFlow Pro // Intelligence Unit
             <div className="lg:col-span-4 space-y-8">
                 {selectedLeadId ? (
                   <>
-                    {/* Node Stats */}
-                    <div className="space-y-8">
-                      <Card className="glass-panel bg-white/1 border-white/5 rounded-[3rem] p-8 space-y-8 overflow-hidden relative">
-                         <div className="absolute -top-12 -right-12 w-24 h-24 bg-primary/10 blur-3xl rounded-full" />
-                         <div className="space-y-6 relative z-10">
-                            <div className="flex items-center gap-3">
-                               <div className="p-2 bg-primary/10 rounded-xl border border-primary/20">
-                                  <Monitor className="w-4 h-4 text-primary" />
-                               </div>
-                               <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 font-mono">Node Telemetry</h3>
-                            </div>
-                            
-                            <div className="space-y-6">
-                               <div className="flex flex-col gap-1">
-                                  <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Entity // Label</span>
-                                  <span className="text-2xl font-serif text-white">{selectedLead?.company_name}</span>
-                               </div>
-                               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
-                                  <div className="flex flex-col gap-1">
-                                     <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Index</span>
-                                     <span className="text-xs font-mono text-white/60">{selectedLead?.rating} SF</span>
-                                  </div>
-                                  <div className="flex flex-col gap-1">
-                                     <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Status</span>
-                                     <span className="text-xs font-mono text-accent uppercase">{selectedLead?.status}</span>
-                                  </div>
-                               </div>
-                            </div>
-                         </div>
-                      </Card>
-    
-                      {/* Outreach Mainboard Summary */}
-                      {outreachSummary && (
-                        <Card className="glass-panel bg-primary/5 border-primary/10 rounded-[3rem] p-8 space-y-6 border-l-4 border-l-primary animate-in fade-in slide-in-from-left-4 duration-700">
-                           <div className="flex items-center gap-3">
-                              <Zap className="w-4 h-4 text-primary animate-pulse" />
-                              <h3 className="text-[10px] font-black uppercase tracking-widest text-white/60 font-mono">Transmission Summary</h3>
-                           </div>
-                           
-                           <div className="grid grid-cols-1 gap-6">
-                              <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                                 <span className="text-[9px] font-black uppercase tracking-widest text-white/20">First Transmission</span>
-                                 <span className="text-[10px] font-mono text-white/60">{format(new Date(outreachSummary.firstContactAt), "MMM d, yyyy")} {' // '} {outreachSummary.firstContactMethod}</span>
-                              </div>
-                              <div className="flex justify-between items-center border-b border-white/5 pb-3">
-                                 <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Total Protocols</span>
-                                 <span className="text-[10px] font-mono text-primary font-black">{outreachSummary.totalAttempts} UNITS</span>
-                              </div>
-                              <div className="space-y-2">
-                                 <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Current Reaction</span>
-                                 <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                                    <span className="text-xs font-serif italic text-accent leading-relaxed">
-                                       &quot;{outreachSummary.latestReaction}&quot;
-                                    </span>
-                                 </div>
-                              </div>
-                           </div>
-                        </Card>
-                      )}
-                    </div>
-    
-                    {/* Interaction Log */}
-                    <Card className="glass-panel bg-white/1 border-white/5 rounded-[3rem] flex flex-col h-[400px]">
-                        <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                               <History className="w-4 h-4 text-white/20" />
-                               <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 font-mono">Protocol Log</h3>
-                            </div>
-                            <span className="font-mono text-[9px] text-white/10">{interactions.length} Entries</span>
-                        </div>
-                        <CardContent className="p-0 overflow-hidden flex-1">
-                            <div className="divide-y divide-white/5 overflow-y-auto h-full custom-scrollbar">
-                                {interactions.length > 0 ? interactions.map((item) => (
-                                    <div key={item.id} className="p-6 space-y-4 hover:bg-white/2 transition-all duration-700 group">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                              <div className={clsx(
-                                                "px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest uppercase border",
-                                                item.interaction_type === 'EMAIL' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                                              )}>
-                                                  {item.interaction_type}
-                                              </div>
-                                              <span className="text-[8px] font-mono text-white/20 uppercase tracking-tighter">{item.method}</span>
-                                            </div>
-                                            <span className="text-[9px] text-white/10 font-mono font-bold">{format(new Date(item.created_at), "HH:mm, MMM d")}</span>
-                                        </div>
-                                        <p className="text-xs text-white/40 leading-relaxed font-light group-hover:text-white/60 transition-colors line-clamp-3 italic">
-                                          &quot;{item.content}&quot;
-                                        </p>
-                                        <div className="flex items-center gap-1.5 text-[9px] text-green-500/40 font-black uppercase tracking-widest">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-green-500/40 animate-pulse" />
-                                            Commit // {item.status}
-                                        </div>
-                                    </div>
-                                )) : (
-                                    <div className="p-20 text-center space-y-4 text-white/5 italic">
-                                       <Zap className="w-10 h-10 mx-auto" />
-                                       <p className="text-[10px] font-black uppercase tracking-widest">Lattice Empty</p>
-                                    </div>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <ErrorBoundary>
+                      <ContactTelemetry 
+                        selectedLead={selectedLead} 
+                        outreachSummary={outreachSummary} 
+                      />
+                    </ErrorBoundary>
+                    {isLoading ? (
+                      <div className="p-12 flex flex-col items-center justify-center space-y-4 opacity-50">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        <p className="text-[10px] font-black uppercase tracking-widest text-primary">Syncing Ledger...</p>
+                      </div>
+                    ) : (
+                      <ErrorBoundary>
+                         <ProtocolLog interactions={interactions} />
+                      </ErrorBoundary>
+                    )}
                   </>
                 ) : (
                   <div className="flex items-center justify-center h-full border border-dashed border-white/5 rounded-[3rem]">
@@ -329,155 +247,26 @@ LeadFlow Pro // Intelligence Unit
             {/* Center Command Modules (Col 8/16) */}
             <div className="lg:col-span-8 space-y-8">
                 {selectedLeadId ? (
-                  <Tabs defaultValue="email" className="w-full">
-                      <TabsList className="bg-white/1 border border-white/5 p-2 mb-10 rounded-[2.5rem] h-20 w-fit">
-                          <TabsTrigger value="email" className="data-[state=active]:bg-white/5 data-[state=active]:text-primary rounded-[1.8rem] px-10 font-mono text-xs font-black uppercase tracking-widest transition-all">
-                              <Mail className="w-4 h-4 mr-3" />
-                              Transmission Alpha
-                          </TabsTrigger>
-                          <TabsTrigger value="voice" className="data-[state=active]:bg-white/5 data-[state=active]:text-accent rounded-[1.8rem] px-10 font-mono text-xs font-black uppercase tracking-widest transition-all">
-                              <Phone className="w-4 h-4 mr-3" />
-                              Audio Protocol
-                          </TabsTrigger>
-                      </TabsList>
-
-                      <TabsContent value="email" className="mt-0 focus-visible:outline-none">
-                          <Card className="glass-panel bg-white/1 border-white/5 rounded-[4rem] p-12 relative overflow-hidden">
-                              <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 blur-3xl -mr-48 -mt-48 rounded-full" />
-                              <CardContent className="p-0 space-y-10 relative z-10">
-                                  <div className="space-y-4">
-                                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 font-mono ml-4">Transmission // Subject</label>
-                                      <Input 
-                                          value={emailSubject} 
-                                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmailSubject(e.target.value)}
-                                          className="bg-white/1 border-white/5 h-16 px-8 rounded-4xl font-serif text-lg text-white focus:border-primary/40 transition-all"
-                                      />
-                                  </div>
-                                  <div className="space-y-4">
-                                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 font-mono ml-4">Payload Content</label>
-                                      <Textarea 
-                                          value={emailBody} 
-                                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEmailBody(e.target.value)}
-                                          className="bg-white/1 border-white/5 min-h-[400px] p-10 rounded-[3rem] font-light text-xl leading-relaxed text-white/60 focus:border-primary/40 transition-all custom-scrollbar outline-none ring-0 focus:ring-0"
-                                      />
-                                  </div>
-                                  
-                                  <div className="flex flex-col md:flex-row justify-between items-center gap-8 p-10 bg-white/2 border border-white/5 rounded-[3rem] backdrop-blur-3xl">
-                                      <div className="flex items-center gap-6">
-                                          <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20">
-                                             <ExternalLink className="w-6 h-6 text-primary" />
-                                          </div>
-                                          <div className="flex flex-col gap-1">
-                                             <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Preview // Lattice Node</span>
-                                             <span className="text-sm font-mono text-primary/60 hover:text-primary transition-colors cursor-pointer">/preview/{selectedLead?.id}</span>
-                                          </div>
-                                      </div>
-                                      <Button 
-                                          onClick={handleSendEmail} 
-                                          disabled={isSending}
-                                          className="bg-primary hover:bg-primary/80 h-16 px-12 rounded-[2rem] text-sm font-black uppercase tracking-widest shadow-2xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
-                                      >
-                                      {isSending ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-5 h-5 mr-3" /> Initiative Pulse</>}
-                                      </Button>
-                                  </div>
-                              </CardContent>
-                          </Card>
-                      </TabsContent>
-
-                      <TabsContent value="voice" className="mt-0 focus-visible:outline-none">
-                          <Card className="glass-panel bg-white/1 border-white/5 rounded-[4rem] overflow-hidden">
-                              <div className="bg-linear-to-r from-accent/10 to-transparent p-12 border-b border-white/5">
-                                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                                      <div className="space-y-3">
-                                          <div className="flex items-center gap-3">
-                                              <Sparkles className="w-5 h-5 text-accent" />
-                                              <h3 className="text-[10px] font-black uppercase tracking-widest text-accent font-mono">Neural Synthesis Module</h3>
-                                          </div>
-                                          <p className="text-lg font-light text-white/40 leading-relaxed">Structural script generation for ElevenLabs integration.</p>
-                                      </div>
-                                      <Button 
-                                          onClick={handleGenerateVoice} 
-                                          disabled={isGeneratingVoice}
-                                          className="bg-accent hover:bg-accent/80 text-background h-14 px-10 rounded-[1.8rem] text-xs font-black uppercase tracking-widest shadow-xl shadow-accent/20 transition-all active:scale-95 disabled:opacity-50"
-                                      >
-                                          {isGeneratingVoice ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Mic2 className="w-4 h-4 mr-3" /> Forging Script</>}
-                                      </Button>
-                                  </div>
-                              </div>
-                              <CardContent className="p-12 space-y-12">
-                                  {voiceScript ? (
-                                      <div className="space-y-12 stagger-item">
-                                          <div className="bg-white/1 border border-white/5 p-12 rounded-[3.5rem] relative group hover:bg-white/2 transition-all duration-1000">
-                                              <p className="text-3xl leading-relaxed text-white/60 font-serif italic text-center max-w-2xl mx-auto">
-                                                  &quot;{voiceScript}&quot;
-                                              </p>
-                                              <div className="absolute top-6 right-6">
-                                                  <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/5 text-white/20" onClick={() => navigator.clipboard.writeText(voiceScript)}>
-                                                      <Copy className="w-4 h-4" />
-                                                  </Button>
-                                              </div>
-                                          </div>
-                                          
-                                          <div className="flex flex-col md:flex-row items-center gap-10 bg-[#0A0A0B] p-10 rounded-[3.5rem] border border-white/5">
-                                              <Button 
-                                                  size="icon" 
-                                                  disabled={!audioUrl}
-                                                  onClick={() => {
-                                                      const audio = document.getElementById('voice-audio') as HTMLAudioElement;
-                                                      if (audio.paused) audio.play();
-                                                      else audio.pause();
-                                                  }}
-                                                  className="rounded-full bg-accent/10 border border-accent/20 w-24 h-24 hover:bg-accent/20 transition-all active:scale-90 group flex items-center justify-center p-0"
-                                              >
-                                                  <Play className="w-8 h-8 fill-accent text-accent group-hover:scale-110 transition-transform" />
-                                              </Button>
-                                              <div className="flex-1 space-y-4">
-                                                  <div className="flex items-center justify-between">
-                                                     <p className="text-[10px] font-black uppercase tracking-widest text-white/40 font-mono">Audio // {audioUrl ? 'Synthesis Ready' : 'Awaiting Metadata'}</p>
-                                                     <span className="text-[10px] font-mono text-white/10 font-bold uppercase tracking-tighter">Commit v.8.3</span>
-                                                  </div>
-                                                  {audioUrl && (
-                                                      <audio id="voice-audio" src={audioUrl} />
-                                                  )}
-                                                  <div className="h-2 bg-white/5 rounded-full w-full overflow-hidden p-0.5">
-                                                      <div className={clsx(
-                                                        "h-full bg-accent rounded-full transition-all duration-1000",
-                                                        audioUrl ? 'w-full shadow-[0_0_15px_rgba(251,191,36,0.5)]' : 'w-1/3 animate-pulse opacity-20'
-                                                      )} />
-                                                  </div>
-                                              </div>
-                                          </div>
-                                          <div className="flex gap-4">
-                                            <Button 
-                                                className="flex-1 bg-accent hover:bg-accent/80 text-white rounded-[2rem] h-16 shadow-lg shadow-accent/20 group"
-                                                onClick={handleInitiateCall}
-                                                disabled={isCalling || !audioUrl}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                   <Zap className="w-5 h-5 group-hover:animate-pulse" />
-                                                   <span className="text-xs font-black uppercase tracking-[0.2em]">Initiate Pulse</span>
-                                                </div>
-                                            </Button>
-                                          </div>
-                                      </div>
-                                  ) : (
-                                      <div className="py-32 text-center space-y-8 opacity-10 italic">
-                                          <div className="p-8 bg-white/5 rounded-full inline-block border border-white/5">
-                                             <Mic2 className="w-16 h-16" />
-                                          </div>
-                                          <p className="text-[10px] font-black uppercase tracking-[1em] text-white">Neural Script // Null</p>
-                                      </div>
-                                  )}
-                              </CardContent>
-                          </Card>
-                      </TabsContent>
-                  </Tabs>
+                  <ErrorBoundary>
+                    <ContactTransmission
+                      selectedLead={selectedLead}
+                      emailSubject={emailSubject}
+                      setEmailSubject={setEmailSubject}
+                      emailBody={emailBody}
+                      setEmailBody={setEmailBody}
+                      isSending={isSending}
+                      handleSendEmail={handleSendEmail}
+                      isGeneratingVoice={isGeneratingVoice}
+                      handleGenerateVoice={handleGenerateVoice}
+                      voiceScript={voiceScript}
+                      audioUrl={audioUrl}
+                      isCalling={isCalling}
+                      handleInitiateCall={handleInitiateCall}
+                    />
+                  </ErrorBoundary>
                 ) : (
                   <div className="stagger-item glass-panel bg-white/1 border-white/5 border-dashed py-48 text-center rounded-[4rem]" style={{ animationDelay: '200ms' }}>
-                    <div className="relative inline-block mb-10">
-                      <Search className="w-24 h-24 mx-auto text-white/5" />
-                      <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-                    </div>
+                    <div className="relative inline-block mb-10" />
                     <p className="text-white/20 font-black uppercase tracking-[1em] text-[10px]">Awaiting Node Selection</p>
                   </div>
                 )}
@@ -485,57 +274,11 @@ LeadFlow Pro // Intelligence Unit
 
             {/* Right Active Mission Sidebar (Col 4/16) */}
             <div className="lg:col-span-4 space-y-8">
-                <Card className="glass-panel bg-white/1 border-white/5 rounded-[3rem] flex flex-col h-full min-h-[600px] border-l-4 border-l-primary/30">
-                    <div className="p-8 border-b border-white/5">
-                        <div className="flex items-center gap-3">
-                           <Activity className="w-4 h-4 text-primary animate-pulse" />
-                           <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 font-mono">Active Outreach Nodes</h3>
-                        </div>
-                    </div>
-                    <CardContent className="p-4 flex-1 overflow-y-auto custom-scrollbar">
-                        <div className="space-y-4">
-                            {leads.filter(l => l.status === 'CONTACTED').length > 0 ? leads.filter(l => l.status === 'CONTACTED').map((mission) => (
-                                <button
-                                    key={mission.id}
-                                    onClick={() => setSelectedLeadId(mission.id)}
-                                    className={clsx(
-                                        "w-full text-left p-6 rounded-[2.5rem] border transition-all duration-500 group relative overflow-hidden",
-                                        selectedLeadId === mission.id 
-                                            ? "bg-primary/10 border-primary/30 shadow-lg shadow-primary/10" 
-                                            : "bg-white/2 border-white/5 hover:bg-white/5 hover:border-white/10"
-                                    )}
-                                >
-                                    <div className="space-y-3 relative z-10">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm font-serif text-white group-hover:text-primary transition-colors">{mission.company_name}</span>
-                                            <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
-                                        </div>
-                                        <div className="flex flex-col gap-1">
-                                            <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/20 font-mono">Status: WAITING_REACTION</span>
-                                            <span className="text-[10px] font-mono text-white/40">
-                                              {mission.location} {' // '} {mission.rating}★
-                                            </span>
-                                        </div>
-                                        <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-primary/60">LIVE MISSION</span>
-                                            <span className="text-[9px] font-mono text-white/20">{format(new Date(mission.status_updated_at || mission.created_at), "MMM d, HH:mm")}</span>
-                                        </div>
-                                    </div>
-                                    {selectedLeadId === mission.id && (
-                                        <div className="absolute top-0 right-0 p-2">
-                                            <Zap className="w-8 h-8 text-primary/10 group-hover:text-primary/20 transition-colors" />
-                                        </div>
-                                    )}
-                                </button>
-                            )) : (
-                                <div className="py-20 text-center space-y-4 opacity-10">
-                                   <Activity className="w-8 h-8 mx-auto" />
-                                   <p className="text-[9px] font-black uppercase tracking-widest">No Active Nodes</p>
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                <ContactList 
+                  leads={leads} 
+                  selectedLeadId={selectedLeadId}
+                  setSelectedLeadId={setSelectedLeadId}
+                />
             </div>
         </div>
       )}

@@ -11,17 +11,14 @@ import {
   addEdge,
   Connection,
   Edge,
+  Node,
   BackgroundVariant,
   Panel
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import TaskNode from './TaskNode';
+import { nodeTypes } from './nodeTypes';
 import { Save, Plus, Settings2, PlayCircle } from 'lucide-react';
-
-const nodeTypes = {
-  task: TaskNode,
-};
 
 const initialNodes = [
   {
@@ -51,11 +48,11 @@ const initialEdges = [
 ];
 
 export default function WorkflowCanvas() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes as any);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges as any);
+  const [nodes, , onNodesChange] = useNodesState(initialNodes as Node[]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges as Edge[]);
 
   const onConnect = useCallback(
-    (params: Connection | Edge) => setEdges((eds) => addEdge({ ...params, animated: true, style: { stroke: '#6366f1' } }, eds)),
+    (params: Connection) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
     [setEdges],
   );
 
@@ -72,11 +69,11 @@ export default function WorkflowCanvas() {
         className="bg-dot-pattern"
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#ffffff10" />
-        <Controls className="!bg-slate-900 !border-white/10 !rounded-xl overflow-hidden shadow-2xl" />
+        <Controls className="bg-slate-900! border-white/10! rounded-xl! overflow-hidden shadow-2xl" />
         <MiniMap 
-          nodeColor={(n: any) => '#1e293b'} 
+          nodeColor={() => '#1e293b'} 
           maskColor="rgba(0, 0, 0, 0.4)" 
-          className="!bg-slate-900/80 !border-white/10 !rounded-2xl backdrop-blur-md"
+          className="bg-slate-900/80! border-white/10! rounded-2xl! backdrop-blur-md"
         />
         
         {/* Top Control Panel */}
@@ -110,7 +107,7 @@ export default function WorkflowCanvas() {
       </ReactFlow>
 
       {/* Grid Overlay Decoration */}
-      <div className="absolute inset-0 pointer-events-none border-[32px] border-slate-950/20 rounded-4xl mask-edge" />
+      <div className="absolute inset-0 pointer-events-none border-32 border-slate-950/20 rounded-4xl mask-edge" />
     </div>
   );
 }

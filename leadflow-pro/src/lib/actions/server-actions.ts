@@ -7,6 +7,7 @@ import { TEMPLATE_DATA_PROMPT, SEARCH_STRATEGY_PROMPT, BOTTIE_SYSTEM_PROMPT, FOR
 import { calculateLeadScore } from "@/services/leadScoring";
 import { logger } from "@/lib/logger";
 import { supabase } from "@/lib/supabase";
+import { rateLimit } from "@/lib/rate-limit";
 
 // In a real app, you would use Prisma, Drizzle, or raw pg queries
 export interface Interaction {
@@ -18,6 +19,15 @@ export interface Interaction {
   created_at: string;
   reaction?: string;
   method?: string;
+}
+
+export interface OutreachSummary {
+  firstContactAt: string;
+  firstContactMethod: "EMAIL" | "CALL";
+  totalAttempts: number;
+  lastStatus: string;
+  latestReaction: string | undefined;
+  allReactions: (string | undefined)[];
 }
 
 export interface DiscoveryResultItem {
@@ -882,12 +892,37 @@ export async function getGlobalAgentStatus(): Promise<GlobalAgentStatus> {
   };
 }
 
+const limiter = rateLimit({
+  interval: 60 * 60 * 1000, // 1 hour
+  uniqueTokenPerInterval: 500,
+});
+
 export async function synthesizeForgeLead(stash: ForgeStash) {
+  // Rate limit check: 10 per hour
+  const limitCheck = await limiter.check(10, "FORGE_SYNTHESIS");
+  if (!limitCheck.success) {
+    return { 
+      success: false, 
+      error: `Rate limit exceeded. Maximum 10 syntheses per hour. Try again in a while.` 
+    };
+  }
+
   const prompt = FORGE_SYNTHESIS_PROMPT(stash);
-  const content = await getCompletion(prompt, "Du bist ein Master AI Engineer.");
   
   try {
-    const rawData = JSON.parse(content || '{}');
+    const content = await getCompletion(prompt, "Du bist ein Master AI Engineer.");
+    
+    if (!content) {
+      throw new Error("AI returned no content");
+    }
+
+    const rawData = JSON.parse(content);
+    
+    // Validation
+    if (!rawData.company_name && !stash.companyName) {
+      throw new Error("Invalid synthesis result: Missing company name");
+    }
+
     const leads = await getLeadsSafe();
     
     const newLead: Lead = {
@@ -929,7 +964,10 @@ export async function synthesizeForgeLead(stash: ForgeStash) {
     
     return { success: true, leadId: newLead.id };
   } catch (err) {
-    logger.error({ err }, "Forge synthesis failed");
-    return { success: false, error: "Synthesis failed" };
+    logger.error({ err: err instanceof Error ? err.message : err }, "Forge synthesis failed");
+    return { 
+      success: false, 
+      error: err instanceof Error ? err.message : "Synthesis failed" 
+    };
   }
 }

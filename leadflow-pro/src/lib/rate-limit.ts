@@ -17,7 +17,7 @@ export function rateLimit(options: RateLimitConfig) {
   });
 
   return {
-    check: async (req: NextRequest, limit: number, token: string) => {
+    check: async (limit: number, token: string, _req?: NextRequest) => {
       const tokenCount = tokenCache.get(token) || [0];
       if (tokenCount[0] === 0) {
         tokenCache.set(token, [1]);

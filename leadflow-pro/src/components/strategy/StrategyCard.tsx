@@ -1,8 +1,15 @@
 "use client";
 
+import { marked } from "marked";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Lightbulb, Palette, Target, Sparkles } from "lucide-react";
+
+// Safe Markdown renderer
+const renderMarkdown = (content: string): string => {
+  // marked.parse returns a string or a promise. Since we're in React and want it sync:
+  return marked.parse(content, { async: false }) as string;
+};
 
 export interface StrategyBrief {
   brandTone: string;
@@ -40,9 +47,10 @@ export function StrategyCard({ strategy, companyName }: StrategyCardProps) {
             <Target className="w-4 h-4" />
             Brand Tone & Tonalität
           </div>
-          <p className="text-lg text-slate-200 font-medium bg-slate-800/50 p-3 rounded-lg border border-slate-700/50">
-            {strategy.brandTone}
-          </p>
+          <div 
+            className="text-lg text-slate-200 font-medium bg-slate-800/50 p-4 rounded-lg border border-slate-700/50 prose prose-invert prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(strategy.brandTone) }}
+          />
         </div>
 
         {/* Key Sells */}
@@ -57,7 +65,7 @@ export function StrategyCard({ strategy, companyName }: StrategyCardProps) {
                 <span className="absolute -right-2 -bottom-2 text-blue-500/10 font-bold text-4xl group-hover:scale-110 transition-transform">
                   {idx + 1}
                 </span>
-                {sell}
+                <div dangerouslySetInnerHTML={{ __html: renderMarkdown(sell) }} className="prose-sm prose-invert" />
               </li>
             )) : <li className="text-slate-500 italic">Keine Verkaufsargumente generiert</li>}
           </ul>
