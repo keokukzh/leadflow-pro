@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Lead } from "@/lib/actions/server-actions";
 
 // ============================================
@@ -17,15 +17,19 @@ type TriggerType = "lead_created" | "lead_score_changed" | "website_status_chang
 interface WorkflowStep {
   id: string;
   type: string;
-  config: Record<string, any>;
+  config: Record<string, string | number | boolean | null>;
 }
 
-export function WorkflowBuilder({ lead, onExecute }: WorkflowBuilderProps) {
-  const [workflows, setWorkflows] = useState<any[]>([]);
+interface WorkflowConfig {
+  [key: string]: string | number | boolean | null;
+}
+
+export const WorkflowBuilder = memo(function WorkflowBuilder({ lead, onExecute }: WorkflowBuilderProps) {
+  const [workflows, setWorkflows] = useState<any[]>([]); // Keeping for now as it's part of the feature
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(null);
   const [steps, setSteps] = useState<WorkflowStep[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
-  const [executionResult, setExecutionResult] = useState<any>(null);
+  const [executionResult, setExecutionResult] = useState<Record<string, any> | null>(null);
 
   // Pre-built templates
   const templates = [
@@ -192,7 +196,7 @@ export function WorkflowBuilder({ lead, onExecute }: WorkflowBuilderProps) {
       )}
     </div>
   );
-}
+});
 
 // ============================================
 // ANALYTICS DASHBOARD COMPONENT
@@ -202,7 +206,7 @@ interface AnalyticsDashboardProps {
   leadId?: string;
 }
 
-export function AnalyticsDashboard({ leadId }: AnalyticsDashboardProps) {
+export const AnalyticsDashboard = memo(function AnalyticsDashboard({ leadId }: AnalyticsDashboardProps) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<"24h" | "7d" | "30d">("24h");
@@ -344,7 +348,7 @@ export function AnalyticsDashboard({ leadId }: AnalyticsDashboardProps) {
       )}
     </div>
   );
-}
+});
 
 function MetricCard({ title, value, icon, trend }: { 
   title: string; 

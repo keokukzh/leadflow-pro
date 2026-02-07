@@ -1,4 +1,5 @@
 import { Lead } from "@/lib/actions/server-actions";
+import { memo } from "react";
 
 // ============================================
 // 🎨 SWISS TEMPLATE V2 - With AI Content
@@ -112,7 +113,7 @@ export const TRUST_BADGES = {
 // 🎨 TEMPLATE V2
 // ============================================
 
-export function SwissTemplateV2({ lead, config }: SwissTemplateV2Props) {
+export const SwissTemplateV2 = memo(function SwissTemplateV2({ lead, config }: SwissTemplateV2Props) {
   const colors = SWISS_COLORS_V2["swiss-neutral"];
   const industry = lead.industry?.toLowerCase() || "service";
   
@@ -277,13 +278,13 @@ export function SwissTemplateV2({ lead, config }: SwissTemplateV2Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
             <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl">
               <p className="text-lg italic mb-4">
-                "Sehr zufrieden mit der Arbeit. Jederzeit wieder!"
+                &quot;Sehr zufrieden mit der Arbeit. Jederzeit wieder!&quot;
               </p>
               <p className="font-medium">⭐⭐⭐⭐⭐ Google Review</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm p-6 rounded-xl">
               <p className="text-lg italic mb-4">
-                "Professioneller Service, faire Preise, top Ergebnis."
+                &quot;Professioneller Service, faire Preise, top Ergebnis.&quot;
               </p>
               <p className="font-medium">⭐⭐⭐⭐⭐ Google Review</p>
             </div>
@@ -350,7 +351,7 @@ export function SwissTemplateV2({ lead, config }: SwissTemplateV2Props) {
       </footer>
     </div>
   );
-}
+});
 
 // Helper functions
 function getRandomImageId(industry: string): string {

@@ -162,25 +162,36 @@ export class WorkflowOrchestrator {
   }
 
   private evaluateCondition(condition: string, env: Record<string, string>): boolean {
-    // Improved evaluation logic with regex
+    // Safer evaluation logic without eval()
     let evaluated = condition;
+    
+    // Replace ${env.KEY} with actual values
     for (const [key, value] of Object.entries(env)) {
-      evaluated = evaluated.replace(new RegExp(`\\\${env.${key}}`, 'g'), value);
+      const escapedValue = String(value).replace(/'/g, "\\'");
+      evaluated = evaluated.replace(new RegExp(`\\\\\\$\\{env\\.${key}\\}`, 'g'), `'${escapedValue}'`);
     }
     
-    // Support basic comparisons: ==, !=, >, <
-    const match = evaluated.match(/^\s*(.+?)\s*(==|!=|>|<)\s*(.+?)\s*$/);
+    // Support basic comparisons: ==, !=, >, <, >=, <=
+    const match = evaluated.match(/^\s*(['"].*?['"]|[\d.]+)\s*(==|!=|>|<|>=|<=)\s*(['"].*?['"]|[\d.]+)\s*$/);
     if (!match) return true;
 
     const [, left, op, right] = match;
-    const l = left.trim().replace(/^['"](.*)['"]$/, '$1');
-    const r = right.trim().replace(/^['"](.*)['"]$/, '$1');
+    
+    // Strip quotes and convert to numbers if applicable
+    const cleanLeft = left.trim().replace(/^['"](.*)['"]$/, '$1');
+    const cleanRight = right.trim().replace(/^['"](.*)['"]$/, '$1');
+    
+    const isNum = !isNaN(Number(cleanLeft)) && !isNaN(Number(cleanRight));
+    const l = isNum ? Number(cleanLeft) : cleanLeft;
+    const r = isNum ? Number(cleanRight) : cleanRight;
 
     switch (op) {
       case '==': return l === r;
       case '!=': return l !== r;
-      case '>': return Number(l) > Number(r);
-      case '<': return Number(l) < Number(r);
+      case '>': return l > r;
+      case '<': return l < r;
+      case '>=': return l >= r;
+      case '<=': return l <= r;
       default: return true;
     }
   }

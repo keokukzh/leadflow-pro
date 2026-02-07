@@ -25,9 +25,20 @@ export interface StrategyBrief {
 interface StrategyCardProps {
   strategy: StrategyBrief;
   companyName: string;
+  leadId: string;
+  onSynthesizeInternal?: () => void;
+  isSynthesizingInternal?: boolean;
+  hasPreview?: boolean;
 }
 
-export function StrategyCard({ strategy, companyName }: StrategyCardProps) {
+export function StrategyCard({ 
+  strategy, 
+  companyName, 
+  leadId, 
+  onSynthesizeInternal, 
+  isSynthesizingInternal, 
+  hasPreview 
+}: StrategyCardProps) {
   return (
     <Card className="bg-slate-900 border-slate-800 text-slate-100 shadow-2xl overflow-hidden">
       <CardHeader className="border-b border-slate-800 bg-slate-900/50 pb-4">
@@ -98,29 +109,33 @@ export function StrategyCard({ strategy, companyName }: StrategyCardProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-black text-purple-400 uppercase tracking-[0.2em] font-mono">
                 <Sparkles className="w-4 h-4 animate-pulse" />
-                Stitch.ai Masterprompt
+                STITCH.ai Core Engine
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(strategy.creationToolPrompt || "");
-                    const btn = document.activeElement as HTMLButtonElement;
-                    const original = btn.innerHTML;
-                    btn.innerHTML = "Copied!";
-                    setTimeout(() => { btn.innerHTML = original; }, 1500);
-                  }}
-                  className="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl transition-all border border-slate-700"
-                >
-                  Raw Copy
-                </button>
+                 {hasPreview ? (
+                  <button
+                    onClick={() => window.open(`/preview/${leadId}`, "_blank")}
+                    className="text-[10px] font-black bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-green-500/20 active:scale-95 flex items-center gap-2"
+                  >
+                    View Live Preview
+                  </button>
+                ) : (
+                  <button
+                    onClick={onSynthesizeInternal}
+                    disabled={isSynthesizingInternal}
+                    className="text-[10px] font-black bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-purple-500/20 active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {isSynthesizingInternal ? "Synthesizing..." : "Initiate STITCH Synthesis"}
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(strategy.creationToolPrompt || "");
                     window.open("https://stitch.ai/portal", "_blank");
                   }}
-                  className="text-[10px] font-black bg-linear-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white px-6 py-2 rounded-xl transition-all shadow-lg shadow-purple-500/20 active:scale-95 flex items-center gap-2"
+                  className="text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl transition-all border border-slate-700 flex items-center gap-2"
                 >
-                  Execute Stitch Protocol
+                  External Portal
                 </button>
               </div>
             </div>
@@ -131,12 +146,6 @@ export function StrategyCard({ strategy, companyName }: StrategyCardProps) {
               <p className="text-xs text-slate-400 leading-relaxed font-mono whitespace-pre-wrap relative z-10 italic">
                 {strategy.creationToolPrompt}
               </p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/5 rounded-lg border border-purple-500/10">
-              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-ping" />
-              <span className="text-[9px] text-purple-400/60 font-bold uppercase tracking-widest font-mono">
-                MCP Logic Engine Standby // Ready for direct ingestion
-              </span>
             </div>
           </div>
         )}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
+// ... (I'll just replace the whole head to be safe)
 import { 
   Plus, 
   Link as LinkIcon, 
@@ -20,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { synthesizeForgeLead, ForgeStash } from "@/lib/actions/server-actions";
 import clsx from "clsx";
 
-export function NeuralForge() {
+export const NeuralForge = memo(function NeuralForge() {
   const [companyName, setCompanyName] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [rating, setRating] = useState(0);
@@ -295,4 +296,4 @@ export function NeuralForge() {
       </div>
     </div>
   );
-}
+});

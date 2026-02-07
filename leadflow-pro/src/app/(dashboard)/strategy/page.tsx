@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BrainCircuit, Loader2, Save, Sparkles, AlertCircle, Info, CheckCircle2, ArrowRight } from "lucide-react";
-import { getLeads, updateLeadStrategy, generateStrategyAction, Lead } from "@/lib/actions/server-actions";
+import { getLeads, updateLeadStrategy, generateStrategyAction, generateSiteConfig, Lead } from "@/lib/actions/server-actions";
 import { Badge } from "@/components/ui/badge";
 import { StrategyCard, StrategyBrief } from "@/components/strategy/StrategyCard";
 import { useSearchParams } from "next/navigation";
@@ -27,6 +27,7 @@ export default function StrategyPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [generatedStrategy, setGeneratedStrategy] = useState<StrategyBrief | null>(null);
+  const [isSynthesizingStitch, setIsSynthesizingStitch] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -82,6 +83,22 @@ export default function StrategyPage() {
       console.error("Save failed:", err);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSynthesizeStitch = async () => {
+    if (!selectedLeadId) return;
+    setIsSynthesizingStitch(true);
+    setError(null);
+    try {
+      await generateSiteConfig(selectedLeadId);
+      // After generation, we might want to refresh leads to get the preview_data state
+      const data = await getLeads();
+      setLeads(data.leads);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "STITCH synthesis failed");
+    } finally {
+      setIsSynthesizingStitch(false);
     }
   };
 
@@ -170,6 +187,10 @@ export default function StrategyPage() {
           <StrategyCard 
             strategy={generatedStrategy} 
             companyName={selectedLead.company_name} 
+            leadId={selectedLead.id}
+            onSynthesizeInternal={handleSynthesizeStitch}
+            isSynthesizingInternal={isSynthesizingStitch}
+            hasPreview={!!selectedLead.preview_data}
           />
           
           <div className="flex justify-end gap-4">

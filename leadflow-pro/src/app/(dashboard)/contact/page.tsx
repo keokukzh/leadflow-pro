@@ -58,23 +58,29 @@ export default function ContactPage() {
 
   useEffect(() => {
     if (selectedLeadId && selectedLead) {
-      const fetchData = async () => {
+      const fetchData = async (signal?: AbortSignal) => {
         setIsLoading(true);
         try {
           const [combined, summary] = await Promise.all([
             getCombinedInteractions(selectedLeadId),
             getOutreachSummary(selectedLeadId)
           ]);
+          if (signal?.aborted) return;
           setInteractions(combined);
           setOutreachSummary(summary);
         } finally {
           setIsLoading(false);
         }
       };
-      fetchData();
       
-      setEmailSubject(`Strategic Proposal for ${selectedLead.company_name} // Alpha Logic`);
-      setEmailBody(`
+      const controller = new AbortController();
+      fetchData(controller.signal);
+      
+      return () => controller.abort();
+      
+      if (selectedLead) {
+        setEmailSubject(`Strategic Proposal for ${selectedLead.company_name} // Alpha Logic`);
+        setEmailBody(`
 Hello ${selectedLead.company_name} Team,
 
 I've been analyzing your market position in ${selectedLead.location}. 
@@ -87,7 +93,8 @@ Our neural analysis suggests this structural pivot will optimize target acquisit
 
 Transmission Protocol 1.0.4.
 LeadFlow Pro // Intelligence Unit
-      `.trim());
+        `.trim());
+      }
     }
   }, [selectedLeadId, selectedLead]);
 

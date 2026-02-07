@@ -941,6 +941,14 @@ export async function synthesizeForgeLead(stash: ForgeStash) {
     
     await writeData(LEADS_FILE, [...leads, newLead]);
     
+    // Auto-generate STITCH preview immediately
+    let previewData = null;
+    try {
+      previewData = await generateSiteConfig(newLead.id);
+    } catch (e) {
+      logger.error({ error: e, leadId: newLead.id }, "Auto-site generation failed after forgery");
+    }
+
     // Sync to Supabase
     try {
       await supabase.from('leads').insert({
@@ -950,8 +958,9 @@ export async function synthesizeForgeLead(stash: ForgeStash) {
         location: newLead.location,
         rating: newLead.rating,
         review_count: newLead.review_count,
-        status: newLead.status,
+        status: previewData ? 'PREVIEW_READY' : newLead.status,
         strategy_brief: newLead.strategy_brief,
+        preview_data: previewData,
         created_at: newLead.created_at
       });
     } catch (e) {
@@ -961,8 +970,9 @@ export async function synthesizeForgeLead(stash: ForgeStash) {
     revalidatePath("/");
     revalidatePath("/memory");
     revalidatePath("/strategy");
+    revalidatePath("/creator");
     
-    return { success: true, leadId: newLead.id };
+    return { success: true, leadId: newLead.id, hasPreview: !!previewData };
   } catch (err) {
     logger.error({ err: err instanceof Error ? err.message : err }, "Forge synthesis failed");
     return { 
