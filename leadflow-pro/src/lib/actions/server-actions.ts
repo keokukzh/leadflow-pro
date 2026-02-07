@@ -538,8 +538,9 @@ export async function logInteraction(leadId: string, type: 'EMAIL' | 'CALL', con
     // Update lead status
     const leads = await getLeadsSafe();
     const lead = leads.find(l => l.id === leadId);
-    if (lead && type === 'EMAIL') {
+    if (lead) {
         lead.status = 'CONTACTED';
+        lead.status_updated_at = new Date().toISOString();
         await writeData(LEADS_FILE, leads);
     }
 
