@@ -14,6 +14,7 @@ import {
 import { useState, useEffect } from "react";
 import { getDashboardStats } from "@/lib/actions/server-actions";
 import clsx from "clsx";
+import Link from "next/link";
 
 interface DashboardStats {
   totalLeads: { value: number; growth: number };
@@ -39,28 +40,32 @@ export default function Home() {
       value: stats?.totalLeads.value ?? 0, 
       icon: Users, 
       change: stats?.totalLeads.growth ? `+${stats.totalLeads.growth.toFixed(0)}%` : '0%', 
-      color: "primary"
+      color: "primary",
+      href: "/memory"
     },
     { 
       name: 'High-Value Targets', 
       value: stats?.qualifiedLeads.value ?? 0, 
       icon: Target, 
       change: stats?.qualifiedLeads.growth ? `+${stats.qualifiedLeads.growth.toFixed(0)}%` : '0%', 
-      color: "accent"
+      color: "accent",
+      href: "/discovery"
     },
     { 
       name: 'Engineered Strategies', 
       value: stats?.strategiesCreated.value ?? 0, 
       icon: Zap, 
       change: stats?.strategiesCreated.growth ? `+${stats.strategiesCreated.growth.toFixed(0)}%` : '0%', 
-      color: "primary"
+      color: "primary",
+      href: "/strategy"
     },
     { 
       name: 'Conversion Rate', 
       value: `${stats?.contactedLeads.value ?? 0}%`, 
       icon: TrendingUp, 
       change: stats?.contactedLeads.growth ? `+${stats.contactedLeads.growth.toFixed(0)}%` : '0%', 
-      color: "accent"
+      color: "accent",
+      href: "/contact"
     },
   ];
 
@@ -96,9 +101,10 @@ export default function Home() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {statItems.map((stat, idx) => (
-          <div
+          <Link
             key={stat.name}
-            className="stagger-item glass-panel group relative overflow-hidden rounded-3xl p-8 hover:bg-white/3 transition-all duration-700"
+            href={stat.href}
+            className="stagger-item glass-panel group relative block overflow-hidden rounded-3xl p-8 hover:bg-white/3 transition-all duration-700"
             style={{ animationDelay: `${idx * 100 + 100}ms` }}
           >
             <div className="relative z-10">
@@ -130,7 +136,7 @@ export default function Home() {
               "absolute -bottom-6 -right-6 w-24 h-24 rounded-full blur-[60px] opacity-0 group-hover:opacity-20 transition-opacity duration-1000",
               stat.color === 'primary' ? "bg-primary" : "bg-accent"
             )} />
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -191,10 +197,13 @@ export default function Home() {
             ))}
           </div>
           
-          <button className="mt-8 w-full py-4 rounded-2xl bg-white/5 text-white/40 text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all duration-500 flex items-center justify-center space-x-2">
+          <Link 
+            href="/strategy"
+            className="mt-8 w-full py-4 rounded-2xl bg-white/5 text-white/40 text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all duration-500 flex items-center justify-center space-x-2"
+          >
             <Briefcase className="w-4 h-4" />
             <span>Deep Insights</span>
-          </button>
+          </Link>
         </div>
       </div>
     </div>
