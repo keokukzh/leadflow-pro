@@ -1,0 +1,203 @@
+// ============================================
+// LeadFlow Pro - Export Service
+// ============================================
+
+import { getLeads } from '@/lib/db/client';
+import type { LeadFilters } from '@/lib/db/types';
+
+type ExportFormat = 'csv' | 'xlsx' | 'json';
+
+/**
+ * Export leads to various formats
+ */
+export async function exportLeads(
+  filters?: LeadFilters, 
+  format: ExportFormat = 'csv'
+): Promise<{ data: string | Blob; filename: string }> {
+  const leads = await getLeads(filters);
+
+  switch (format) {
+    case 'csv':
+      return {
+        data: generateCSV(leads),
+        filename: `leads_${new Date().toISOString().split('T')[0]}.csv`,
+      };
+    
+    case 'json':
+      return {
+        data: JSON.stringify(leads, null, 2),
+        filename: `leads_${new Date().toISOString().split('T')[0]}.json`,
+      };
+    
+    case 'xlsx':
+      // For XLSX, we'd use a library like xlsx
+      // For now, return CSV with XLSX extension
+      return {
+        data: generateCSV(leads),
+        filename: `leads_${new Date().toISOString().split('T')[0]}.xlsx`,
+      };
+    
+    default:
+      throw new Error(`Unknown format: ${format}`);
+  }
+}
+
+/**
+ * Generate CSV from leads
+ */
+function generateCSV(leads: any[]): string {
+  if (leads.length === 0) return '';
+
+  const headers = [
+    'company_name',
+    'phone',
+    'email',
+    'industry',
+    'location',
+    'website',
+    'google_rating',
+    'google_reviews_count',
+    'score',
+    'status',
+    'source',
+    'created_at',
+  ];
+
+  const rows = leads.map(lead =>
+    headers.map(header => {
+      const value = lead[header];
+      if (value === null || value === undefined) return '';
+      if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+        return `"${value.replace(/"/g, '""')}"`;
+      }
+      return value;
+    }).join(',')
+  );
+
+  return [headers.join(','), ...rows].join('\n');
+}
+
+/**
+ * Parse CSV to lead objects
+ */
+export function parseCSV(csvContent: string): any[] {
+  const lines = csvContent.trim().split('\n');
+  if (lines.length < 2) return [];
+
+  const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+  
+  const leads: any[] = [];
+  
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    
+    if (values.length !== headers.length) continue;
+    
+    const lead: any = {};
+    
+    headers.forEach((header, index) => {
+      const value = values[index]?.trim();
+      
+      if (!value) return;
+      
+      // Type conversions
+      switch (header) {
+        case 'google_rating':
+          lead.google_rating = parseFloat(value);
+          break;
+        case 'google_reviews_count':
+          lead.google_reviews_count = parseInt(value);
+          break;
+        case 'score':
+          lead.score = parseInt(value);
+          break;
+        default:
+          lead[header] = value;
+      }
+    });
+    
+    if (lead.company_name) {
+      leads.push(lead);
+    }
+  }
+  
+  return leads;
+}
+
+/**
+ * Parse a single CSV line (handles quoted values)
+ */
+function parseCSVLine(line: string): string[] {
+  const values: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      values.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  values.push(current);
+  return values.map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"'));
+}
+
+/**
+ * Generate vCard for a lead
+ */
+export function generateVCard(lead: any): string {
+  return `BEGIN:VCARD
+VERSION:3.0
+FN:${lead.company_name}
+ORG:LeadFlow Pro
+TEL;TYPE=CELL:${lead.phone}
+EMAIL:${lead.email || ''}
+URL:${lead.website || ''}
+NOTE:Score: ${lead.score} | Status: ${lead.status} | Source: ${lead.source || 'Unknown'}
+END:VCARD`;
+}
+
+/**
+ * Generate markdown report
+ */
+export function generateReport(data: {
+  totalLeads: number;
+  hotLeads: number;
+  warmLeads: number;
+  coldLeads: number;
+  emailsSent: number;
+  callsMade: number;
+  conversionRate: number;
+}): string {
+  const date = new Date().toISOString().split('T')[0];
+  
+  return `# LeadFlow Pro - Weekly Report
+Generated: ${date}
+
+## Overview
+- **Total Leads:** ${data.totalLeads}
+- **Hot Leads:** ${data.hotLeads}
+- **Warm Leads:** ${data.warmLeads}
+- **Cold Leads:** ${data.coldLeads}
+
+## Outreach
+- **Emails Sent:** ${data.emailsSent}
+- **Calls Made:** ${data.callsMade}
+- **Conversion Rate:** ${data.conversionRate}%
+
+## Lead Distribution
+- 🔥 Hot (70+): ${Math.round((data.hotLeads / Math.max(1, data.totalLeads)) * 100)}%
+- ☀️ Warm (40-69): ${Math.round((data.warmLeads / Math.max(1, data.totalLeads)) * 100)}%
+- ❄️ Cold (<40): ${Math.round((data.coldLeads / Math.max(1, data.totalLeads)) * 100)}%
+
+---
+*Generated by LeadFlow Pro*
+`;
+}
