@@ -49,12 +49,16 @@ export async function POST(req: Request) {
     // --- Perplexity Logic ---
     if (settings.discoveryProvider === 'perplexity' && settings.perplexityApiKey) {
       console.log(`[SearchSpecialist] Running Perplexity Autonomous Search...`);
-      const allPerplexityResults = [];
+      const allPerplexityResults: any[] = [];
       
       for (const location of targetLocations) {
         try {
           const results = await searchLeadsWithPerplexity(industry, location);
-          allPerplexityResults.push(...results);
+          for (const res of results) {
+             if (!allPerplexityResults.some((existing: any) => existing.place_id === res.place_id || (existing.source_url && existing.source_url === res.source_url))) {
+               allPerplexityResults.push(res);
+             }
+          }
           
           if (missionId) {
             await updateMission(missionId, { results: allPerplexityResults as DiscoveryMission['results'] });
@@ -249,12 +253,22 @@ export async function POST(req: Request) {
       delete (rest as Record<string, unknown>).reviews_short;
       return rest;
     });
-
-    if (missionId) {
-      await updateMission(missionId, { results: finalResults as DiscoveryMission['results'], status: 'COMPLETED' });
+    
+    // Final deduplication safety check
+    const uniqueFinalResults: any[] = [];
+    const seenIds = new Set();
+    for (const r of finalResults) {
+      if (!seenIds.has(r.place_id)) {
+        seenIds.add(r.place_id);
+        uniqueFinalResults.push(r);
+      }
     }
 
-    return NextResponse.json<ApiResponse>({ success: true, data: { results: finalResults } });
+    if (missionId) {
+      await updateMission(missionId, { results: uniqueFinalResults as DiscoveryMission['results'], status: 'COMPLETED' });
+    }
+
+    return NextResponse.json<ApiResponse>({ success: true, data: { results: uniqueFinalResults } });
 
   } catch (error) {
     console.error("Discovery Search Error:", error);

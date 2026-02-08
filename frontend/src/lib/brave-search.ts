@@ -55,7 +55,7 @@ export async function searchLeadsWithBrave(industry: string, location: string): 
     const name = r.title.replace(/ \|.*/, "").replace(/ - .*/, "").trim(); // Clean title
 
     return {
-      place_id: `brave-${Buffer.from(r.url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 32)}`,
+      place_id: `brave-${Buffer.from(r.url).toString('hex').substring(0, 48)}`,
       name: name,
       vicinity: location, // Brave doesn't give address usually in web search
       website: r.url,

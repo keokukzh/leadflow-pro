@@ -42,7 +42,16 @@ export default function DiscoveryPage() {
     pollInterval.current = setInterval(async () => {
       const mission = await getMissionById(missionId);
       if (mission) {
-        setResults(mission.results as DiscoveryResult[]);
+        // Dedup results based on place_id to prevent "Duplicate Key" crash from old/cached data
+        const uniqueResults: DiscoveryResult[] = [];
+        const seenIds = new Set();
+        (mission.results as DiscoveryResult[]).forEach(r => {
+          if (!seenIds.has(r.place_id)) {
+            seenIds.add(r.place_id);
+            uniqueResults.push(r);
+          }
+        });
+        setResults(uniqueResults);
         if (mission.status !== 'IN_PROGRESS') {
           setIsLoading(false);
           stopPolling();
@@ -55,7 +64,16 @@ export default function DiscoveryPage() {
     const loadLatest = async () => {
       const mission = await getLatestMission();
       if (mission) {
-        setResults(mission.results as DiscoveryResult[]);
+        // Dedup results based on place_id to prevent "Duplicate Key" crash from old/cached data
+        const uniqueResults: DiscoveryResult[] = [];
+        const seenIds = new Set();
+        (mission.results as DiscoveryResult[]).forEach(r => {
+          if (!seenIds.has(r.place_id)) {
+            seenIds.add(r.place_id);
+            uniqueResults.push(r);
+          }
+        });
+        setResults(uniqueResults);
         setHasScanned(true);
         if (mission.status === 'IN_PROGRESS') {
           setIsLoading(true);
