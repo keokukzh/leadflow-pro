@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLeads, useGenerateSiteConfig } from "@/lib/hooks/useLeads";
 import { LeadSidebar } from "@/components/creator/LeadSidebar";
 import { CreatorToolbar } from "@/components/creator/CreatorToolbar";
-import { Monitor, Cpu, Fingerprint } from "lucide-react";
+import { Cpu, Fingerprint } from "lucide-react";
 import { clsx } from "clsx";
 
 type Viewport = "desktop" | "tablet" | "mobile";
@@ -20,7 +20,8 @@ export default function CreatorContent() {
     refetch 
   } = useLeads({});
   
-  const leads = data?.leads || [];
+  // Stable leads reference to avoid unnecessary re-renders
+  const leads = useMemo(() => data?.leads || [], [data]);
   
   const [selectedLeadId, setSelectedLeadId] = useState<string>("");
   const [viewport, setViewport] = useState<Viewport>("desktop");
@@ -32,14 +33,17 @@ export default function CreatorContent() {
   const selectedLead = leads.find(l => l.id === selectedLeadId);
   const isGenerating = generateMutation.isPending || selectedLead?.status === 'PREVIEW_GENERATING';
   
-  // Initialize from URL
+  // Initialize from URL - use setTimeout to avoid synchronous setState in effect
   useEffect(() => {
     const leadId = searchParams.get("leadId");
     if (leadId && leads.length > 0) {
-      const exists = leads.find(l => l.id === leadId);
-      if (exists && exists.id !== selectedLeadId) {
+      const timeoutId = setTimeout(() => {
+        const exists = leads.find(l => l.id === leadId);
+        if (exists && exists.id !== selectedLeadId) {
           setSelectedLeadId(exists.id);
-      }
+        }
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [searchParams, leads, selectedLeadId]);
 

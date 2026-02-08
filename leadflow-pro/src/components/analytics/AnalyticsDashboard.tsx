@@ -2,8 +2,7 @@
 
 import { memo, useMemo } from "react";
 import { useAnalytics } from "@/lib/hooks/useLeads";
-import { Card } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Users, DollarSign, Target, Zap } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Target } from "lucide-react";
 
 // ============================================
 // ANALYTICS DASHBOARD
@@ -14,57 +13,46 @@ interface AnalyticsDashboardProps {
   dateRange?: { start: string; end: string };
 }
 
-export const AnalyticsDashboard = memo(function AnalyticsDashboard({ 
-  dateRange 
+export const AnalyticsDashboard = memo(function AnalyticsDashboard({
+  dateRange // eslint-disable-line @typescript-eslint/no-unused-vars
 }: AnalyticsDashboardProps) {
   const { data, isLoading, error } = useAnalytics();
 
-  if (isLoading) {
-    return <AnalyticsSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="p-8 bg-red-50 rounded-xl border border-red-200">
-        <p className="text-red-600">Analytics konnten nicht geladen werden</p>
-      </div>
-    );
-  }
-
-  const metrics = data || {
-    totalLeads: 0,
-    convertedLeads: 0,
-    totalRevenue: 0,
-    conversionRate: 0,
-    avgDealSize: 0,
-    responseTime: 0
-  };
+  // All hooks MUST be called before any early returns
+  const metrics = useMemo(() => ({
+    totalLeads: data?.totalLeads ?? 0,
+    convertedLeads: data?.convertedLeads ?? 0,
+    totalRevenue: data?.totalRevenue ?? 0,
+    conversionRate: data?.conversionRate ?? 0,
+    avgDealSize: data?.avgDealSize ?? 0,
+    responseTime: data?.responseTime ?? 0
+  }), [data]);
 
   const stats = useMemo(() => [
-    { 
-      label: "Total Leads", 
-      value: metrics.totalLeads, 
+    {
+      label: "Total Leads",
+      value: metrics.totalLeads,
       icon: Users,
       color: "text-blue-500",
       bg: "bg-blue-500/10"
     },
-    { 
-      label: "Konversionen", 
-      value: metrics.convertedLeads, 
+    {
+      label: "Konversionen",
+      value: metrics.convertedLeads,
       icon: Target,
       color: "text-green-500",
       bg: "bg-green-500/10"
     },
-    { 
-      label: "Umsatz", 
-      value: `CHF ${metrics.totalRevenue.toLocaleString()}`, 
+    {
+      label: "Umsatz",
+      value: `CHF ${metrics.totalRevenue.toLocaleString()}`,
       icon: DollarSign,
       color: "text-yellow-500",
       bg: "bg-yellow-500/10"
     },
-    { 
-      label: "Konversionsrate", 
-      value: `${metrics.conversionRate}%`, 
+    {
+      label: "Konversionsrate",
+      value: `${metrics.conversionRate}%`,
       icon: TrendingUp,
       color: "text-purple-500",
       bg: "bg-purple-500/10"
@@ -79,6 +67,19 @@ export const AnalyticsDashboard = memo(function AnalyticsDashboard({
     { month: "May", leads: 75, conversions: 32 },
     { month: "Jun", leads: 89, conversions: 41 },
   ], []);
+
+  // Early returns AFTER all hooks
+  if (isLoading) {
+    return <AnalyticsSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 bg-red-50 rounded-xl border border-red-200">
+        <p className="text-red-600">Analytics konnten nicht geladen werden</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -104,11 +105,11 @@ export const AnalyticsDashboard = memo(function AnalyticsDashboard({
           {chartData.map((item) => (
             <div key={item.month} className="flex-1 flex flex-col items-center gap-2">
               <div className="w-full flex gap-1 items-end h-48">
-                <div 
+                <div
                   className="flex-1 bg-blue-500/50 rounded-t transition-all hover:bg-blue-500"
                   style={{ height: `${(item.leads / 100) * 100}%` }}
                 />
-                <div 
+                <div
                   className="flex-1 bg-green-500/50 rounded-t transition-all hover:bg-green-500"
                   style={{ height: `${(item.conversions / 100) * 100}%` }}
                 />

@@ -60,7 +60,7 @@ export function VariantSelector({ lead, currentVariant, onSelect, onClose }: Var
                     {isSelected && <span className="ml-auto text-blue-500">✓</span>}
                   </div>
                   <p className="text-xs text-slate-500 mb-2">{variant.desc}</p>
-                  <p className="text-sm text-slate-700 truncate">"{headline}"</p>
+                  <p className="text-sm text-slate-700 truncate">&quot;{headline}&quot;</p>
                 </button>
               );
             })}
