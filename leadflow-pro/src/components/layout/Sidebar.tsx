@@ -115,19 +115,19 @@ export function Sidebar() {
         </nav>
 
         {/* Animation Display */}
-        <div className="px-0 py-0 -mt-32 flex flex-col items-center overflow-visible pointer-events-none">
-          <div className="relative w-80 h-80 group">
+        <div className="px-0 py-0 -mt-20 flex flex-col items-center overflow-visible pointer-events-none">
+          <div className="relative w-64 h-64 group">
             <Image 
               src="/sidebar-animation.gif" 
               alt="System Intelligence Animation" 
               fill
-              className="object-contain mix-blend-screen brightness-125 contrast-125 transition-all duration-1000 scale-125"
+              className="object-contain mix-blend-screen brightness-125 contrast-125 transition-all duration-1000"
               unoptimized
             />
             {/* Ambient Glow */}
-            <div className="absolute inset-x-0 bottom-1/4 h-1/2 bg-primary/30 blur-[60px] rounded-full -z-10 animate-pulse" />
+            <div className="absolute inset-x-0 bottom-1/4 h-1/2 bg-primary/30 blur-[40px] rounded-full -z-10 animate-pulse" />
           </div>
-          <div className="-mt-16 flex items-center space-x-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 backdrop-blur-sm relative z-10">
+          <div className="-mt-12 flex items-center space-x-2 px-3 py-1 bg-white/5 rounded-full border border-white/10 backdrop-blur-sm relative z-10">
             <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_15px_#9b2335] animate-pulse" />
             <span className="text-[9px] font-bold text-white/70 uppercase tracking-[0.2em]">Neural Link Active</span>
           </div>
