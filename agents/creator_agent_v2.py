@@ -505,7 +505,7 @@ class CreatorAgent2:
 
 # Path to leads.json in Next.js app - use relative pathing for robustness
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LEADS_FILE = os.path.join(BASE_DIR, "..", "leadflow-pro", "data", "leads.json")
+LEADS_FILE = os.path.join(BASE_DIR, "..", "frontend", "data", "leads.json")
 
 def load_leads() -> List[Dict]:
     """Lädt Leads aus leads.json."""
@@ -544,7 +544,7 @@ def main():
     print("=" * 70)
     print("🎯 CREATOR AGENT 2.0")
     print("   Image AI + Content Generation + Lead Scoring")
-    print("   📁 Verbunden mit: leadflow-pro/data/leads.json")
+    print("   📁 Verbunden mit: frontend/data/leads.json")
     print("=" * 70)
     
     # Lade Leads aus leads.json

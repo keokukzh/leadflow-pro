@@ -129,7 +129,7 @@ if __name__ == "__main__":
     
     # Save to data folder
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    output_path = os.path.join(BASE_DIR, "..", "leadflow-pro", "data", "leads.csv")
+    output_path = os.path.join(BASE_DIR, "..", "frontend", "data", "leads.csv")
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["id", "name", "city", "industry", "reviews", "rating", "website"])
         writer.writeheader()

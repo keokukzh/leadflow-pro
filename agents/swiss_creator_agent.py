@@ -172,8 +172,8 @@ def main():
     
     # Adjusted paths for agents/ folder
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    input_file = os.path.join(BASE_DIR, "..", "leadflow-pro", "data", "leads_alle.csv")
-    output_file = os.path.join(BASE_DIR, "..", "leadflow-pro", "data", "lead_strategies.csv")
+    input_file = os.path.join(BASE_DIR, "..", "frontend", "data", "leads_alle.csv")
+    output_file = os.path.join(BASE_DIR, "..", "frontend", "data", "lead_strategies.csv")
     
     if os.path.exists(input_file):
         result = agent.process_csv(input_file, output_file)
