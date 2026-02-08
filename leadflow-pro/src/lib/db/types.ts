@@ -232,7 +232,7 @@ export interface DashboardStats {
   totalLeads: number;
   newLeadsThisWeek: number;
   leadsByStatus: Record<LeadStatus, number>;
-  leadsByScore: { hot: number; warm: cold: number };
+  leadsByScore: { hot: number; warm: number; cold: number };
   totalCalls: number;
   totalEmails: number;
   emailsOpened: number;

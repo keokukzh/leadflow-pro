@@ -72,12 +72,7 @@ export default function ContactPage() {
           setIsLoading(false);
         }
       };
-      
-      const controller = new AbortController();
-      fetchData(controller.signal);
-      
-      return () => controller.abort();
-      
+
       if (selectedLead) {
         setEmailSubject(`Strategic Proposal for ${selectedLead.company_name} // Alpha Logic`);
         setEmailBody(`
@@ -95,6 +90,11 @@ Transmission Protocol 1.0.4.
 LeadFlow Pro // Intelligence Unit
         `.trim());
       }
+      
+      const controller = new AbortController();
+      fetchData(controller.signal);
+      
+      return () => controller.abort();
     }
   }, [selectedLeadId, selectedLead]);
 

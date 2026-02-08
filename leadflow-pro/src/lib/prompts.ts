@@ -56,14 +56,14 @@ export const STRATEGY_PROMPT = (lead: Lead) => `
 
   CREATION TOOL PROMPT INSTRUCTIONS:
   Generate a comprehensive, visually descriptive English prompt for AI design tools (Google Stitch, Midjourney).
-  Optimize the logic engine output to fit optimal skill with stitch preview generation specific on customer generated data.
+  Optimize the logic engine output using the "Aesthetic Design Skill" for high-fidelity stitch preview generation specific to customer generated data.
   You MUST weave in specific details from the company context, the sentiment analysis, and the unique pain points identified in the DEEP RESEARCH section provided above. The goal is a preview that feels bespoke to ${lead.company_name}.
   The prompt MUST include:
   - Industry context and business type (e.g., "professional plumbing company website")
   - Color palette with specific hex codes from colorPalette
   - Layout style matching layoutType
   - Hero section description (imagery, typography style, atmosphere)
-  - Brand personality and tone matching brandTone
+  - Brand personality and tone (Substantiate the BRAND TONE here, do NOT use placeholders like "{brandTone}")
   - Key visual elements (icons, photos, gradients, shadows)
   - Modern design trends (glassmorphism, micro-animations, bold typography)
   
@@ -159,7 +159,7 @@ export const SEARCH_STRATEGY_PROMPT = (industry: string, location: string) => `
   Beispiel: ["Anfrage 1", "Anfrage 2", ...]
 `;
 
-export const FORGE_SYNTHESIS_PROMPT = (stash: any) => `
+export const FORGE_SYNTHESIS_PROMPT = (stash: { companyName: string; ownerName: string; rating: number; links: string[]; text: string; images: string[] }) => `
   ${BOTTIE_SYSTEM_PROMPT}
 
   Du bist ein Master AI Engineer & Webdesign Stratege. Deine Aufgabe ist es, unstrukturierte Daten aus dem "Neural Forge" zu einem Master-Prompt für Stitch.ai zu synthetisieren.
@@ -192,7 +192,7 @@ export const FORGE_SYNTHESIS_PROMPT = (stash: any) => `
         { "name": "Secondary", "hex": "#HEX3" }
       ],
       "layoutType": "modern-split | minimal-soft | emotional-dark | clean-professional",
-      "creationToolPrompt": "The ultimate Stitch.ai Masterprompt (English, highly detailed, incorporating all summarized intelligence)"
+      "creationToolPrompt": "The ultimate Stitch.ai Masterprompt (English, highly detailed, incorporating all summarized intelligence. IMPORTANT: Use the final brandTone text here, DO NOT use placeholders like {strategy.brandTone})"
     }
   }
 
