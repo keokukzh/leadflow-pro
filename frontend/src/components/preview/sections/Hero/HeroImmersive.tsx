@@ -18,7 +18,7 @@ export const HeroImmersive: FC<Props> = ({ data, theme }) => {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80"></div>
+        <div className="absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/80"></div>
       </div>
 
       <div className="container px-6 relative z-10 max-w-4xl mx-auto">

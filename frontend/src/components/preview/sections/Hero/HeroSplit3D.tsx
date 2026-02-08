@@ -64,7 +64,7 @@ export const HeroSplit3D: FC<Props> = ({ data, theme }) => {
                alt="Hero Visual" 
                className="w-full h-auto object-cover"
              />
-             <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-transparent"></div>
+             <div className="absolute inset-0 bg-linear-to-tr from-black/20 to-transparent"></div>
            </div>
         </motion.div>
       </div>
