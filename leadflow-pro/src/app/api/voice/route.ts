@@ -23,7 +23,7 @@ import { logger } from '@/lib/logger';
 export async function POST(req: NextRequest) {
   // 1. Rate Limiting Check
   const ip = req.headers.get('x-forwarded-for') || 'anonymous';
-  const { success: limitOk } = await apiRateLimit.check(req as any, 5, ip);
+  const { success: limitOk } = await apiRateLimit.check(5, ip);
   
   if (!limitOk) {
     logger.warn({ ip }, "Rate limit exceeded for voice call");

@@ -17,7 +17,7 @@ const CallRequestSchema = z.object({
  */
 export async function POST(req: NextRequest) {
   const ip = req.headers.get('x-forwarded-for') || 'anonymous';
-  const { success: limitOk } = await apiRateLimit.check(req, 10, ip);
+  const { success: limitOk } = await apiRateLimit.check(10, ip);
   
   if (!limitOk) {
     return NextResponse.json({ success: false, error: "Rate limit exceeded" }, { status: 429 });

@@ -505,7 +505,7 @@ class CreatorAgent2:
 
 # Path to leads.json in Next.js app - use relative pathing for robustness
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LEADS_FILE = os.path.join(BASE_DIR, "leadflow-pro", "data", "leads.json")
+LEADS_FILE = os.path.join(BASE_DIR, "..", "leadflow-pro", "data", "leads.json")
 
 def load_leads() -> List[Dict]:
     """Lädt Leads aus leads.json."""

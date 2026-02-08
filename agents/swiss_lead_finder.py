@@ -127,12 +127,14 @@ if __name__ == "__main__":
         logger.warning("No real leads found or mock mode enabled. Using mock data.")
         leads = find_leads_mock(args.city, args.industry, args.min_reviews, args.min_rating)
     
-    # Save to CSV
-    with open("leads.csv", "w", newline="", encoding="utf-8") as f:
+    # Save to data folder
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    output_path = os.path.join(BASE_DIR, "..", "leadflow-pro", "data", "leads.csv")
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["id", "name", "city", "industry", "reviews", "rating", "website"])
         writer.writeheader()
         writer.writerows(leads)
     
-    logger.info(f"Search complete. {len(leads)} leads saved to leads.csv")
+    logger.info(f"Search complete. {len(leads)} leads saved to {output_path}")
     for lead in leads:
         logger.info(f"- {lead['id']}: {lead['name']} ({lead['rating']} stars)")

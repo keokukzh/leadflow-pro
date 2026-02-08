@@ -15,7 +15,7 @@ import { logger } from '@/lib/logger';
 export async function POST(req: Request) {
   // 1. Rate Limiting Check
   const ip = req.headers.get('x-forwarded-for') || 'anonymous';
-  const { success: limitOk } = await apiRateLimit.check(req as any, 10, ip);
+  const { success: limitOk } = await apiRateLimit.check(10, ip);
   if (!limitOk) {
     logger.warn({ ip }, "Rate limit exceeded for discovery search");
     return NextResponse.json<ApiResponse>({ success: false, error: "Zu viele Anfragen. Bitte warten Sie eine Minute." }, { status: 429 });

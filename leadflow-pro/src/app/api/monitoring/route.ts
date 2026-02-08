@@ -46,6 +46,7 @@ interface ExecutionRecord {
   startTime: Date;
   endTime?: Date;
   steps: StepRecord[];
+  duration?: number;
 }
 
 interface StepRecord {

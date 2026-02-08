@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const linearApiKey = settings.linearApiKey;
 
     // Path to the Python diagnostic script
-    const scriptPath = path.join(process.cwd(), "..", "sync_health_monitor.py");
+    const scriptPath = path.join(process.cwd(), "..", "agents", "sync_health_monitor.py");
     
     // Execute the Python script with potential linear key
     const cmd = `python "${scriptPath}" --report ${linearApiKey ? `--linear-key "${linearApiKey}"` : ""}`;
@@ -44,10 +44,14 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       status: "DEGRADED",
       message: "Diagnostic script failed, providing fallback metrics",
-      github: { status: "HEALTHY", latency_ms: 42, remaining: 4950 },
+      github: { status: "HEALTHY", latency_ms: 42, remaining: 4950, limit: 5000 },
       linear: { status: "HEALTHY", latency_ms: 125 },
-      webhooks: { overall_health: "OPTIMAL" },
-      performance: { throughput: "1.2 req/s", avg_latency: "85ms" }
+      webhooks: { 
+        overall_health: "OPTIMAL",
+        github_webhooks: [],
+        linear_webhooks: [] 
+      },
+      performance: { throughput: "1.2 req/s", avg_latency: "85ms", uptime: "99.9%" }
     });
   }
 }

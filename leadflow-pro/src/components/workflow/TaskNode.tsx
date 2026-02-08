@@ -18,17 +18,17 @@ import {
 import { StepType } from '@/lib/workflow/types';
 
 const nodeIcons: Record<StepType, React.ReactNode> = {
-  email: <Mail className="w-4 h-4" />,
-  call: <Phone className="w-4 h-4" />,
-  wait: <Clock className="w-4 h-4" />,
-  condition: <GitBranch className="w-4 h-4" />,
-  webhook: <Webhook className="w-4 h-4" />,
-  notification: <Bell className="w-4 h-4" />,
-  database: <Database className="w-4 h-4" />,
-  api: <Globe className="w-4 h-4" />,
-  script: <Code className="w-4 h-4" />,
-  branch: <GitBranch className="w-4 h-4" />,
-  parallel: <Layers className="w-4 h-4" />
+  email: <Mail className="w-4 h-4 text-white" />,
+  call: <Phone className="w-4 h-4 text-white" />,
+  wait: <Clock className="w-4 h-4 text-white" />,
+  condition: <GitBranch className="w-4 h-4 text-white" />,
+  webhook: <Webhook className="w-4 h-4 text-white" />,
+  notification: <Bell className="w-4 h-4 text-white" />,
+  database: <Database className="w-4 h-4 text-white" />,
+  api: <Globe className="w-4 h-4 text-white" />,
+  script: <Code className="w-4 h-4 text-white" />,
+  branch: <GitBranch className="w-4 h-4 text-white" />,
+  parallel: <Layers className="w-4 h-4 text-white" />
 };
 
 const nodeColors: Record<string, string> = {
@@ -64,7 +64,7 @@ const TaskNode = ({ data, selected }: NodeProps) => {
       
       <div className="flex items-center gap-3">
         <div className={`p-2 rounded-xl border border-white/10 ${colorClass} shadow-lg shadow-black/20`}>
-          {React.cloneElement(icon as React.ReactElement, { className: 'w-4 h-4 text-white' })}
+          {icon}
         </div>
         <div className="flex-1 overflow-hidden">
           <h4 className="text-sm font-semibold text-white truncate">
@@ -76,9 +76,9 @@ const TaskNode = ({ data, selected }: NodeProps) => {
         </div>
       </div>
 
-      {data.description && (
+      {typeof data.description === 'string' && (
         <div className="mt-3 text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
-          {data.description as string}
+          {data.description}
         </div>
       )}
 

@@ -171,7 +171,7 @@ export default function SyncHealthDashboard() {
             <p className="text-xs text-slate-500">Delivery Success Rate: 100%</p>
             <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
               <Activity className="w-3 h-3 text-blue-500" />
-              <span>{report?.webhooks.github_webhooks.length} aktive Hooks</span>
+              <span>{report?.webhooks?.github_webhooks?.length ?? 0} aktive Hooks</span>
             </div>
           </CardContent>
         </Card>
