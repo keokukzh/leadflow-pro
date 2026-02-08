@@ -17,6 +17,7 @@ export default function CreatorContent() {
   const { 
     data, 
     isLoading, 
+    isFetching,
     refetch 
   } = useLeads({});
   
@@ -84,6 +85,7 @@ export default function CreatorContent() {
             selectedLeadId={selectedLeadId}
             onSelectLead={setSelectedLeadId}
             isLoading={isLoading}
+            isFetching={isFetching}
             onRefresh={refetch}
           />
       </div>

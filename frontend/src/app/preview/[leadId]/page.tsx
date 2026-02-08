@@ -1,5 +1,6 @@
 import { getLeadById } from "@/lib/actions/server-actions";
 import MasterTemplate from "@/components/templates/MasterTemplate";
+import { DynamicRenderer } from "@/components/preview/DynamicRenderer";
 import { notFound } from "next/navigation";
 
 export default async function PreviewPage({ params }: { params: Promise<{ leadId: string }> }) {
@@ -29,5 +30,23 @@ export default async function PreviewPage({ params }: { params: Promise<{ leadId
     );
   }
 
-  return <MasterTemplate data={lead.preview_data} />;
+  // BACKWARD COMPATIBILITY LAYER
+  // If the lead has old 'preview_data' but no 'siteConfig', we map it on the fly
+  // or show a "Regeneration Needed" message if mapping is too complex.
+  // Ideally, we want to support both or migrate.
+  
+  if (lead.siteConfig) {
+      return <DynamicRenderer config={lead.siteConfig} />;
+  }
+
+  // Fallback for old data (optional: map old data to new schema or use old template)
+  // For now, let's keep MasterTemplate as fallback if you want, 
+  // OR force regeneration by showing a message.
+  
+  if (lead.preview_data) {
+     // Option A: Use old template (requires keeping it)
+     return <MasterTemplate data={lead.preview_data} />;
+  }
+  
+  return null;
 }

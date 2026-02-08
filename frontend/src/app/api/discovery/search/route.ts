@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       }, { status: 400 });
     }
 
-    const { industry, locations, missionId: mId } = validation.data as SearchDiscoveryData;
+    const { industry, locations, missionId: mId, limit } = validation.data as SearchDiscoveryData;
     missionId = mId;
     
     logger.info({ industry, locations, missionId }, "Starting discovery search mission");
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     }
 
     // --- Perplexity Logic ---
-    if (settings.discoveryProvider === 'perplexity') {
+    if (settings.discoveryProvider === 'perplexity' && settings.perplexityApiKey) {
       console.log(`[SearchSpecialist] Running Perplexity Autonomous Search...`);
       const allPerplexityResults = [];
       
@@ -59,52 +59,75 @@ export async function POST(req: Request) {
           if (missionId) {
             await updateMission(missionId, { results: allPerplexityResults as DiscoveryMission['results'] });
           }
+
+          if (limit && allPerplexityResults.length >= limit) {
+            allPerplexityResults.splice(limit);
+            break;
+          }
         } catch (err) {
           console.error(`Perplexity search failed for ${location}:`, err);
         }
       }
 
-      if (missionId) {
-        await updateMission(missionId, { results: allPerplexityResults as DiscoveryMission['results'], status: 'COMPLETED' });
+      if (allPerplexityResults.length > 0) {
+        if (missionId) {
+          await updateMission(missionId, { results: allPerplexityResults as DiscoveryMission['results'], status: 'COMPLETED' });
+        }
+        return NextResponse.json({ results: allPerplexityResults });
+      }
+      
+      console.warn("[SearchSpecialist] Perplexity returned no results or failed. Falling back to Mock/SERP.");
+    }
+
+    // --- Brave Logic ---
+    if (settings.discoveryProvider === 'brave' && settings.braveApiKey) {
+      console.log(`[SearchSpecialist] Running Brave Search...`);
+      const allBraveResults: any[] = [];
+      const { searchLeadsWithBrave } = await import('@/lib/brave-search');
+
+      for (const location of targetLocations) {
+        try {
+          // Dedup results based on place_id or source_url
+          const results = await searchLeadsWithBrave(industry, location);
+          for (const res of results) {
+            if (!allBraveResults.some((existing: any) => existing.place_id === res.place_id || existing.source_url === res.source_url)) {
+              allBraveResults.push(res);
+            }
+          }
+          
+          if (missionId) {
+             // We cast to any because strict typing might slightly mismatch but structure is compatible
+            await updateMission(missionId, { results: allBraveResults as any });
+          }
+          
+          if (limit && allBraveResults.length >= limit) {
+            allBraveResults.splice(limit);
+            break;
+          }
+        } catch (err) {
+           console.error(`Brave search failed for ${location}:`, err);
+        }
       }
 
-      return NextResponse.json({ results: allPerplexityResults });
+      if (allBraveResults.length > 0) {
+        if (missionId) {
+          await updateMission(missionId, { results: allBraveResults as any, status: 'COMPLETED' });
+        }
+        return NextResponse.json({ results: allBraveResults });
+      }
+      
+      return NextResponse.json<ApiResponse>({ success: false, error: "Brave Search lieferte keine Ergebnisse." }, { status: 404 });
     }
 
     const apiKey = settings.serpApiKey;
     const allResultsMap = new Map<string, any>();
 
     if (!apiKey) {
-      // Mock for all requested cities
-      const mockResults = targetLocations.map(loc => {
-        const primaryIndustry = industry.split(",")[0].trim() || "Unternehmen";
-        return {
-          place_id: `mock-${loc}`,
-          name: `${primaryIndustry} ${loc}`,
-          rating: 4.8,
-          user_ratings_total: 24,
-          vicinity: loc,
-          analysis: {
-            priorityScore: 9,
-            mainSentiment: 'Positiv',
-            painPoints: [`Veraltete Online-Präsenz`, `Fehlende Buchungsmöglichkeit`],
-            targetDecisionMaker: `Inhaber (${primaryIndustry})`,
-            valueProposition: `Optimierte Kundenansprache und modernes Design für ${primaryIndustry}.`,
-            outreachStrategy: `Direkte Ansprache der fehlenden digitalen Sichtbarkeit.`,
-            conversationStarters: [
-              `Ich habe Ihre tollen Google-Bewertungen gesehen, aber Kunden finden keine Website.`
-            ]
-          },
-          website: null,
-          simulated: true
-        };
-      });
-
-      if (missionId) {
-        await updateMission(missionId, { results: mockResults, status: 'COMPLETED' });
-      }
-
-      return NextResponse.json({ results: mockResults, isSimulated: true });
+      console.log(`[SearchSpecialist] No valid SerpAPI Key found.`);
+      return NextResponse.json<ApiResponse>({ 
+        success: false, 
+        error: "Kein API Key konfiguriert. Bitte SerpAPI oder Perplexity Key in den Einstellungen hinterlegen für echte Ergebnisse." 
+      }, { status: 400 });
     }
 
     for (const location of targetLocations) {
@@ -112,7 +135,11 @@ export async function POST(req: Request) {
       const queries = await generateSearchQueries(industry, location);
       console.log(`[SearchSpecialist] Executing ${queries.length} optimized queries...`);
 
+      if (limit && allResultsMap.size >= limit) break;
+
       for (const query of queries) {
+        if (limit && allResultsMap.size >= limit) break;
+
         // Check if mission was stopped externally
         if (missionId) {
           const currentMission = await getMissionById(missionId);
@@ -134,11 +161,39 @@ export async function POST(req: Request) {
 
           if (data.local_results) {
             const results = data.local_results as Array<Record<string, unknown>>;
-            const filtered = results.filter((res) => 
-               (res.rating && (res.rating as number) >= 4.0 || !res.rating) && !res.website
-            );
+            const filtered = results.filter((res) => {
+               // Basic Quality Check
+               if (!res.title) return false;
+               const name = (res.title as string).toLowerCase();
+
+
+               // 1. Check Rating & Website
+               const ratingOk = (res.rating && (res.rating as number) >= 4.0 || !res.rating);
+               const noWebsite = !res.website; // We prioritize leads WITHOUT website for sales
+
+               if (!ratingOk || !noWebsite) return false;
+
+               // Define words for analysis
+               const nameWords = name.replace(/[^\w\s]/g, '').split(/\s+/);
+
+               // 2. Real Name Validation (Anti-Spam/Generic)
+               if (name.includes(" in ") || name.includes("best of") || name.includes("top 10")) return false;
+
+               // Check if name is just Category + Location (e.g. "Builder Zurich")
+               const allGenericWords = new Set(["best", "top", "near", "me", "service", "company", "listing", "directory"]);
+               
+               // Check for "listicle" indicators
+               if (name.includes("best of") || name.includes("top 10") || name.includes(" 10 ") || name.includes("besten")) return false;
+
+               const isGeneric = nameWords.every(w => allGenericWords.has(w));
+               // Only filter if it is PURELY generic words (e.g. "Best Service")
+               if (isGeneric) return false;
+
+               return true;
+            });
 
             for (const res of filtered) {
+              if (limit && allResultsMap.size >= limit) break;
               if (!allResultsMap.has(res.place_id as string)) {
                 allResultsMap.set(res.place_id as string, {
                   place_id: res.place_id,
@@ -174,7 +229,7 @@ export async function POST(req: Request) {
 
     const resultsArray = Array.from(allResultsMap.values())
       .sort((a, b) => ((b.rating || 0) * (b.user_ratings_total || 0)) - ((a.rating || 0) * (a.user_ratings_total || 0)))
-      .slice(0, 15);
+      .slice(0, limit || allResultsMap.size);
 
     console.log(`[SearchSpecialist] Synthesizing deep research for top 3 leads...`);
     for (const res of resultsArray.slice(0, 3)) {

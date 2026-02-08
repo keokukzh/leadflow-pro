@@ -75,42 +75,83 @@ export const STRATEGY_PROMPT = (lead: Lead) => `
 export const TEMPLATE_DATA_PROMPT = (lead: Lead) => `
   ${BOTTIE_SYSTEM_PROMPT}
 
-  Du bist ein High-End Web-Designer und Konversions-Spezialist. Erstelle distinctive Inhalte, die UNVERGESSLICH sind.
+  Du bist ein Elite Creative Director (Swiss Design School alumi). Deine Aufgabe ist es, eine komplette Website-Konfiguration (SiteConfig) für diesen Kunden zu erstellen.
   
-  CONTEXT:
-  Name: ${lead.company_name} | Ton: ${lead.strategy_brief?.brandTone}
-  Layout: ${lead.strategy_brief?.layoutType || 'modern-split'}
+  KUNDE:
+  Name: ${lead.company_name}
+  Branche: ${lead.industry}
+  Ort: ${lead.location}
+  Google Rating: ${lead.rating} (${lead.review_count} Reviews)
   
-  AUFGABE (Frontend-Design Skill Enforcement):
-  Erstelle das JSON-Datenpaket. Nutze eine Sprache, die den Charakter von "${lead.company_name}" perfekt trifft.
-  
-  RICHTLINIEN FÜR CONTENT & DESIGN:
-  - HEADLINES: Keine generischen Phrasen. Nutze Power-Statements mit Charakter.
-  - TYPO-PAIRING: (Konzeptionell) Empfiehl ein Pairing (z.B. Syne + Outfit, Boska + General Sans).
-  - FARBEN: Nutze die gewählten Farben (${lead.strategy_brief?.colorPalette.map(c => c.hex).join(', ')}) für maximale visuelle Spannung.
-  
-  JSON-STRUKTUR:
-  {
-    "businessName": "${lead.company_name}",
-    "industry": "${lead.industry}",
-    "layoutType": "${lead.strategy_brief?.layoutType || 'modern-split'}",
-    "primaryColor": "${lead.strategy_brief?.colorPalette[0]?.hex || '#3b82f6'}",
-    "secondaryColor": "${lead.strategy_brief?.colorPalette[1]?.hex || '#10b981'}",
-    "heroHeadline": "Ein BOLD Power-Statement für ${lead.location}",
-    "heroSubheadline": "Ein Satz, der sofort Vertrauen aufbaut und den Pain Point adressiert",
-    "heroImageUrl": "Präzises Keyword für atmosphärische Unsplash-Bilder", 
-    "usps": [
-      { "title": "Spezifischer Vorteil 1", "description": "Detailreiches Benefit-Copywriting" },
-      { "title": "Spezifischer Vorteil 2", "description": "..." },
-      { "title": "Spezifischer Vorteil 3", "description": "..." }
-    ],
-    "reviewScore": "${lead.rating}",
-    "reviewCount": ${lead.review_count},
-    "location": "${lead.location}",
-    "phoneNumber": "044 123 45 67"
-  }
+  ANALYSIS CONTEXT:
+  ${lead.analysis ? `
+  - Pain Points: ${lead.analysis.painPoints.join(', ')}
+  - Value Prop: ${lead.analysis.valueProposition}
+  - Sentiment: ${lead.analysis.mainSentiment}
+  ` : 'Keine tiefere Analyse vorhanden.'}
 
-  ANTWORTE NUR MIT VALIDEM JSON.
+  DEINE AUFGABE:
+  1. Bestimme den "Vibe" basierend auf der Branche:
+     - Anwälte/Finanzen -> 'luxury-serif' (Seriös, Edel)
+     - Tech/Startups -> 'tech-glass' (Futuristisch, Dark Mode)
+     - Handwerk/Bau -> 'neo-brutalism' (Stark, Bold, Kantig)
+     - Wellness/Health -> 'warm-organic' (Sanft, Rund)
+     - Standard/Allgemein -> 'swiss-minimal' (Sauber, Grid)
+
+  2. Wähle die passenden Komponenten-Varianten (Structure):
+     - 'luxury-serif' -> Hero: 'immersive-image'
+     - 'tech-glass' -> Hero: 'split-3d'
+     - 'swiss-minimal' -> Hero: 'minimal-type'
+
+  3. Schreibe Copywriting, das zum Vibe passt (kein generisches Marketing-Bla-Bla).
+
+  ANTWORTE NUR MIT DIESEM JSON-FORMAT (SiteConfig):
+  {
+    "vibe": "swiss-minimal | neo-brutalism | luxury-serif | tech-glass | warm-organic",
+    "theme": {
+      "primaryColor": "#hex",
+      "secondaryColor": "#hex",
+      "accentColor": "#hex",
+      "backgroundColor": "#hex (meist weiss oder sehr helles grau, ausser bei tech-glass)",
+      "fontHeading": "font-serif | font-sans | font-mono",
+      "fontBody": "font-sans | font-serif",
+      "radius": "0 | 0.5rem | 1rem | 9999px",
+      "shadow": "none | soft | hard"
+    },
+    "content": {
+      "businessName": "${lead.company_name}",
+      "hero": {
+        "headline": "Kurze, impact-volle Headline (max 6 Worte)",
+        "subheadline": "Überzeugender Subtext, der Pain Points löst",
+        "ctaText": "Handlungsaufforderung",
+        "imageKeyword": "Englischer Suchbegriff für Unsplash (z.B. abstract architecture, luxury office)"
+      },
+      "services": {
+        "title": "Unsere Expertise",
+        "items": [
+          { "title": "Service 1", "description": "Kurze Beschreibung", "icon": "LucideIconName (z.B. Shield, Zap, Star)" },
+          { "title": "Service 2", "description": "Kurze Beschreibung", "icon": "LucideIconName" },
+          { "title": "Service 3", "description": "Kurze Beschreibung", "icon": "LucideIconName" }
+        ]
+      },
+      "socialProof": {
+        "badgeText": "Bekannt aus...",
+        "stat": "4.9/5",
+        "statLabel": "Kundenzufriedenheit"
+      },
+      "contact": {
+        "phone": "044 123 45 67",
+        "email": "kontakt@${lead.company_name.replace(/\s+/g, '').toLowerCase()}.ch",
+        "address": "${lead.location}"
+      }
+    },
+    "structure": {
+      "hero": { "variant": "split-3d | centered-video | minimal-type | immersive-image" },
+      "features": { "variant": "grid-cards | list-minimal | bento-box" },
+      "socialProof": { "variant": "ticker | masonry | carousel" },
+      "cta": { "variant": "floating-card | full-width-gradient" }
+    }
+  }
 `;
 
 export interface LeadContext {

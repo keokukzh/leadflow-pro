@@ -114,7 +114,9 @@ export async function searchGoogleMaps(
     language?: string;
   } = {}
 ): Promise<{ success: boolean; results?: GoogleMapsResult[]; error?: string }> {
-  const searchQuery = `${query} in ${location}`;
+  // Optimize query format for "Real" results
+  // "Pizza near Bern" often gives better list results than "Pizza in Bern" which sometimes returns the city itself
+  const searchQuery = `${query} ${location}`;
   
   const result = await runActor<GoogleMapsResult>(
     APIFY_ACTORS.GOOGLE_MAPS_SCRAPER,
@@ -187,9 +189,14 @@ export function filterLeadCandidates(
   options: {
     minRating?: number;
     requireNoWebsite?: boolean;
+    query?: string; // Search query context for filtering
+    location?: string;
   } = {}
 ): GoogleMapsResult[] {
   return results.filter(result => {
+    // 1. Basic Filters
+    if (!result.title) return false;
+    
     // Check rating threshold
     if (options.minRating && result.totalScore && result.totalScore < options.minRating) {
       return false;
@@ -199,7 +206,27 @@ export function filterLeadCandidates(
     if (options.requireNoWebsite && result.website) {
       return false;
     }
+
+    // 2. "Real Name" Validation
+    const name = result.title.toLowerCase();
     
+    // Explicitly exclude "listicle" titles
+    if (name.includes("best of") || name.includes(" top ") || name.includes(" 10 ")) {
+      return false;
+    }
+
+    // Check for purely generic names (refined list)
+    // We allow "Zahnarzt Zürich" now (Service + Location) as it is often a real business title on Maps
+    const nameWords = name.replace(/[^\w\s]/g, '').split(/\s+/);
+    const genericBanList = new Set(["best", "top", "near", "me", "service", "listing", "directory"]);
+    
+    // Only filter if EVERY word is in the ban list
+    const isPurelyGeneric = nameWords.every(w => genericBanList.has(w));
+
+    if (isPurelyGeneric) {
+       return false;
+    }
+
     return true;
   });
 }
@@ -216,7 +243,7 @@ export function transformToLeadFormat(result: GoogleMapsResult, industry: string
     vicinity: result.address,
     website: result.website || null,
     phone: result.phone || null,
-    source_url: result.url,
+    source_url: result.url || (result.placeId ? `https://www.google.com/maps/place/?q=place_id:${result.placeId}` : undefined),
     industry,
   };
 }

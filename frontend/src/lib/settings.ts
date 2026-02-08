@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { readData, writeData } from "./storage";
 
+export type DiscoveryProvider = 'serpapi' | 'apify' | 'perplexity' | 'brave';
+
 export interface Settings {
   llmProvider: 'cloud' | 'local';
   localEndpoint: string;
@@ -12,8 +14,10 @@ export interface Settings {
   resendApiKey: string;
   apifyToken: string;
   linearApiKey: string;
-  discoveryProvider: 'serpapi' | 'apify' | 'perplexity';
+  discoveryProvider: DiscoveryProvider;
   perplexityApiKey: string;
+  braveApiKey?: string;
+  googleMapsApiKey?: string;
 }
 
 const SETTINGS_FILE = 'settings.json';
@@ -29,12 +33,16 @@ const DEFAULT_SETTINGS: Settings = {
   linearApiKey: '',
   discoveryProvider: 'serpapi',
   perplexityApiKey: '',
+  braveApiKey: '',
+  googleMapsApiKey: '',
 };
+
+const isPlaceholder = (val: string) => !val || val.includes("PLACEHOLDER") || val.includes("YOUR_API_KEY");
 
 export async function getSettings(): Promise<Settings> {
   const settings = await readData<Settings>(SETTINGS_FILE, DEFAULT_SETTINGS);
   
-  return {
+  const rawSettings = {
     ...settings,
     serpApiKey: settings.serpApiKey || process.env.SERPAPI_API_KEY || '',
     openaiApiKey: settings.openaiApiKey || process.env.OPENAI_API_KEY || '',
@@ -43,6 +51,19 @@ export async function getSettings(): Promise<Settings> {
     apifyToken: settings.apifyToken || process.env.APIFY_TOKEN || '',
     linearApiKey: settings.linearApiKey || process.env.LINEAR_API_KEY || '',
     perplexityApiKey: settings.perplexityApiKey || process.env.PERPLEXITY_API_KEY || '',
+    braveApiKey: settings.braveApiKey || process.env.BRAVE_API_KEY || '',
+  };
+
+  return {
+    ...rawSettings,
+    serpApiKey: isPlaceholder(rawSettings.serpApiKey) ? '' : rawSettings.serpApiKey,
+    openaiApiKey: isPlaceholder(rawSettings.openaiApiKey) ? '' : rawSettings.openaiApiKey,
+    elevenLabsApiKey: isPlaceholder(rawSettings.elevenLabsApiKey) ? '' : rawSettings.elevenLabsApiKey,
+    resendApiKey: isPlaceholder(rawSettings.resendApiKey) ? '' : rawSettings.resendApiKey,
+    apifyToken: isPlaceholder(rawSettings.apifyToken) ? '' : rawSettings.apifyToken,
+    linearApiKey: isPlaceholder(rawSettings.linearApiKey) ? '' : rawSettings.linearApiKey,
+    perplexityApiKey: isPlaceholder(rawSettings.perplexityApiKey) ? '' : rawSettings.perplexityApiKey,
+    braveApiKey: isPlaceholder(rawSettings.braveApiKey) ? '' : rawSettings.braveApiKey,
   };
 }
 

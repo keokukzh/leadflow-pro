@@ -87,6 +87,7 @@ export interface Lead {
     outreachStrategy: string;
     conversationStarters: string[];
   } | null;
+  siteConfig?: import('../schemas').SiteConfig;
   preview_data?: TemplateData | null;
   created_at: string;
   status_updated_at?: string;
@@ -169,6 +170,8 @@ export async function runApifyDiscovery(
   const candidates = filterLeadCandidates(searchResult.results, {
     minRating: 4.0,
     requireNoWebsite: true,
+    query: industry,
+    location: location
   });
   
   const leads = candidates.map(c => {
@@ -733,12 +736,30 @@ export async function generateSiteConfig(leadId: string) {
       throw new Error("KI hat keine gültige Konfiguration geliefert.");
     }
 
-    const previewData = JSON.parse(content);
+    const aiResponseFn = JSON.parse(content);
+    
+    // Determine if it is the old or new format
+    let previewData = null;
+    let siteConfig = null;
+
+    if (aiResponseFn.vibe) {
+       // New Architecture
+       siteConfig = aiResponseFn;
+    } else {
+       // Old Architecture fallback
+       previewData = aiResponseFn;
+    }
     
     // Save to database/file
     const leads = await getLeadsSafe();
     const updatedLeads = leads.map(l => 
-      l.id === leadId ? { ...l, preview_data: previewData, status: 'PREVIEW_READY' as const, status_updated_at: new Date().toISOString() } : l
+      l.id === leadId ? { 
+          ...l, 
+          preview_data: previewData, 
+          siteConfig: siteConfig,
+          status: 'PREVIEW_READY' as const, 
+          status_updated_at: new Date().toISOString() 
+      } : l
     );
     await writeData(LEADS_FILE, updatedLeads);
 
@@ -747,7 +768,10 @@ export async function generateSiteConfig(leadId: string) {
       const { error } = await supabase
         .from('leads')
         .update({ 
-          preview_data: previewData, 
+          preview_data: previewData,
+          // We need to make sure Supabase 'leads' table has a 'site_config' column or JSONB 'preview_data' can hold it.
+          // For now, assuming we might need to migrate schema later, but we save strict to local JSON.
+          // If Supabase fails, it just logs error.
           status: 'PREVIEW_READY' 
         })
         .eq('id', leadId);

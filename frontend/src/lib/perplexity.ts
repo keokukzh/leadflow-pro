@@ -5,6 +5,7 @@ export interface PerplexityLead {
   name: string;
   vicinity: string;
   website: string | null;
+  source_url?: string;
   industry: string;
   rating?: number;
   user_ratings_total?: number;
@@ -28,11 +29,15 @@ export async function searchLeadsWithPerplexity(industry: string, location: stri
   const prompt = `Finde 5 hochwertige Leads (B2B Unternehmen) in der Branche "${industry}" in "${location}". 
 Die Unternehmen sollten eine schlechte oder gar keine Website haben, aber gute Google-Bewertungen.
 
+WICHTIG: Erfinde KEINE Namen. Nutze nur ECHTE Unternehmen, die du online finden kannst.
+Keine generischen Namen wie "Bäckerei ${location}" wenn es diesen Laden nicht exakt so gibt.
+
 Gib die Ergebnisse als JSON-Array zurück. Jedes Objekt im Array muss folgendes Schema haben:
 {
   "name": "Name des Unternehmens",
   "vicinity": "Adresse oder Standort",
   "website": "URL oder null",
+  "source_url": "Link zu Google Maps oder Verzeichniseintrag (falls vorhanden)",
   "industry": "${industry}",
   "rating": 4.5,
   "user_ratings_total": 20,

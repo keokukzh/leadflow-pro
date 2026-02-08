@@ -25,6 +25,8 @@ export default function DiscoveryPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<DiscoveryResult[]>([]);
   const [hasScanned, setHasScanned] = useState(false);
+  const [limit, setLimit] = useState<string>("");
+
   
   const pollInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -107,7 +109,8 @@ export default function DiscoveryPage() {
         body: JSON.stringify({ 
           industry: finalIndustries.join(", "), 
           locations: finalLocations,
-          missionId: mission.id 
+          missionId: mission.id,
+          limit: limit ? parseInt(limit) : undefined
         })
       });
     } catch (error) {
@@ -274,6 +277,27 @@ export default function DiscoveryPage() {
               />
             </div>
           </div>
+
+          {/* Intelligence Parameters */}
+          <div className="pt-8 border-t border-white/5">
+            <div className="max-w-xs space-y-4">
+              <div className="flex items-center gap-3">
+                 <div className="p-2 bg-primary/10 rounded-xl">
+                   <Activity className="w-5 h-5 text-primary" />
+                 </div>
+                 <h3 className="text-sm font-bold uppercase tracking-widest text-white/80">Intelligence Depth</h3>
+              </div>
+              <Input 
+                type="number"
+                placeholder="Max Results (e.g. 50)"
+                className="bg-white/5 border-white/10 h-14 rounded-xl px-6 text-sm text-white placeholder:text-white/20 focus:ring-primary/50 transition-all font-mono"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)}
+              />
+              <p className="text-[9px] text-white/20 font-mono">Set result limit to optimize synchronization speed. Leave empty for exhaustive scan.</p>
+            </div>
+          </div>
+
 
           <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-white/5 gap-8">
             <div className="flex flex-wrap gap-8 items-center text-white/40 font-mono text-[9px] uppercase tracking-widest font-bold">

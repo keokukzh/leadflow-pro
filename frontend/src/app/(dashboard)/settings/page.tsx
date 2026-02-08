@@ -198,6 +198,24 @@ export default function SettingsPage() {
                     className="data-[state=checked]:bg-purple-500"
                   />
                 </div>
+
+                <div className={clsx(
+                  "p-6 rounded-3xl border transition-all duration-700 flex items-center justify-between",
+                  settings.discoveryProvider === 'brave' ? "bg-orange-500/5 border-orange-500/20 shadow-[0_0_30px_rgba(249,115,22,0.05)]" : "bg-white/2 border-white/5 opacity-40 shrink-0"
+                )}>
+                  <div className="flex items-center gap-5">
+                    <Globe className={clsx("w-8 h-8", settings.discoveryProvider === 'brave' ? "text-orange-400" : "text-white/20")} />
+                    <div>
+                      <p className="font-bold text-white tracking-tight">Brave Search API</p>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest">Privacy-First Index</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={settings.discoveryProvider === 'brave'} 
+                    onCheckedChange={(checked) => setSettings({...settings, discoveryProvider: checked ? 'brave' : 'serpapi'})}
+                    className="data-[state=checked]:bg-orange-500"
+                  />
+                </div>
               </div>
 
               {settings.discoveryProvider === 'apify' && !settings.apifyToken && (
@@ -228,6 +246,7 @@ export default function SettingsPage() {
                 { label: "Vocal Synthesis", key: "elevenLabsApiKey", icon: Bot, color: "text-purple-400" },
                 { label: "Crawler Token", key: "apifyToken", icon: Search, color: "text-cyan-400" },
                 { label: "Perplexity AI", key: "perplexityApiKey", icon: Zap, color: "text-purple-400" },
+                { label: "Brave Token", key: "braveApiKey", icon: Globe, color: "text-orange-400" },
                 { label: "Linear Sync", key: "linearApiKey", icon: ShieldCheck, color: "text-white/60" },
               ].map((item) => (
                 <div key={item.key} className="space-y-3 group">
